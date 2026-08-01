@@ -88,3 +88,37 @@ It does not mean:
 Future runtime stages must be introduced through bounded interfaces and independently testable authorities.
 
 DefaultUnifiedDevilRuntime must remain a coordinator and must not become a giant implementation containing the full Devil system.
+
+## Stage 2 Runtime Meaning
+
+During Stage 2, DefaultUnifiedDevilRuntime coordinates the bounded
+constitutional path through Executive Readiness:
+
+Constitutional Validation → Identity → Trust → Authorization →
+Understanding → Decision → Task → Planning → Capability Selection →
+Executive Readiness
+
+The default Stage 2 authorities remain deliberately conservative. Where the
+required intelligence or operating subsystem does not yet exist, they return a
+structured deferred result rather than inventing identity, authority,
+understanding, decisions, tasks, plans, capabilities, or readiness.
+
+RuntimeStatus.DEFERRED means:
+
+- the ContextEnvelope entered the unified constitutional runtime;
+- constitutional ordering and trace continuity were preserved;
+- the completed Stage 2 authorities were coordinated;
+- work stopped honestly before the execution boundary.
+
+It does not mean:
+
+- execution began;
+- a capability was available or healthy;
+- operating-system permission existed;
+- an action succeeded;
+- an observation occurred;
+- verification occurred;
+- an outcome was established.
+
+Execution, Observation, Verification, Outcome production, and Communication
+remain later-stage responsibilities and are not implemented by Stage 2.
