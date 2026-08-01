@@ -14,14 +14,14 @@ import kotlin.test.assertNull
 class DefaultUnifiedDevilRuntimeTest {
 
     @Test
-    fun `accept returns a structured accepted result with the same trace`() {
+    fun `accept returns a structured deferred result with the same trace`() {
         val context = createContext()
         val runtime: UnifiedDevilRuntime = DefaultUnifiedDevilRuntime()
 
         val result = runtime.accept(context)
 
         assertEquals(context.traceId, result.traceId)
-        assertEquals(RuntimeStatus.ACCEPTED, result.status)
+        assertEquals(RuntimeStatus.DEFERRED, result.status)
         assertNull(result.error)
     }
 
