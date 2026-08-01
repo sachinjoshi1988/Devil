@@ -6,7 +6,17 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Stage 0 — Project Foundation and Baseline
+Devil Coding Stage 1 — Complete
+
+Stage 1 established the constitutional model foundation and the platform-independent, non-executing Unified Devil Runtime boundary.
+
+Stage 2 has not started.
+
+## Official resume point
+
+Tag: `devil-stage-1-complete`
+
+Commit: `2a0572a87edcc58184c553107f3e56f085dc7cad`
 
 ## Core rule
 
