@@ -12,5 +12,5 @@ interface UnifiedDevilRuntime {
 
     fun accept(
         context: ContextEnvelope,
-    )
+    ): RuntimeResult
 }
