@@ -2,41 +2,67 @@ package com.devil.core.runtime.trust
 
 import com.devil.core.model.context.ContextEnvelope
 import com.devil.core.runtime.identity.IdentityResult
-import com.devil.core.runtime.identity.IdentityStatus
 
 /**
- * Default Stage 2 implementation of trust evaluation.
+ * Default Stage 4 trust authority coordinator.
  *
- * Trust is evaluated only after identity has been resolved. If identity remains
- * unresolved or has failed, trust evaluation is deferred without inventing a
- * trust conclusion.
+ * This implementation obtains a structured trust-evaluation request, delegates
+ * bounded subject trust evaluation to the resolver, and maps the assessment into
+ * the stable runtime TrustResult contract.
  *
- * It performs no identity resolution, authentication, authorization,
- * reasoning, planning, or execution.
+ * It does not resolve identity, authenticate a subject, prove ownership, grant
+ * authorization, enter Owner Mode, plan, execute, observe, or verify outcomes.
  */
-class DefaultTrustAuthority : TrustAuthority {
+class DefaultTrustAuthority(
+    private val requestProvider: TrustEvaluationRequestProvider =
+        DefaultTrustEvaluationRequestProvider(),
+    private val resolver: TrustEvaluationResolver =
+        DefaultTrustEvaluationResolver(),
+    private val resultMapper: TrustEvaluationResultMapper =
+        DefaultTrustEvaluationResultMapper(),
+) : TrustAuthority {
 
     override fun evaluate(
         context: ContextEnvelope,
         identity: IdentityResult,
     ): TrustResult {
-        require(identity.traceId == context.traceId) {
-            "Context and identity result must use the same trace identity."
+        val requestResult = requestProvider.provide(
+            context = context,
+            identity = identity,
+        )
+
+        require(requestResult.traceId == context.traceId) {
+            "Context and trust-evaluation request result must use the same trace identity."
         }
 
-        return when (identity.status) {
-            IdentityStatus.RESOLVED -> TrustResult.create(
-                traceId = context.traceId,
-                status = TrustStatus.EVALUATED,
-                trustLevel = context.trustLevel,
-            )
+        return when (requestResult.status) {
+            TrustEvaluationRequestStatus.AVAILABLE -> {
+                val request = requireNotNull(requestResult.request)
+                val assessment = resolver.evaluate(request)
+                val result = resultMapper.map(
+                    traceId = context.traceId,
+                    assessment = assessment,
+                )
 
-            IdentityStatus.UNRESOLVED,
-            IdentityStatus.FAILED,
-            -> TrustResult.create(
-                traceId = context.traceId,
-                status = TrustStatus.DEFERRED,
-            )
+                require(result.traceId == context.traceId) {
+                    "Context and mapped trust result must use the same trace identity."
+                }
+
+                result
+            }
+
+            TrustEvaluationRequestStatus.UNAVAILABLE ->
+                TrustResult.create(
+                    traceId = context.traceId,
+                    status = TrustStatus.DEFERRED,
+                )
+
+            TrustEvaluationRequestStatus.FAILED ->
+                TrustResult.create(
+                    traceId = context.traceId,
+                    status = TrustStatus.FAILED,
+                    error = requireNotNull(requestResult.error),
+                )
         }
     }
 }
