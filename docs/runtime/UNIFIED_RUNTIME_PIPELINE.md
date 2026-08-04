@@ -169,3 +169,65 @@ Future identity growth must enter through genuine evidence providers and bounded
 resolution policy. DefaultIdentityAuthority must remain the Identity coordinator
 and must not absorb Trust, Authorization, Security, Brain, Planning, Execution,
 Observation, Verification, or Memory responsibilities.
+
+## Stage 4 Trust and Authorization Runtime Meaning
+
+During Stage 4, the Trust authority coordinates the bounded internal path:
+
+ContextEnvelope + IdentityResult → Trust Evaluation Request Provider →
+Trust Evaluation Resolver → Trust Evaluation Result Mapper → TrustResult
+
+The Authorization authority coordinates the bounded internal path:
+
+ContextEnvelope + IdentityResult + TrustResult →
+Authorization Evaluation Request Provider →
+Authorization Evaluation Resolver →
+Authorization Evaluation Result Mapper → AuthorizationResult
+
+Stage 4 establishes:
+
+- a subject-specific trust classification separate from context provenance;
+- structured trust assessments and evaluation requests;
+- bounded trust request-provider, resolver, and mapper contracts;
+- structured constitutional authorization assessments and requests;
+- explicit authorized, denied, and deferred continuation states;
+- bounded authorization request-provider, resolver, and mapper contracts;
+- trace continuity across trust and authorization runtime boundaries;
+- conservative default behavior when genuine policy inputs are unavailable.
+
+ContextTrustLevel describes supplied-context provenance. SubjectTrustLevel describes
+a bounded subject trust assessment. Neither classification automatically grants
+authorization.
+
+The default trust resolver returns SubjectTrustLevel.UNESTABLISHED because no
+subject-trust policy is available. The stable TrustResult contract currently
+exposes ContextTrustLevel rather than TrustAssessment, so the default trust
+result mapper returns TrustStatus.DEFERRED rather than fabricating runtime trust.
+
+The default authorization request provider returns UNAVAILABLE because the
+stable TrustResult contract does not expose the genuine TrustAssessment required
+by AuthorizationEvaluationRequest. DefaultAuthorizationAuthority therefore
+returns AuthorizationStatus.DEFERRED rather than reconstructing subject trust or
+inventing authority.
+
+Trust evaluation does not mean:
+
+- the subject was authenticated;
+- ownership was proven;
+- authorization was granted;
+- Owner Mode was entered;
+- a capability was authorized;
+- operating-system permission existed;
+- execution was permitted;
+- an outcome was verified.
+
+Constitutional authorization applies only to continuation beyond the
+authorization boundary. It does not authorize an individual capability, grant
+operating-system permission, enter Owner Mode, perform execution, observe a
+result, verify completion, or establish an outcome.
+
+Future trust and authorization growth must enter through genuine bounded policy
+and evidence providers. DefaultTrustAuthority and DefaultAuthorizationAuthority
+must remain coordinators and must not absorb Identity, Security, Brain, Planning,
+Capability, Execution, Observation, Verification, Outcome, or Memory
+responsibilities.
