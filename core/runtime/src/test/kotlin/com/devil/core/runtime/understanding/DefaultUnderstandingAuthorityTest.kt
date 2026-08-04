@@ -7,6 +7,14 @@ import com.devil.core.model.context.ContextEnvelope
 import com.devil.core.model.context.ContextSecurityLevel
 import com.devil.core.model.context.ContextSource
 import com.devil.core.model.context.ContextTrustLevel
+import com.devil.core.model.conversation.ConversationInput
+import com.devil.core.model.conversation.ConversationIntakeRecord
+import com.devil.core.model.conversation.ConversationIntakeResult
+import com.devil.core.model.conversation.ConversationIntakeState
+import com.devil.core.model.error.ErrorCode
+import com.devil.core.model.error.UniversalErrorRecord
+import com.devil.core.model.understanding.UnderstandingRecord
+import com.devil.core.model.understanding.UnderstandingState
 import com.devil.core.runtime.authorization.AuthorizationResult
 import com.devil.core.runtime.authorization.AuthorizationStatus
 import com.devil.core.runtime.conversation.ConversationIntakeAuthorityResult
@@ -23,7 +31,7 @@ import kotlin.test.assertNull
 class DefaultUnderstandingAuthorityTest {
 
     @Test
-    fun `understand defers without inventing meaning`() {
+    fun `understand coordinates accepted intake through provider resolver and mapper`() {
         val context = createContext(
             "trace-understanding-default-001",
         )
@@ -34,12 +42,54 @@ class DefaultUnderstandingAuthorityTest {
             context = context,
             identity = createIdentity(context.traceId),
             trust = createTrust(context.traceId),
-            authorization = createAuthorization(context.traceId),
+            authorization =
+                createAuthorization(context.traceId),
             conversationIntake =
-                createConversationIntake(context.traceId),
+                createProducedIntake(
+                    context = context,
+                    state =
+                        ConversationIntakeState.ACCEPTED,
+                ),
         )
 
         assertEquals(context.traceId, result.traceId)
+        assertEquals(
+            UnderstandingAuthorityStatus.PRODUCED,
+            result.status,
+        )
+        assertEquals(
+            UnderstandingState.UNSUPPORTED,
+            requireNotNull(result.understanding).state,
+        )
+        assertEquals(
+            "No structured language-understanding policy is available.",
+            result.understanding.summary,
+        )
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `understand defers when evaluation request is unavailable`() {
+        val context = createContext(
+            "trace-understanding-default-002",
+        )
+
+        val result = DefaultUnderstandingAuthority()
+            .understand(
+                context = context,
+                identity =
+                    createIdentity(context.traceId),
+                trust = createTrust(context.traceId),
+                authorization =
+                    createAuthorization(context.traceId),
+                conversationIntake =
+                    ConversationIntakeAuthorityResult.create(
+                        traceId = context.traceId,
+                        status =
+                            ConversationIntakeAuthorityStatus.DEFERRED,
+                    ),
+            )
+
         assertEquals(
             UnderstandingAuthorityStatus.DEFERRED,
             result.status,
@@ -49,9 +99,56 @@ class DefaultUnderstandingAuthorityTest {
     }
 
     @Test
+    fun `understand preserves failed evaluation request error`() {
+        val context = createContext(
+            "trace-understanding-default-003",
+        )
+        val error = createError(context.traceId)
+
+        val authority = DefaultUnderstandingAuthority(
+            requestProvider = object :
+                UnderstandingEvaluationRequestProvider {
+                override fun provide(
+                    conversationIntake:
+                        ConversationIntakeAuthorityResult,
+                ): UnderstandingEvaluationRequestResult {
+                    return UnderstandingEvaluationRequestResult
+                        .create(
+                            traceId = context.traceId,
+                            status =
+                                UnderstandingEvaluationRequestStatus.FAILED,
+                            error = error,
+                        )
+                }
+            },
+        )
+
+        val result = authority.understand(
+            context = context,
+            identity = createIdentity(context.traceId),
+            trust = createTrust(context.traceId),
+            authorization =
+                createAuthorization(context.traceId),
+            conversationIntake =
+                ConversationIntakeAuthorityResult.create(
+                    traceId = context.traceId,
+                    status =
+                        ConversationIntakeAuthorityStatus.DEFERRED,
+                ),
+        )
+
+        assertEquals(
+            UnderstandingAuthorityStatus.FAILED,
+            result.status,
+        )
+        assertNull(result.understanding)
+        assertEquals(error, result.error)
+    }
+
+    @Test
     fun `understand rejects identity result from a different trace`() {
         val context = createContext(
-            "trace-understanding-default-002",
+            "trace-understanding-default-004",
         )
 
         assertFailsWith<IllegalArgumentException> {
@@ -63,9 +160,14 @@ class DefaultUnderstandingAuthorityTest {
                     ),
                 ),
                 trust = createTrust(context.traceId),
-                authorization = createAuthorization(context.traceId),
+                authorization =
+                    createAuthorization(context.traceId),
                 conversationIntake =
-                    createConversationIntake(context.traceId),
+                    ConversationIntakeAuthorityResult.create(
+                        traceId = context.traceId,
+                        status =
+                            ConversationIntakeAuthorityStatus.DEFERRED,
+                    ),
             )
         }
     }
@@ -73,21 +175,27 @@ class DefaultUnderstandingAuthorityTest {
     @Test
     fun `understand rejects trust result from a different trace`() {
         val context = createContext(
-            "trace-understanding-default-003",
+            "trace-understanding-default-005",
         )
 
         assertFailsWith<IllegalArgumentException> {
             DefaultUnderstandingAuthority().understand(
                 context = context,
-                identity = createIdentity(context.traceId),
+                identity =
+                    createIdentity(context.traceId),
                 trust = createTrust(
                     TraceId.from(
                         "trace-understanding-trust-other",
                     ),
                 ),
-                authorization = createAuthorization(context.traceId),
+                authorization =
+                    createAuthorization(context.traceId),
                 conversationIntake =
-                    createConversationIntake(context.traceId),
+                    ConversationIntakeAuthorityResult.create(
+                        traceId = context.traceId,
+                        status =
+                            ConversationIntakeAuthorityStatus.DEFERRED,
+                    ),
             )
         }
     }
@@ -95,13 +203,14 @@ class DefaultUnderstandingAuthorityTest {
     @Test
     fun `understand rejects authorization result from a different trace`() {
         val context = createContext(
-            "trace-understanding-default-004",
+            "trace-understanding-default-006",
         )
 
         assertFailsWith<IllegalArgumentException> {
             DefaultUnderstandingAuthority().understand(
                 context = context,
-                identity = createIdentity(context.traceId),
+                identity =
+                    createIdentity(context.traceId),
                 trust = createTrust(context.traceId),
                 authorization = createAuthorization(
                     TraceId.from(
@@ -109,7 +218,11 @@ class DefaultUnderstandingAuthorityTest {
                     ),
                 ),
                 conversationIntake =
-                    createConversationIntake(context.traceId),
+                    ConversationIntakeAuthorityResult.create(
+                        traceId = context.traceId,
+                        status =
+                            ConversationIntakeAuthorityStatus.DEFERRED,
+                    ),
             )
         }
     }
@@ -117,22 +230,133 @@ class DefaultUnderstandingAuthorityTest {
     @Test
     fun `understand rejects conversation intake from a different trace`() {
         val context = createContext(
-            "trace-understanding-default-005",
+            "trace-understanding-default-007",
         )
 
         assertFailsWith<IllegalArgumentException> {
             DefaultUnderstandingAuthority().understand(
                 context = context,
-                identity = createIdentity(context.traceId),
+                identity =
+                    createIdentity(context.traceId),
                 trust = createTrust(context.traceId),
-                authorization = createAuthorization(context.traceId),
-                conversationIntake = createConversationIntake(
-                    TraceId.from(
-                        "trace-understanding-intake-other",
+                authorization =
+                    createAuthorization(context.traceId),
+                conversationIntake =
+                    ConversationIntakeAuthorityResult.create(
+                        traceId = TraceId.from(
+                            "trace-understanding-intake-other",
+                        ),
+                        status =
+                            ConversationIntakeAuthorityStatus.DEFERRED,
                     ),
-                ),
             )
         }
+    }
+
+    @Test
+    fun `understand rejects request result from a different trace`() {
+        val context = createContext(
+            "trace-understanding-default-008",
+        )
+        val authority = DefaultUnderstandingAuthority(
+            requestProvider = object :
+                UnderstandingEvaluationRequestProvider {
+                override fun provide(
+                    conversationIntake:
+                        ConversationIntakeAuthorityResult,
+                ): UnderstandingEvaluationRequestResult {
+                    return UnderstandingEvaluationRequestResult
+                        .create(
+                            traceId = TraceId.from(
+                                "trace-understanding-request-other",
+                            ),
+                            status =
+                                UnderstandingEvaluationRequestStatus.UNAVAILABLE,
+                        )
+                }
+            },
+        )
+
+        assertFailsWith<IllegalArgumentException> {
+            authority.understand(
+                context = context,
+                identity =
+                    createIdentity(context.traceId),
+                trust = createTrust(context.traceId),
+                authorization =
+                    createAuthorization(context.traceId),
+                conversationIntake =
+                    ConversationIntakeAuthorityResult.create(
+                        traceId = context.traceId,
+                        status =
+                            ConversationIntakeAuthorityStatus.DEFERRED,
+                    ),
+            )
+        }
+    }
+
+    @Test
+    fun `understand rejects mapped result from a different trace`() {
+        val context = createContext(
+            "trace-understanding-default-009",
+        )
+        val authority = DefaultUnderstandingAuthority(
+            resultMapper = object :
+                UnderstandingEvaluationResultMapper {
+                override fun map(
+                    traceId: TraceId,
+                    understanding: UnderstandingRecord,
+                ): UnderstandingAuthorityResult {
+                    return UnderstandingAuthorityResult.create(
+                        traceId = TraceId.from(
+                            "trace-understanding-mapper-other",
+                        ),
+                        status =
+                            UnderstandingAuthorityStatus.DEFERRED,
+                    )
+                }
+            },
+        )
+
+        assertFailsWith<IllegalArgumentException> {
+            authority.understand(
+                context = context,
+                identity =
+                    createIdentity(context.traceId),
+                trust = createTrust(context.traceId),
+                authorization =
+                    createAuthorization(context.traceId),
+                conversationIntake =
+                    createProducedIntake(
+                        context = context,
+                        state =
+                            ConversationIntakeState.ACCEPTED,
+                    ),
+            )
+        }
+    }
+
+    private fun createProducedIntake(
+        context: ContextEnvelope,
+        state: ConversationIntakeState,
+    ): ConversationIntakeAuthorityResult {
+        return ConversationIntakeAuthorityResult.create(
+            traceId = context.traceId,
+            status =
+                ConversationIntakeAuthorityStatus.PRODUCED,
+            intake = ConversationIntakeResult.create(
+                record = ConversationIntakeRecord.create(
+                    input = ConversationInput.create(
+                        context = context,
+                        content =
+                            "Please open the camera.",
+                    ),
+                    state = state,
+                    rationale =
+                        "Bounded conversation intake was established.",
+                ),
+            ),
+        )
     }
 
     private fun createIdentity(
@@ -162,12 +386,20 @@ class DefaultUnderstandingAuthorityTest {
         )
     }
 
-    private fun createConversationIntake(
+    private fun createError(
         traceId: TraceId,
-    ): ConversationIntakeAuthorityResult {
-        return ConversationIntakeAuthorityResult.create(
+    ): UniversalErrorRecord {
+        return UniversalErrorRecord.create(
+            errorCode = ErrorCode.from(
+                "UNDERSTANDING_EVALUATION_REQUEST_FAILED",
+            ),
             traceId = traceId,
-            status = ConversationIntakeAuthorityStatus.DEFERRED,
+            occurredAt =
+                DevilTimestamp.fromEpochMilliseconds(
+                    1_754_000_070_500L,
+                ),
+            summary =
+                "Understanding evaluation request failed.",
         )
     }
 
@@ -179,10 +411,12 @@ class DefaultUnderstandingAuthorityTest {
             schemaVersion = SchemaVersion.from(1),
             source = ContextSource.TEST,
             trustLevel = ContextTrustLevel.VERIFIED,
-            securityLevel = ContextSecurityLevel.RESTRICTED,
-            observedAt = DevilTimestamp.fromEpochMilliseconds(
-                1_754_000_063_000L,
-            ),
+            securityLevel =
+                ContextSecurityLevel.RESTRICTED,
+            observedAt =
+                DevilTimestamp.fromEpochMilliseconds(
+                    1_754_000_070_000L,
+                ),
         )
     }
 }

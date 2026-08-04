@@ -7,18 +7,27 @@ import com.devil.core.runtime.identity.IdentityResult
 import com.devil.core.runtime.trust.TrustResult
 
 /**
- * Default Stage 5 implementation of structured understanding.
+ * Default Stage 6 structured-understanding authority coordinator.
  *
- * Conversation intake now supplies a bounded operational result, but no
- * language-understanding policy is available yet. This implementation therefore
- * validates constitutional trace continuity and defers understanding without
- * inventing meaning.
+ * This authority obtains a bounded understanding-evaluation request, delegates
+ * evaluation to the resolver, and maps the resulting UnderstandingRecord into
+ * the stable operational result contract.
  *
- * It performs no identity resolution, trust evaluation, authorization,
- * conversation intake, decision-making, task creation, planning, execution,
- * observation, or verification.
+ * It does not resolve identity, evaluate trust, grant authorization, perform
+ * conversation intake, create memory, select decisions, create tasks, plan
+ * work, authorize capabilities, execute actions, observe results, or verify
+ * outcomes.
  */
-class DefaultUnderstandingAuthority : UnderstandingAuthority {
+class DefaultUnderstandingAuthority(
+    private val requestProvider:
+        UnderstandingEvaluationRequestProvider =
+        DefaultUnderstandingEvaluationRequestProvider(),
+    private val resolver: UnderstandingEvaluationResolver =
+        DefaultUnderstandingEvaluationResolver(),
+    private val resultMapper:
+        UnderstandingEvaluationResultMapper =
+        DefaultUnderstandingEvaluationResultMapper(),
+) : UnderstandingAuthority {
 
     override fun understand(
         context: ContextEnvelope,
@@ -43,9 +52,47 @@ class DefaultUnderstandingAuthority : UnderstandingAuthority {
             "Context and conversation-intake result must use the same trace identity."
         }
 
-        return UnderstandingAuthorityResult.create(
-            traceId = context.traceId,
-            status = UnderstandingAuthorityStatus.DEFERRED,
-        )
+        val requestResult =
+            requestProvider.provide(conversationIntake)
+
+        require(requestResult.traceId == context.traceId) {
+            "Context and understanding-evaluation request result must use the same trace identity."
+        }
+
+        return when (requestResult.status) {
+            UnderstandingEvaluationRequestStatus.AVAILABLE -> {
+                val request =
+                    requireNotNull(requestResult.request)
+                val understanding =
+                    resolver.evaluate(request)
+                val result = resultMapper.map(
+                    traceId = context.traceId,
+                    understanding = understanding,
+                )
+
+                require(result.traceId == context.traceId) {
+                    "Context and mapped understanding result must use the same trace identity."
+                }
+
+                result
+            }
+
+            UnderstandingEvaluationRequestStatus.UNAVAILABLE ->
+                UnderstandingAuthorityResult.create(
+                    traceId = context.traceId,
+                    status =
+                        UnderstandingAuthorityStatus.DEFERRED,
+                )
+
+            UnderstandingEvaluationRequestStatus.FAILED ->
+                UnderstandingAuthorityResult.create(
+                    traceId = context.traceId,
+                    status =
+                        UnderstandingAuthorityStatus.FAILED,
+                    error = requireNotNull(
+                        requestResult.error,
+                    ),
+                )
+        }
     }
 }
