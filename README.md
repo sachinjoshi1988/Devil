@@ -6,15 +6,15 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Devil Coding Stage 5 — Complete
+Devil Coding Stage 6 — Complete
 
-Stage 5 completed the Conversation and Context Intake foundation and integrated bounded conversation intake into the single Unified Devil Runtime path between constitutional authorization and structured understanding.
+Stage 6 completed the Structured Understanding foundation and integrated the bounded understanding-evaluation provider, resolver, and result-mapper chain into the unified Understanding Authority.
 
-Stage 5 — Conversation and Context Intake is complete.
+Stage 6 — Structured Understanding is complete.
 
 ## Official resume point
 
-Tag: `devil-stage-5-complete`
+Tag: `devil-stage-6-complete`
 
 
 ## Core rule

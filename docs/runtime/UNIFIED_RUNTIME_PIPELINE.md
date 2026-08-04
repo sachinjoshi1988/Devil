@@ -281,3 +281,59 @@ UnderstandingAuthority now requires the completed ConversationIntakeAuthorityRes
 Future voice, keyboard, vision, notification, automation, and other modalities must normalize into the same unified conversation pipeline. They must not create separate runtime paths or separate Devil intelligences.
 
 Conversation Intake must remain separate from Understanding, Memory, Identity, Trust, Authorization, Decision, Planning, Capability, Execution, Observation, Verification, and Outcome responsibilities.
+
+## Stage 6 Structured Understanding Runtime Meaning
+
+During Stage 6, the Understanding Authority changed from an always-deferred placeholder into a bounded coordinator.
+
+The structured internal path is:
+
+ConversationIntakeAuthorityResult → Understanding Evaluation Request Provider → UnderstandingEvaluationRequest → Understanding Evaluation Resolver → UnderstandingRecord → Understanding Evaluation Result Mapper → UnderstandingAuthorityResult
+
+Stage 6 establishes:
+
+- one structured UnderstandingEvaluationRequest model;
+- explicit available, unavailable, and failed request-construction states;
+- a bounded Understanding Evaluation Request Provider;
+- a bounded Understanding Evaluation Resolver;
+- a bounded Understanding Evaluation Result Mapper;
+- trace continuity across all Understanding handoffs;
+- operational separation between produced understanding and understanding quality;
+- conservative default behavior when no structured language-understanding policy exists.
+
+UnderstandingEvaluationRequest preserves the completed ConversationIntakeResult. It does not duplicate the authoritative ContextEnvelope or textual content.
+
+DefaultUnderstandingEvaluationRequestProvider creates a request only when Conversation Intake produced an ACCEPTED intake record.
+
+Its behavior is:
+
+- produced ACCEPTED intake → AVAILABLE;
+- produced DEFERRED intake → UNAVAILABLE;
+- produced REJECTED intake → UNAVAILABLE;
+- deferred Conversation Intake Authority result → UNAVAILABLE;
+- failed Conversation Intake Authority result → matching propagated failure.
+
+DefaultUnderstandingEvaluationResolver does not infer intent from textual content. Because no structured language-understanding policy is available, it preserves the authoritative context and produces:
+
+- UnderstandingState.UNSUPPORTED;
+- summary: “No structured language-understanding policy is available.”
+
+This is a genuinely produced UnderstandingRecord. UNSUPPORTED describes understanding quality and does not mean the Understanding Authority failed operationally.
+
+DefaultUnderstandingEvaluationResultMapper maps every valid UnderstandingRecord to UnderstandingAuthorityStatus.PRODUCED while preserving the record’s COMPLETE, AMBIGUOUS, INCOMPLETE, or UNSUPPORTED state unchanged.
+
+An unavailable evaluation request produces UnderstandingAuthorityStatus.DEFERRED. A failed request-construction result produces UnderstandingAuthorityStatus.FAILED with the matching error.
+
+Structured Understanding does not mean:
+
+- intent was inferred;
+- a decision was selected;
+- memory was created;
+- a task or plan was created;
+- a capability was authorized;
+- execution occurred;
+- an outcome was observed or verified.
+
+DefaultUnderstandingAuthority must remain a coordinator and must not absorb Conversation Intake, Identity, Trust, Authorization, Memory, Brain, Decision, Task, Planning, Capability, Execution, Observation, Verification, or Outcome responsibilities.
+
+Future language understanding must enter through bounded policies or resolver implementations. It must not bypass Conversation Intake, fabricate meaning, or create a parallel intelligence path.
