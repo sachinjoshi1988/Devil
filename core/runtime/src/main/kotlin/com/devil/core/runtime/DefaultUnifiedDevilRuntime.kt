@@ -1,6 +1,6 @@
 package com.devil.core.runtime
 
-import com.devil.core.model.context.ContextEnvelope
+import com.devil.core.model.conversation.ConversationInput
 import com.devil.core.runtime.authorization.AuthorizationAuthority
 import com.devil.core.runtime.authorization.DefaultAuthorizationAuthority
 import com.devil.core.runtime.capability.CapabilitySelectionAuthority
@@ -8,6 +8,8 @@ import com.devil.core.runtime.capability.DefaultCapabilitySelectionAuthority
 import com.devil.core.runtime.constitution.ConstitutionValidationAuthority
 import com.devil.core.runtime.constitution.ConstitutionValidationStatus
 import com.devil.core.runtime.constitution.DefaultConstitutionValidationAuthority
+import com.devil.core.runtime.conversation.ConversationIntakeAuthority
+import com.devil.core.runtime.conversation.DefaultConversationIntakeAuthority
 import com.devil.core.runtime.decision.DecisionAuthority
 import com.devil.core.runtime.decision.DefaultDecisionAuthority
 import com.devil.core.runtime.executive.DefaultExecutiveReadinessAuthority
@@ -27,9 +29,13 @@ import com.devil.core.runtime.understanding.UnderstandingAuthority
 /**
  * Default constitutional runtime coordinator.
  *
- * This implementation preserves the ordered Stage 2 path from constitutional
- * validation through Executive readiness. It coordinates bounded authorities
- * without absorbing their responsibilities.
+ * This implementation preserves one ordered runtime path from constitutional
+ * validation through Executive readiness. Conversation intake is positioned
+ * after authorization and before understanding.
+ *
+ * The supplied ConversationInput owns the authoritative constitutional context.
+ * This coordinator does not absorb the responsibilities of its bounded
+ * authorities.
  *
  * It performs no platform execution, invents no observations, verifies no
  * outcomes, and makes no unverified success claim.
@@ -44,6 +50,9 @@ class DefaultUnifiedDevilRuntime(
         DefaultTrustAuthority(),
     private val authorizationAuthority: AuthorizationAuthority =
         DefaultAuthorizationAuthority(),
+    private val conversationIntakeAuthority:
+        ConversationIntakeAuthority =
+        DefaultConversationIntakeAuthority(),
     private val understandingAuthority: UnderstandingAuthority =
         DefaultUnderstandingAuthority(),
     private val decisionAuthority: DecisionAuthority =
@@ -61,15 +70,19 @@ class DefaultUnifiedDevilRuntime(
 ) : UnifiedDevilRuntime {
 
     override fun accept(
-        context: ContextEnvelope,
+        input: ConversationInput,
     ): RuntimeResult {
-        val validation = constitutionValidationAuthority.validate(context)
+        val context = input.context
+        val validation =
+            constitutionValidationAuthority.validate(context)
 
         require(validation.traceId == context.traceId) {
             "Context and constitutional validation result must use the same trace identity."
         }
 
-        if (validation.status == ConstitutionValidationStatus.INVALID) {
+        if (validation.status ==
+            ConstitutionValidationStatus.INVALID
+        ) {
             return RuntimeResult.create(
                 traceId = context.traceId,
                 status = RuntimeStatus.REJECTED,
@@ -90,11 +103,24 @@ class DefaultUnifiedDevilRuntime(
             trust = trust,
         )
 
+        val conversationIntake =
+            conversationIntakeAuthority.intake(
+                input = input,
+                identity = identity,
+                trust = trust,
+                authorization = authorization,
+            )
+
+        require(conversationIntake.traceId == context.traceId) {
+            "Context and conversation-intake result must use the same trace identity."
+        }
+
         val understanding = understandingAuthority.understand(
             context = context,
             identity = identity,
             trust = trust,
             authorization = authorization,
+            conversationIntake = conversationIntake,
         )
 
         val decision = decisionAuthority.decide(
@@ -124,28 +150,30 @@ class DefaultUnifiedDevilRuntime(
             task = task,
         )
 
-        val capability = capabilitySelectionAuthority.select(
-            context = context,
-            identity = identity,
-            trust = trust,
-            authorization = authorization,
-            understanding = understanding,
-            decision = decision,
-            task = task,
-            plan = plan,
-        )
+        val capability =
+            capabilitySelectionAuthority.select(
+                context = context,
+                identity = identity,
+                trust = trust,
+                authorization = authorization,
+                understanding = understanding,
+                decision = decision,
+                task = task,
+                plan = plan,
+            )
 
-        val readiness = executiveReadinessAuthority.evaluate(
-            context = context,
-            identity = identity,
-            trust = trust,
-            authorization = authorization,
-            understanding = understanding,
-            decision = decision,
-            task = task,
-            plan = plan,
-            capability = capability,
-        )
+        val readiness =
+            executiveReadinessAuthority.evaluate(
+                context = context,
+                identity = identity,
+                trust = trust,
+                authorization = authorization,
+                understanding = understanding,
+                decision = decision,
+                task = task,
+                plan = plan,
+                capability = capability,
+            )
 
         require(readiness.traceId == context.traceId) {
             "Context and Executive readiness result must use the same trace identity."

@@ -2,19 +2,21 @@ package com.devil.core.runtime.understanding
 
 import com.devil.core.model.context.ContextEnvelope
 import com.devil.core.runtime.authorization.AuthorizationResult
+import com.devil.core.runtime.conversation.ConversationIntakeAuthorityResult
 import com.devil.core.runtime.identity.IdentityResult
 import com.devil.core.runtime.trust.TrustResult
 
 /**
- * Default Stage 2 implementation of structured understanding.
+ * Default Stage 5 implementation of structured understanding.
  *
- * The current ContextEnvelope carries constitutional metadata but no semantic
- * interaction content from which an UnderstandingRecord can honestly be
- * produced. This implementation therefore preserves trace continuity and
- * defers understanding without inventing meaning.
+ * Conversation intake now supplies a bounded operational result, but no
+ * language-understanding policy is available yet. This implementation therefore
+ * validates constitutional trace continuity and defers understanding without
+ * inventing meaning.
  *
  * It performs no identity resolution, trust evaluation, authorization,
- * decision-making, task creation, planning, execution, or verification.
+ * conversation intake, decision-making, task creation, planning, execution,
+ * observation, or verification.
  */
 class DefaultUnderstandingAuthority : UnderstandingAuthority {
 
@@ -23,6 +25,7 @@ class DefaultUnderstandingAuthority : UnderstandingAuthority {
         identity: IdentityResult,
         trust: TrustResult,
         authorization: AuthorizationResult,
+        conversationIntake: ConversationIntakeAuthorityResult,
     ): UnderstandingAuthorityResult {
         require(identity.traceId == context.traceId) {
             "Context and identity result must use the same trace identity."
@@ -34,6 +37,10 @@ class DefaultUnderstandingAuthority : UnderstandingAuthority {
 
         require(authorization.traceId == context.traceId) {
             "Context and authorization result must use the same trace identity."
+        }
+
+        require(conversationIntake.traceId == context.traceId) {
+            "Context and conversation-intake result must use the same trace identity."
         }
 
         return UnderstandingAuthorityResult.create(
