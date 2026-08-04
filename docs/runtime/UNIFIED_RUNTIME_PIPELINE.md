@@ -231,3 +231,53 @@ and evidence providers. DefaultTrustAuthority and DefaultAuthorizationAuthority
 must remain coordinators and must not absorb Identity, Security, Brain, Planning,
 Capability, Execution, Observation, Verification, Outcome, or Memory
 responsibilities.
+
+## Stage 5 Conversation and Context Intake Runtime Meaning
+
+During Stage 5, the unified runtime entry contract changed from ContextEnvelope to ConversationInput.
+
+ConversationInput owns the authoritative ContextEnvelope and carries normalized, non-blank textual content without interpreting language or inferring intent.
+
+The unified runtime now preserves the ordered path:
+
+ConversationInput → Constitutional Validation → Identity → Trust → Authorization → Conversation Intake → Understanding → Decision → Task → Plan → Capability Selection → Executive Readiness
+
+Stage 5 establishes:
+
+- one bounded ConversationInput model;
+- explicit accepted, deferred, and rejected intake states;
+- structured conversation-intake records and results;
+- a bounded Conversation Intake Authority;
+- produced, deferred, and failed operational authority states;
+- trace continuity across conversation intake;
+- one unified runtime entry path;
+- explicit placement of Conversation Intake after Authorization and before Understanding;
+- preservation of the original conversation input without semantic interpretation.
+
+Conversation Intake does not mean:
+
+- language was understood;
+- intent was inferred;
+- identity was resolved;
+- trust was established;
+- authorization was granted;
+- memory was created;
+- a decision was selected;
+- a task or plan was created;
+- a capability was executed;
+- an outcome was observed or verified.
+
+DefaultConversationIntakeAuthority maps established constitutional authorization state into bounded intake state:
+
+- AUTHORIZED → ACCEPTED;
+- DENIED → REJECTED;
+- DEFERRED → DEFERRED;
+- FAILED → matching propagated failure.
+
+The default authority does not inspect or interpret textual content.
+
+UnderstandingAuthority now requires the completed ConversationIntakeAuthorityResult and verifies trace continuity before understanding may proceed. DefaultUnderstandingAuthority still returns DEFERRED because no language-understanding policy is available yet.
+
+Future voice, keyboard, vision, notification, automation, and other modalities must normalize into the same unified conversation pipeline. They must not create separate runtime paths or separate Devil intelligences.
+
+Conversation Intake must remain separate from Understanding, Memory, Identity, Trust, Authorization, Decision, Planning, Capability, Execution, Observation, Verification, and Outcome responsibilities.

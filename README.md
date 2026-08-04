@@ -6,15 +6,15 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Devil Coding Stage 4 — Complete
+Devil Coding Stage 5 — Complete
 
-Stage 4 completed the Trust and Authorization Foundation and integrated the bounded trust-evaluation and constitutional authorization-evaluation authority chains while preserving the stable Unified Devil Runtime boundary.
+Stage 5 completed the Conversation and Context Intake foundation and integrated bounded conversation intake into the single Unified Devil Runtime path between constitutional authorization and structured understanding.
 
-Stage 4 — Trust and Authorization Foundation is complete.
+Stage 5 — Conversation and Context Intake is complete.
 
 ## Official resume point
 
-Tag: `devil-stage-4-complete`
+Tag: `devil-stage-5-complete`
 
 
 ## Core rule
