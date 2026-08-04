@@ -122,3 +122,50 @@ It does not mean:
 
 Execution, Observation, Verification, Outcome production, and Communication
 remain later-stage responsibilities and are not implemented by Stage 2.
+
+## Stage 3 Identity Runtime Meaning
+
+During Stage 3, the Identity authority coordinates the bounded internal path:
+
+ContextEnvelope → Identity Resolution Request Provider → Identity Resolution
+Resolver → Identity Resolution Result Mapper → IdentityResult
+
+Stage 3 establishes:
+
+- a stable identity identifier;
+- bounded owner and subject context;
+- identity-evidence provenance;
+- coherent identity-evidence sets;
+- structured resolution requests;
+- unique candidate collections;
+- bounded identity confidence;
+- explicit resolved, unresolved, and ambiguous resolution states;
+- structured resolution selections and records;
+- a conservative runtime mapping to the stable IdentityResult contract;
+- an internal request-provider, resolver, and mapper chain;
+- trace continuity across the identity runtime boundary.
+
+The default Stage 3 provider returns UNAVAILABLE because ContextEnvelope does not
+contain genuine subject identity evidence. The default Identity authority
+therefore returns IdentityStatus.UNRESOLVED rather than fabricating an identity,
+evidence, confidence, ownership claim, or successful resolution.
+
+Identity resolution does not mean:
+
+- the subject was authenticated;
+- ownership was proven;
+- a relationship was established;
+- trust was granted;
+- authorization was granted;
+- Owner Mode was entered;
+- execution was permitted;
+- an action or outcome was verified.
+
+OwnerContext records the bounded owner and current-subject identities only. It
+does not itself prove ownership, authentication, trust, relationship, authority,
+or permission to act.
+
+Future identity growth must enter through genuine evidence providers and bounded
+resolution policy. DefaultIdentityAuthority must remain the Identity coordinator
+and must not absorb Trust, Authorization, Security, Brain, Planning, Execution,
+Observation, Verification, or Memory responsibilities.

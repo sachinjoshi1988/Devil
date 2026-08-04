@@ -6,15 +6,15 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Devil Coding Stage 2 — Complete
+Devil Coding Stage 3 — Complete
 
-Stage 2 completed the constitutional governance foundation and integrated the bounded Unified Devil Runtime authority chain through Executive Readiness.
+Stage 3 completed the Identity and Owner Context foundation and integrated the bounded identity-resolution authority chain while preserving the stable Unified Devil Runtime boundary.
 
-Stage 2 — Constitutional Governance Foundation is complete.
+Stage 3 — Identity and Owner Context is complete.
 
 ## Official resume point
 
-Tag: `devil-stage-2-complete`
+Tag: `devil-stage-3-complete`
 
 
 ## Core rule
