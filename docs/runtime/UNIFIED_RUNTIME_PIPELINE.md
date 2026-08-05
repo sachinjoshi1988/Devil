@@ -470,3 +470,53 @@ Those responsibilities remain with their own later authorities.
 Future task-identity policy must enter through a bounded TaskIdentityProvider
 implementation. It must not be hidden inside TaskCreationResolver,
 DefaultTaskAuthority, or the unified runtime coordinator.
+
+## Stage 9 Constitutional Planning Runtime Meaning
+
+
+Stage 9 establishes the bounded Constitutional Planning Foundation without introducing planning intelligence, capability binding, execution, observation, verification, or outcome responsibilities.
+
+The runtime now coordinates the following bounded chain:
+
+TaskAuthorityResult
+        ↓
+PlanCreationRequestProvider
+        ↓
+PlanCreationRequestResult
+        ↓
+PlanningStrategyProvider
+        ↓
+PlanningStrategyProvisionResult
+        ↓
+PlanIdentityProvider
+        ↓
+PlanIdentityProvisionResult
+        ↓
+PlanCreationResolver
+        ↓
+PlanRecord
+        ↓
+PlanCreationResultMapper
+        ↓
+PlanAuthorityResult
+
+A plan-creation request is available only when the Task Authority has produced one TaskRecord.
+
+Planning strategy and plan identity remain separate bounded dependencies. Neither may be fabricated by the runtime or the Plan Authority.
+
+DefaultPlanAuthority coordinates request preparation, planning strategy, plan identity, plan creation, and result mapping while preserving trace continuity across every handoff.
+
+The default runtime safely defers planning whenever no genuine planning strategy or plan identity is available. This is intentional constitutional behavior and must never be bypassed.
+
+Constitutional Planning does not mean:
+
+- selecting capabilities,
+- authorizing execution,
+- executing platform actions,
+- observing execution,
+- verifying outcomes,
+- or changing final outcome state.
+
+Those responsibilities remain with their own later authorities.
+
+Future planning policy must enter through bounded PlanningStrategyProvider and PlanIdentityProvider implementations. It must not be hidden inside PlanCreationResolver, DefaultPlanAuthority, or the unified runtime coordinator.

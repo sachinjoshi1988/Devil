@@ -6,19 +6,20 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Devil Coding Stage 8 — Complete
+Devil Coding Stage 9 — Complete
 
-Stage 8 completed the Constitutional Task Foundation and integrated the bounded task-creation request provider, task identity provider, task creation resolver, and result mapper into the unified Task Authority. The default runtime does not fabricate task identity and therefore safely defers task creation until a genuine task-identity policy is available.
+Stage 9 completed the Constitutional Planning Foundation and integrated the bounded plan-creation request provider, planning strategy provider, plan identity provider, plan creation resolver, and result mapper into the unified Plan Authority.
 
-Stage 8 — Constitutional Task Foundation is complete.
+The default runtime does not fabricate planning strategy or plan identity. Planning therefore safely defers until genuine constitutional planning and identity policies are available.
+
+Stage 9 — Constitutional Planning Foundation is complete.
 
 ## Official resume point
 
-Tag: `devil-stage-8-complete`
-
+Tag: `devil-stage-9-complete`
 
 ## Core rule
 
 No implementation may bypass:
 
-Constitution → Identity → Trust → Authorization → Understanding → Decision → Task → Capability → Verification → Outcome
+Constitution → Identity → Trust → Authorization → Understanding → Decision → Task → Plan → Capability → Execution → Observation → Verification → Outcome
