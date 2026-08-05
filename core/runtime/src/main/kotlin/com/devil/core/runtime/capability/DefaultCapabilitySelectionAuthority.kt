@@ -10,20 +10,32 @@ import com.devil.core.runtime.trust.TrustResult
 import com.devil.core.runtime.understanding.UnderstandingAuthorityResult
 
 /**
- * Default Stage 2 implementation of capability selection.
+ * Default Stage 10 constitutional Capability Selection Authority coordinator.
  *
- * The current runtime has no capability registry and selection engine capable
- * of choosing a justified CapabilityContract. This implementation therefore
- * preserves trace continuity and defers selection without inventing a
- * capability.
+ * This authority obtains one bounded capability-selection request, obtains the
+ * existing capability registry, delegates bounded selection resolution, and maps
+ * the resolution into the stable operational result contract.
  *
- * It performs no identity resolution, trust evaluation, authorization,
- * understanding, decision selection, task creation, planning, availability or
- * health evaluation, permission checks, execution, observation, verification,
- * or outcome reporting.
+ * It does not resolve identity, evaluate trust, grant authorization, produce
+ * understanding, select decisions, create tasks or plans, register capabilities,
+ * invent capability-selection policy, establish availability or health, check
+ * operating-system permission, execute actions, observe results, verify outcomes,
+ * or report final outcomes.
  */
-class DefaultCapabilitySelectionAuthority :
-    CapabilitySelectionAuthority {
+class DefaultCapabilitySelectionAuthority(
+    private val requestProvider:
+        CapabilitySelectionRequestProvider =
+        DefaultCapabilitySelectionRequestProvider(),
+    private val registry:
+        CapabilityRegistry =
+        DefaultCapabilityRegistry(),
+    private val resolver:
+        CapabilitySelectionResolver =
+        DefaultCapabilitySelectionResolver(),
+    private val resultMapper:
+        CapabilitySelectionResultMapper =
+        DefaultCapabilitySelectionResultMapper(),
+) : CapabilitySelectionAuthority {
 
     override fun select(
         context: ContextEnvelope,
@@ -63,9 +75,72 @@ class DefaultCapabilitySelectionAuthority :
             "Context and plan result must use the same trace identity."
         }
 
-        return CapabilitySelectionResult.create(
-            traceId = context.traceId,
-            status = CapabilitySelectionStatus.DEFERRED,
-        )
+        val requestResult = requestProvider.provide(plan)
+
+        require(requestResult.traceId == context.traceId) {
+            "Context and capability-selection request result must use the same trace identity."
+        }
+
+        return when (requestResult.status) {
+            CapabilitySelectionRequestStatus.AVAILABLE -> {
+                val request = requireNotNull(requestResult.request)
+
+                val registryResult = registry.obtain(
+                    traceId = context.traceId,
+                    request = request,
+                )
+
+                require(registryResult.traceId == context.traceId) {
+                    "Context and capability registry result must use the same trace identity."
+                }
+
+                when (registryResult.status) {
+                    CapabilityRegistryStatus.AVAILABLE,
+                    CapabilityRegistryStatus.UNAVAILABLE,
+                    -> {
+                        val resolution = resolver.resolve(
+                            traceId = context.traceId,
+                            request = request,
+                            registry = registryResult,
+                        )
+
+                        require(resolution.traceId == context.traceId) {
+                            "Context and capability selection resolution result must use the same trace identity."
+                        }
+
+                        val result = resultMapper.map(
+                            traceId = context.traceId,
+                            resolution = resolution,
+                        )
+
+                        require(result.traceId == context.traceId) {
+                            "Context and mapped capability selection result must use the same trace identity."
+                        }
+
+                        result
+                    }
+
+                    CapabilityRegistryStatus.FAILED ->
+                        CapabilitySelectionResult.create(
+                            traceId = context.traceId,
+                            status = CapabilitySelectionStatus.FAILED,
+                            error = requireNotNull(registryResult.error),
+                        )
+                }
+            }
+
+            CapabilitySelectionRequestStatus.UNAVAILABLE ->
+                CapabilitySelectionResult.create(
+                    traceId = context.traceId,
+                    status = CapabilitySelectionStatus.DEFERRED,
+                )
+
+            CapabilitySelectionRequestStatus.FAILED ->
+                CapabilitySelectionResult.create(
+                    traceId = context.traceId,
+                    status = CapabilitySelectionStatus.FAILED,
+                    error = requireNotNull(requestResult.error),
+                )
+        }
     }
 }
