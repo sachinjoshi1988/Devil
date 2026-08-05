@@ -520,3 +520,54 @@ Constitutional Planning does not mean:
 Those responsibilities remain with their own later authorities.
 
 Future planning policy must enter through bounded PlanningStrategyProvider and PlanIdentityProvider implementations. It must not be hidden inside PlanCreationResolver, DefaultPlanAuthority, or the unified runtime coordinator.
+
+## Stage 10 Constitutional Capability Selection Runtime Meaning
+
+
+Stage 10 establishes the bounded Constitutional Capability Selection Foundation without introducing capability-selection policy, capability authorization, execution, observation, verification, or outcome responsibilities.
+
+The runtime now coordinates the following bounded chain:
+
+PlanAuthorityResult
+        ↓
+CapabilitySelectionRequestProvider
+        ↓
+CapabilitySelectionRequestResult
+        ↓
+CapabilityRegistry
+        ↓
+CapabilityRegistryResult
+        ↓
+CapabilitySelectionResolver
+        ↓
+CapabilitySelectionResolutionResult
+        ↓
+CapabilitySelectionResultMapper
+        ↓
+CapabilitySelectionResult
+
+A capability-selection request is available only when the Plan Authority has produced one PlanRecord.
+
+The Capability Registry exposes existing registered capabilities only. It does not fabricate registrations, select capabilities, authorize capabilities, activate capabilities, execute actions, observe results, verify outcomes, or report final outcomes.
+
+DefaultCapabilitySelectionResolver resolves at most one registered capability from the bounded request and registry result. No approved constitutional capability-selection policy exists yet, so the default resolver intentionally returns UNAVAILABLE rather than inventing selection policy or choosing a capability without justified constitutional evidence.
+
+DefaultCapabilitySelectionResultMapper converts bounded capability-selection resolution into the stable operational CapabilitySelectionResult contract. A resolved capability becomes SELECTED, resolution unavailability becomes DEFERRED, and resolution failure preserves its matching error.
+
+DefaultCapabilitySelectionAuthority coordinates request preparation, capability registry access, capability resolution, and result mapping while preserving trace continuity across every constitutional handoff.
+
+The default runtime therefore safely defers capability selection whenever no genuine constitutional capability-selection policy can justify selecting one registered capability. This intentional behavior must never be bypassed by fabricated policy or arbitrary capability selection.
+
+Constitutional Capability Selection does not mean:
+
+- granting authorization,
+- evaluating operating-system permissions,
+- checking capability health or readiness,
+- executing platform actions,
+- observing execution,
+- verifying outcomes,
+- or changing final outcome state.
+
+Those responsibilities remain with their own later authorities.
+
+Future constitutional capability-selection policy must enter through bounded CapabilitySelectionResolver implementations. It must not be hidden inside DefaultCapabilitySelectionAuthority, DefaultCapabilitySelectionResultMapper, the Capability Registry, or the unified runtime coordinator.
