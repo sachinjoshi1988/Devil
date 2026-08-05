@@ -337,3 +337,63 @@ Structured Understanding does not mean:
 DefaultUnderstandingAuthority must remain a coordinator and must not absorb Conversation Intake, Identity, Trust, Authorization, Memory, Brain, Decision, Task, Planning, Capability, Execution, Observation, Verification, or Outcome responsibilities.
 
 Future language understanding must enter through bounded policies or resolver implementations. It must not bypass Conversation Intake, fabricate meaning, or create a parallel intelligence path.
+
+## Stage 7 Constitutional Decision Runtime Meaning
+
+
+Stage 7 establishes the bounded Constitutional Decision Foundation without
+introducing a constitutional reasoning engine or decision policy.
+
+The runtime now coordinates the following bounded chain:
+
+UnderstandingAuthorityResult
+        ↓
+DecisionEvaluationRequestProvider
+        ↓
+DecisionEvaluationRequestResult
+        ↓
+DecisionEvaluationResolver
+        ↓
+DecisionRecord
+        ↓
+DecisionEvaluationResultMapper
+        ↓
+DecisionAuthorityResult
+
+DecisionEvaluationRequest preserves one produced UnderstandingRecord as the
+authoritative input to constitutional decision evaluation. It does not
+reinterpret understanding, create memory, create tasks, create plans,
+authorize capabilities, execute actions, observe outcomes, or verify results.
+
+DefaultDecisionEvaluationRequestProvider creates an evaluation request only
+when Understanding Authority produced one bounded UnderstandingRecord.
+Deferred understanding remains unavailable while failed understanding
+propagates its matching error.
+
+DefaultDecisionEvaluationResolver currently preserves the supplied
+UnderstandingRecord and returns DecisionState.DEFERRED because no
+constitutional decision policy has been implemented yet. It never fabricates
+a selected decision, rejection, or clarification requirement.
+
+DefaultDecisionEvaluationResultMapper converts every valid DecisionRecord into
+a produced DecisionAuthorityResult while preserving the DecisionState inside
+the DecisionRecord.
+
+DefaultDecisionAuthority now acts only as the bounded coordinator of the
+decision-evaluation chain. It validates trace continuity, requests evaluation,
+delegates resolution, maps the DecisionRecord, and preserves propagated
+failures without performing identity resolution, trust evaluation,
+authorization, understanding, task creation, planning, capability selection,
+execution, observation, or verification.
+
+The unified runtime therefore continues as:
+
+Understanding
+    ↓
+Decision
+    ↓
+Task
+
+Stage 7 completes the Constitutional Decision Foundation while preserving one
+authoritative constitutional decision path and preventing fabricated
+DecisionRecords in the absence of justified policy evidence.
