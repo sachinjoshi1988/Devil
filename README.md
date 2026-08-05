@@ -6,17 +6,17 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Devil Coding Stage 9 — Complete
+Devil Coding Stage 10 — Complete
 
-Stage 9 completed the Constitutional Planning Foundation and integrated the bounded plan-creation request provider, planning strategy provider, plan identity provider, plan creation resolver, and result mapper into the unified Plan Authority.
+Stage 10 completed the Constitutional Capability Selection Foundation and integrated the bounded capability-selection request provider, capability registry, capability selection resolver, and result mapper into the unified Capability Selection Authority.
 
-The default runtime does not fabricate planning strategy or plan identity. Planning therefore safely defers until genuine constitutional planning and identity policies are available.
+The default runtime does not fabricate capability registrations or capability-selection policy. Capability selection therefore safely defers until genuine registered capabilities and constitutional selection policy are available.
 
-Stage 9 — Constitutional Planning Foundation is complete.
+Stage 10 — Constitutional Capability Selection Foundation is complete.
 
 ## Official resume point
 
-Tag: `devil-stage-9-complete`
+Tag: `devil-stage-10-complete`
 
 ## Core rule
 
