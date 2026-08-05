@@ -397,3 +397,76 @@ Task
 Stage 7 completes the Constitutional Decision Foundation while preserving one
 authoritative constitutional decision path and preventing fabricated
 DecisionRecords in the absence of justified policy evidence.
+
+## Stage 8 Constitutional Task Runtime Meaning
+
+
+Stage 8 establishes the bounded Constitutional Task Foundation without
+introducing task-identity fabrication, planning behavior, capability binding,
+execution, observation, verification, or outcome responsibilities.
+
+The runtime now coordinates the following bounded chain:
+
+DecisionAuthorityResult
+        ↓
+TaskCreationRequestProvider
+        ↓
+TaskCreationRequestResult
+        ↓
+TaskIdentityProvider
+        ↓
+TaskIdentityProvisionResult
+        ↓
+TaskCreationResolver
+        ↓
+TaskRecord
+        ↓
+TaskCreationResultMapper
+        ↓
+TaskAuthorityResult
+
+A task-creation request is available only when the Decision Authority has
+produced one DecisionRecord whose DecisionState is SELECTED.
+
+Decision records in DEFERRED, REQUIRES_CLARIFICATION, or REJECTED state do not
+create task requests. A deferred Decision Authority result also remains
+unavailable, while decision failure propagates its matching error.
+
+Task identity is a separate bounded dependency. TaskId validates and represents
+an existing identity, but it does not generate one. No approved constitutional
+task-identity policy exists yet, so DefaultTaskIdentityProvider returns
+UNAVAILABLE rather than fabricating identity from trace data or hard-coded
+values.
+
+When one genuine TaskId is available, DefaultTaskCreationResolver preserves the
+selected DecisionRecord, applies the supplied TaskId, and creates exactly one
+TaskRecord in TaskState.CREATED. The task summary is preserved from the
+DecisionRecord and is not reinterpreted.
+
+DefaultTaskCreationResultMapper maps every valid TaskRecord as operationally
+TaskAuthorityStatus.CREATED. The task lifecycle state remains inside TaskState
+and is not converted into operational deferral or failure.
+
+DefaultTaskAuthority is the coordinator for this chain. It validates trace
+continuity across context, identity, trust, authorization, understanding,
+decision, request preparation, task identity provision, and mapped task result.
+
+The default runtime therefore safely defers task creation because no genuine
+task identity is available. This is intentional constitutional behavior and
+must not be bypassed by inventing task identities.
+
+Constitutional Task does not mean:
+
+- planning work,
+- selecting or binding capabilities,
+- authorizing execution,
+- executing platform actions,
+- observing execution,
+- verifying outcomes,
+- or changing final outcome state.
+
+Those responsibilities remain with their own later authorities.
+
+Future task-identity policy must enter through a bounded TaskIdentityProvider
+implementation. It must not be hidden inside TaskCreationResolver,
+DefaultTaskAuthority, or the unified runtime coordinator.
