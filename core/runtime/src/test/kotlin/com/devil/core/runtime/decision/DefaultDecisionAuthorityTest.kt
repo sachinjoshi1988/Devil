@@ -7,6 +7,12 @@ import com.devil.core.model.context.ContextEnvelope
 import com.devil.core.model.context.ContextSecurityLevel
 import com.devil.core.model.context.ContextSource
 import com.devil.core.model.context.ContextTrustLevel
+import com.devil.core.model.decision.DecisionRecord
+import com.devil.core.model.decision.DecisionState
+import com.devil.core.model.error.ErrorCode
+import com.devil.core.model.error.UniversalErrorRecord
+import com.devil.core.model.understanding.UnderstandingRecord
+import com.devil.core.model.understanding.UnderstandingState
 import com.devil.core.runtime.authorization.AuthorizationResult
 import com.devil.core.runtime.authorization.AuthorizationStatus
 import com.devil.core.runtime.identity.IdentityResult
@@ -23,121 +29,326 @@ import kotlin.test.assertNull
 class DefaultDecisionAuthorityTest {
 
     @Test
-    fun `decide defers without inventing a decision`() {
-        val context = createContext("trace-decision-default-001")
-        val identity = IdentityResult.create(
-            traceId = context.traceId,
-            status = IdentityStatus.UNRESOLVED,
+    fun `decide coordinates produced understanding through provider resolver and mapper`() {
+        val context = createContext(
+            "trace-decision-default-001",
         )
-        val trust = TrustResult.create(
-            traceId = context.traceId,
-            status = TrustStatus.DEFERRED,
-        )
-        val authorization = AuthorizationResult.create(
-            traceId = context.traceId,
-            status = AuthorizationStatus.DEFERRED,
-        )
-        val understanding = UnderstandingAuthorityResult.create(
-            traceId = context.traceId,
-            status = UnderstandingAuthorityStatus.DEFERRED,
-        )
-        val authority: DecisionAuthority = DefaultDecisionAuthority()
 
-        val result = authority.decide(
+        val result = DefaultDecisionAuthority().decide(
             context = context,
-            identity = identity,
-            trust = trust,
-            authorization = authorization,
-            understanding = understanding,
+            identity = createIdentity(context.traceId),
+            trust = createTrust(context.traceId),
+            authorization =
+                createAuthorization(context.traceId),
+            understanding =
+                createProducedUnderstanding(context),
         )
 
         assertEquals(context.traceId, result.traceId)
-        assertEquals(DecisionAuthorityStatus.DEFERRED, result.status)
+        assertEquals(
+            DecisionAuthorityStatus.PRODUCED,
+            result.status,
+        )
+        assertEquals(
+            DecisionState.DEFERRED,
+            requireNotNull(result.decision).state,
+        )
+        assertEquals(
+            "No constitutional decision policy is available.",
+            result.decision.summary,
+        )
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `decide defers when evaluation request is unavailable`() {
+        val context = createContext(
+            "trace-decision-default-002",
+        )
+
+        val result = DefaultDecisionAuthority().decide(
+            context = context,
+            identity = createIdentity(context.traceId),
+            trust = createTrust(context.traceId),
+            authorization =
+                createAuthorization(context.traceId),
+            understanding =
+                UnderstandingAuthorityResult.create(
+                    traceId = context.traceId,
+                    status =
+                        UnderstandingAuthorityStatus.DEFERRED,
+                ),
+        )
+
+        assertEquals(
+            DecisionAuthorityStatus.DEFERRED,
+            result.status,
+        )
         assertNull(result.decision)
         assertNull(result.error)
     }
 
     @Test
+    fun `decide preserves failed evaluation request error`() {
+        val context = createContext(
+            "trace-decision-default-003",
+        )
+        val error = createError(context.traceId)
+
+        val authority = DefaultDecisionAuthority(
+            requestProvider = object :
+                DecisionEvaluationRequestProvider {
+                override fun provide(
+                    understanding:
+                        UnderstandingAuthorityResult,
+                ): DecisionEvaluationRequestResult {
+                    return DecisionEvaluationRequestResult.create(
+                        traceId = context.traceId,
+                        status =
+                            DecisionEvaluationRequestStatus.FAILED,
+                        error = error,
+                    )
+                }
+            },
+        )
+
+        val result = authority.decide(
+            context = context,
+            identity = createIdentity(context.traceId),
+            trust = createTrust(context.traceId),
+            authorization =
+                createAuthorization(context.traceId),
+            understanding =
+                UnderstandingAuthorityResult.create(
+                    traceId = context.traceId,
+                    status =
+                        UnderstandingAuthorityStatus.DEFERRED,
+                ),
+        )
+
+        assertEquals(
+            DecisionAuthorityStatus.FAILED,
+            result.status,
+        )
+        assertNull(result.decision)
+        assertEquals(error, result.error)
+    }
+
+    @Test
     fun `decide rejects identity result from a different trace`() {
-        val context = createContext("trace-decision-default-002")
-        val authority: DecisionAuthority = DefaultDecisionAuthority()
+        val context = createContext(
+            "trace-decision-default-004",
+        )
 
         assertFailsWith<IllegalArgumentException> {
-            authority.decide(
+            DefaultDecisionAuthority().decide(
                 context = context,
-                identity = IdentityResult.create(
-                    traceId = TraceId.from("trace-decision-identity-other"),
-                    status = IdentityStatus.UNRESOLVED,
+                identity = createIdentity(
+                    TraceId.from(
+                        "trace-decision-identity-other",
+                    ),
                 ),
                 trust = createTrust(context.traceId),
-                authorization = createAuthorization(context.traceId),
-                understanding = createUnderstanding(context.traceId),
+                authorization =
+                    createAuthorization(context.traceId),
+                understanding =
+                    UnderstandingAuthorityResult.create(
+                        traceId = context.traceId,
+                        status =
+                            UnderstandingAuthorityStatus.DEFERRED,
+                    ),
             )
         }
     }
 
     @Test
     fun `decide rejects trust result from a different trace`() {
-        val context = createContext("trace-decision-default-003")
-        val authority: DecisionAuthority = DefaultDecisionAuthority()
+        val context = createContext(
+            "trace-decision-default-005",
+        )
 
         assertFailsWith<IllegalArgumentException> {
-            authority.decide(
+            DefaultDecisionAuthority().decide(
                 context = context,
-                identity = createIdentity(context.traceId),
+                identity =
+                    createIdentity(context.traceId),
                 trust = createTrust(
-                    TraceId.from("trace-decision-trust-other"),
+                    TraceId.from(
+                        "trace-decision-trust-other",
+                    ),
                 ),
-                authorization = createAuthorization(context.traceId),
-                understanding = createUnderstanding(context.traceId),
+                authorization =
+                    createAuthorization(context.traceId),
+                understanding =
+                    UnderstandingAuthorityResult.create(
+                        traceId = context.traceId,
+                        status =
+                            UnderstandingAuthorityStatus.DEFERRED,
+                    ),
             )
         }
     }
 
     @Test
     fun `decide rejects authorization result from a different trace`() {
-        val context = createContext("trace-decision-default-004")
-        val authority: DecisionAuthority = DefaultDecisionAuthority()
+        val context = createContext(
+            "trace-decision-default-006",
+        )
 
         assertFailsWith<IllegalArgumentException> {
-            authority.decide(
+            DefaultDecisionAuthority().decide(
                 context = context,
-                identity = createIdentity(context.traceId),
+                identity =
+                    createIdentity(context.traceId),
                 trust = createTrust(context.traceId),
                 authorization = createAuthorization(
-                    TraceId.from("trace-decision-authorization-other"),
+                    TraceId.from(
+                        "trace-decision-authorization-other",
+                    ),
                 ),
-                understanding = createUnderstanding(context.traceId),
+                understanding =
+                    UnderstandingAuthorityResult.create(
+                        traceId = context.traceId,
+                        status =
+                            UnderstandingAuthorityStatus.DEFERRED,
+                    ),
             )
         }
     }
 
     @Test
     fun `decide rejects understanding result from a different trace`() {
-        val context = createContext("trace-decision-default-005")
-        val authority: DecisionAuthority = DefaultDecisionAuthority()
+        val context = createContext(
+            "trace-decision-default-007",
+        )
 
         assertFailsWith<IllegalArgumentException> {
-            authority.decide(
+            DefaultDecisionAuthority().decide(
                 context = context,
-                identity = createIdentity(context.traceId),
+                identity =
+                    createIdentity(context.traceId),
                 trust = createTrust(context.traceId),
-                authorization = createAuthorization(context.traceId),
-                understanding = createUnderstanding(
-                    TraceId.from("trace-decision-understanding-other"),
-                ),
+                authorization =
+                    createAuthorization(context.traceId),
+                understanding =
+                    UnderstandingAuthorityResult.create(
+                        traceId = TraceId.from(
+                            "trace-decision-understanding-other",
+                        ),
+                        status =
+                            UnderstandingAuthorityStatus.DEFERRED,
+                    ),
             )
         }
     }
 
-    private fun createIdentity(traceId: TraceId): IdentityResult {
+    @Test
+    fun `decide rejects request result from a different trace`() {
+        val context = createContext(
+            "trace-decision-default-008",
+        )
+
+        val authority = DefaultDecisionAuthority(
+            requestProvider = object :
+                DecisionEvaluationRequestProvider {
+                override fun provide(
+                    understanding:
+                        UnderstandingAuthorityResult,
+                ): DecisionEvaluationRequestResult {
+                    return DecisionEvaluationRequestResult.create(
+                        traceId = TraceId.from(
+                            "trace-decision-request-other",
+                        ),
+                        status =
+                            DecisionEvaluationRequestStatus.UNAVAILABLE,
+                    )
+                }
+            },
+        )
+
+        assertFailsWith<IllegalArgumentException> {
+            authority.decide(
+                context = context,
+                identity =
+                    createIdentity(context.traceId),
+                trust = createTrust(context.traceId),
+                authorization =
+                    createAuthorization(context.traceId),
+                understanding =
+                    UnderstandingAuthorityResult.create(
+                        traceId = context.traceId,
+                        status =
+                            UnderstandingAuthorityStatus.DEFERRED,
+                    ),
+            )
+        }
+    }
+
+    @Test
+    fun `decide rejects mapped result from a different trace`() {
+        val context = createContext(
+            "trace-decision-default-009",
+        )
+
+        val authority = DefaultDecisionAuthority(
+            resultMapper = object :
+                DecisionEvaluationResultMapper {
+                override fun map(
+                    traceId: TraceId,
+                    decision: DecisionRecord,
+                ): DecisionAuthorityResult {
+                    return DecisionAuthorityResult.create(
+                        traceId = TraceId.from(
+                            "trace-decision-mapper-other",
+                        ),
+                        status =
+                            DecisionAuthorityStatus.DEFERRED,
+                    )
+                }
+            },
+        )
+
+        assertFailsWith<IllegalArgumentException> {
+            authority.decide(
+                context = context,
+                identity =
+                    createIdentity(context.traceId),
+                trust = createTrust(context.traceId),
+                authorization =
+                    createAuthorization(context.traceId),
+                understanding =
+                    createProducedUnderstanding(context),
+            )
+        }
+    }
+
+    private fun createProducedUnderstanding(
+        context: ContextEnvelope,
+    ): UnderstandingAuthorityResult {
+        return UnderstandingAuthorityResult.create(
+            traceId = context.traceId,
+            status = UnderstandingAuthorityStatus.PRODUCED,
+            understanding = UnderstandingRecord.create(
+                context = context,
+                state = UnderstandingState.UNSUPPORTED,
+                summary =
+                    "No structured language-understanding policy is available.",
+            ),
+        )
+    }
+
+    private fun createIdentity(
+        traceId: TraceId,
+    ): IdentityResult {
         return IdentityResult.create(
             traceId = traceId,
             status = IdentityStatus.UNRESOLVED,
         )
     }
 
-    private fun createTrust(traceId: TraceId): TrustResult {
+    private fun createTrust(
+        traceId: TraceId,
+    ): TrustResult {
         return TrustResult.create(
             traceId = traceId,
             status = TrustStatus.DEFERRED,
@@ -153,23 +364,37 @@ class DefaultDecisionAuthorityTest {
         )
     }
 
-    private fun createUnderstanding(
+    private fun createError(
         traceId: TraceId,
-    ): UnderstandingAuthorityResult {
-        return UnderstandingAuthorityResult.create(
+    ): UniversalErrorRecord {
+        return UniversalErrorRecord.create(
+            errorCode = ErrorCode.from(
+                "DECISION_EVALUATION_REQUEST_FAILED",
+            ),
             traceId = traceId,
-            status = UnderstandingAuthorityStatus.DEFERRED,
+            occurredAt =
+                DevilTimestamp.fromEpochMilliseconds(
+                    1_754_000_076_500L,
+                ),
+            summary =
+                "Decision evaluation request failed.",
         )
     }
 
-    private fun createContext(traceValue: String): ContextEnvelope {
+    private fun createContext(
+        traceValue: String,
+    ): ContextEnvelope {
         return ContextEnvelope.create(
             traceId = TraceId.from(traceValue),
             schemaVersion = SchemaVersion.from(1),
             source = ContextSource.TEST,
             trustLevel = ContextTrustLevel.VERIFIED,
-            securityLevel = ContextSecurityLevel.RESTRICTED,
-            observedAt = DevilTimestamp.fromEpochMilliseconds(1_754_000_016_000L),
+            securityLevel =
+                ContextSecurityLevel.RESTRICTED,
+            observedAt =
+                DevilTimestamp.fromEpochMilliseconds(
+                    1_754_000_076_000L,
+                ),
         )
     }
 }
