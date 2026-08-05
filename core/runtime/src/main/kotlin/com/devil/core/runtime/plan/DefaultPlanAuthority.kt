@@ -9,17 +9,35 @@ import com.devil.core.runtime.trust.TrustResult
 import com.devil.core.runtime.understanding.UnderstandingAuthorityResult
 
 /**
- * Default Stage 2 implementation of constitutional plan creation.
+ * Default Stage 9 constitutional Plan Authority coordinator.
  *
- * The current runtime has no planning engine capable of creating a justified
- * PlanRecord. This implementation therefore preserves trace continuity and
- * defers planning without inventing a plan.
+ * This authority obtains one bounded plan-creation request, obtains one
+ * constitutional planning strategy and one genuine plan identity, delegates
+ * plan creation to the resolver, and maps the resulting PlanRecord into the
+ * stable operational result contract.
  *
- * It performs no identity resolution, trust evaluation, authorization,
- * understanding, decision selection, task creation, capability binding,
- * execution, observation, verification, or outcome reporting.
+ * It does not resolve identity, evaluate trust, grant authorization, produce
+ * understanding, select decisions, create tasks, invent planning strategy,
+ * generate plan identity, bind capabilities, execute actions, observe results,
+ * verify outcomes, or report final outcomes.
  */
-class DefaultPlanAuthority : PlanAuthority {
+class DefaultPlanAuthority(
+    private val requestProvider:
+        PlanCreationRequestProvider =
+        DefaultPlanCreationRequestProvider(),
+    private val strategyProvider:
+        PlanningStrategyProvider =
+        DefaultPlanningStrategyProvider(),
+    private val planIdentityProvider:
+        PlanIdentityProvider =
+        DefaultPlanIdentityProvider(),
+    private val resolver:
+        PlanCreationResolver =
+        DefaultPlanCreationResolver(),
+    private val resultMapper:
+        PlanCreationResultMapper =
+        DefaultPlanCreationResultMapper(),
+) : PlanAuthority {
 
     override fun createPlan(
         context: ContextEnvelope,
@@ -54,9 +72,102 @@ class DefaultPlanAuthority : PlanAuthority {
             "Context and task result must use the same trace identity."
         }
 
-        return PlanAuthorityResult.create(
-            traceId = context.traceId,
-            status = PlanAuthorityStatus.DEFERRED,
-        )
+        val requestResult = requestProvider.provide(task)
+
+        require(requestResult.traceId == context.traceId) {
+            "Context and plan-creation request result must use the same trace identity."
+        }
+
+        return when (requestResult.status) {
+            PlanCreationRequestStatus.AVAILABLE -> {
+                val request = requireNotNull(requestResult.request)
+
+                val strategyResult = strategyProvider.provide(
+                    traceId = context.traceId,
+                    request = request,
+                )
+
+                require(strategyResult.traceId == context.traceId) {
+                    "Context and planning strategy result must use the same trace identity."
+                }
+
+                when (strategyResult.status) {
+                    PlanningStrategyProvisionStatus.AVAILABLE -> {
+                        val identityResult =
+                            planIdentityProvider.provide(
+                                traceId = context.traceId,
+                                request = request,
+                            )
+
+                        require(identityResult.traceId == context.traceId) {
+                            "Context and plan identity result must use the same trace identity."
+                        }
+
+                        when (identityResult.status) {
+                            PlanIdentityProvisionStatus.AVAILABLE -> {
+                                val plan = resolver.create(
+                                    request = request,
+                                    planId =
+                                        requireNotNull(identityResult.planId),
+                                    strategy =
+                                        requireNotNull(strategyResult.strategy),
+                                )
+
+                                val result = resultMapper.map(
+                                    traceId = context.traceId,
+                                    plan = plan,
+                                )
+
+                                require(result.traceId == context.traceId) {
+                                    "Context and mapped plan result must use the same trace identity."
+                                }
+
+                                result
+                            }
+
+                            PlanIdentityProvisionStatus.UNAVAILABLE ->
+                                PlanAuthorityResult.create(
+                                    traceId = context.traceId,
+                                    status = PlanAuthorityStatus.DEFERRED,
+                                )
+
+                            PlanIdentityProvisionStatus.FAILED ->
+                                PlanAuthorityResult.create(
+                                    traceId = context.traceId,
+                                    status = PlanAuthorityStatus.FAILED,
+                                    error =
+                                        requireNotNull(identityResult.error),
+                                )
+                        }
+                    }
+
+                    PlanningStrategyProvisionStatus.UNAVAILABLE ->
+                        PlanAuthorityResult.create(
+                            traceId = context.traceId,
+                            status = PlanAuthorityStatus.DEFERRED,
+                        )
+
+                    PlanningStrategyProvisionStatus.FAILED ->
+                        PlanAuthorityResult.create(
+                            traceId = context.traceId,
+                            status = PlanAuthorityStatus.FAILED,
+                            error = requireNotNull(strategyResult.error),
+                        )
+                }
+            }
+
+            PlanCreationRequestStatus.UNAVAILABLE ->
+                PlanAuthorityResult.create(
+                    traceId = context.traceId,
+                    status = PlanAuthorityStatus.DEFERRED,
+                )
+
+            PlanCreationRequestStatus.FAILED ->
+                PlanAuthorityResult.create(
+                    traceId = context.traceId,
+                    status = PlanAuthorityStatus.FAILED,
+                    error = requireNotNull(requestResult.error),
+                )
+        }
     }
 }
