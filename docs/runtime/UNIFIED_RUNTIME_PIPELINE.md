@@ -618,3 +618,50 @@ Constitutional Executive Readiness does not mean:
 Those responsibilities remain with their own later authorities.
 
 Future constitutional Executive-readiness policy must enter through bounded ExecutiveReadinessEvaluator implementations. It must not be hidden inside DefaultExecutiveReadinessAuthority, DefaultExecutiveReadinessResultMapper, ExecutiveReadinessRequestProvider, or the unified runtime coordinator.
+
+## Stage 12 Constitutional Execution Runtime Meaning
+
+
+Stage 12 establishes the bounded Constitutional Execution Foundation without introducing capability activation, operating-system interaction, platform execution, observation, verification, or outcome responsibilities.
+
+The runtime now coordinates the following bounded chain:
+
+ExecutiveReadinessResult
+        ↓
+ExecutionRequestProvider
+        ↓
+ExecutionRequestResult
+        ↓
+ExecutionEvaluator
+        ↓
+ExecutionEvaluationResult
+        ↓
+ExecutionResultMapper
+        ↓
+ExecutionResult
+
+An Execution Request is available only when the Executive Readiness Authority has produced one READY ExecutiveReadinessResult together with one PlanRecord and one selected registered CapabilityContract.
+
+The ExecutionRequestProvider prepares one bounded ExecutionRequest only from constitutionally approved planning, capability-selection, and Executive-readiness results. It does not activate capabilities, invoke platform APIs, perform actions, observe execution, verify outcomes, or report final success.
+
+DefaultExecutionEvaluator evaluates at most one bounded ExecutionRequest. No approved constitutional execution policy exists yet, so the default evaluator intentionally returns UNAVAILABLE rather than claiming that execution may proceed without justified constitutional evidence.
+
+DefaultExecutionResultMapper converts bounded execution evaluation into the stable operational ExecutionResult contract. Approved execution evidence becomes APPROVED, evaluation unavailability becomes DEFERRED, and evaluation failure preserves its matching error.
+
+DefaultExecutionAuthority coordinates request preparation, execution evaluation, and result mapping while preserving trace continuity across every constitutional handoff.
+
+The default runtime therefore safely defers execution whenever no genuine constitutional execution policy can justify approaching platform execution. This intentional behavior must never be bypassed by fabricated execution approval or assumptions that Executive Readiness alone permits execution.
+
+Constitutional Execution does not mean:
+
+- activating capabilities,
+- invoking operating-system APIs,
+- performing platform actions,
+- observing execution,
+- verifying outcomes,
+- reporting success,
+- or changing final outcome state.
+
+Those responsibilities remain with their own later authorities.
+
+Future constitutional execution policy must enter through bounded ExecutionEvaluator implementations. It must not be hidden inside DefaultExecutionAuthority, DefaultExecutionResultMapper, ExecutionRequestProvider, or the unified runtime coordinator.

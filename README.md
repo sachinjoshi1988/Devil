@@ -6,17 +6,17 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Devil Coding Stage 11 — Complete
+Devil Coding Stage 12 — Complete
 
-Stage 11 completed the Constitutional Executive Readiness Foundation and integrated the bounded Executive-readiness request provider, readiness evaluator, and result mapper into the unified Executive Readiness Authority.
+Stage 12 completed the Constitutional Execution Foundation and integrated the bounded execution-request provider, execution evaluator, result mapper, and unified Execution Authority into the single constitutional runtime path.
 
-The default runtime does not fabricate Executive-readiness policy or treat capability selection as permission to execute. Executive readiness therefore safely defers until genuine constitutional readiness evidence is available.
+The default runtime does not fabricate execution policy, activate capabilities, invoke platform APIs, or claim that an action occurred. Constitutional execution therefore safely defers until genuine execution policy and a bounded platform execution implementation are available.
 
-Stage 11 — Constitutional Executive Readiness Foundation is complete.
+Stage 12 — Constitutional Execution Foundation is complete.
 
 ## Official resume point
 
-Tag: `devil-stage-11-complete`
+Tag: `devil-stage-12-complete`
 
 ## Core rule
 
