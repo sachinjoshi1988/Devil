@@ -807,3 +807,52 @@ Constitutional Outcome evaluation does not mean:
 Those responsibilities remain with their own explicitly defined later authorities.
 
 Future constitutional outcome policy and genuine outcome-determination evidence must enter through bounded OutcomeEvaluator implementations. They must not be hidden inside DefaultOutcomeAuthority, DefaultOutcomeResultMapper, OutcomeRequestProvider, Verification Authority, or the unified runtime coordinator.
+
+## Stage 16 Constitutional World Model Update Runtime Meaning
+
+Stage 16 establishes the bounded Constitutional World Model Update Foundation without introducing fabricated update evidence, actual world-state mutation, task or plan state mutation, memory creation, learning, external communication, or any authority beyond bounded World Model update evaluation.
+
+The runtime now coordinates the following bounded chain:
+
+OutcomeResult
+        ↓
+WorldModelUpdateRequestProvider
+        ↓
+WorldModelUpdateRequestResult
+        ↓
+WorldModelUpdateEvaluator
+        ↓
+WorldModelUpdateEvaluationResult
+        ↓
+WorldModelUpdateResultMapper
+        ↓
+WorldModelUpdateResult
+
+A World Model Update Request is available only when the Outcome Authority has produced one ESTABLISHED OutcomeResult containing one bounded OutcomeRequest.
+
+The WorldModelUpdateRequestProvider prepares one bounded WorldModelUpdateRequest only from constitutionally established outcome evidence. It does not mutate world state, claim that world state changed, change task or plan state, create memory or learning, communicate externally, or produce a runtime result.
+
+DefaultWorldModelUpdateEvaluator evaluates at most one bounded WorldModelUpdateRequest. No approved constitutional World Model update policy or genuine World Model mutation mechanism exists yet, so the default evaluator intentionally returns UNAVAILABLE rather than treating an established outcome as permission to mutate world state or claiming that state changed.
+
+DefaultWorldModelUpdateResultMapper converts bounded World Model update evaluation into the stable operational WorldModelUpdateResult contract. Genuine constitutional update evidence becomes APPLICABLE, evaluation unavailability becomes DEFERRED, and evaluation failure preserves its matching error.
+
+DefaultWorldModelUpdateAuthority coordinates request preparation, World Model update evaluation, and result mapping while preserving trace continuity across every constitutional handoff.
+
+The unified runtime now passes the bounded OutcomeResult into the World Model Update Authority. An established outcome alone no longer produces runtime acceptance. Runtime acceptance requires an APPLICABLE WorldModelUpdateResult, while update unavailability safely defers and update failure rejects with its matching error.
+
+Constitutional World Model update evaluation does not mean:
+
+- fabricating World Model update evidence,
+- assuming an established outcome permits world-state mutation,
+- mutating world state,
+- claiming that world state changed,
+- changing task or plan state,
+- creating or committing memory,
+- creating learning,
+- communicating externally,
+- bypassing unified runtime handling,
+- or absorbing the responsibilities of earlier constitutional authorities.
+
+Actual World Model mutation remains a separate future responsibility and must occur only through explicitly approved constitutional policy and a genuine bounded update mechanism.
+
+Future constitutional World Model update policy and genuine update mechanisms must enter through bounded WorldModelUpdateEvaluator implementations. They must not be hidden inside DefaultWorldModelUpdateAuthority, DefaultWorldModelUpdateResultMapper, WorldModelUpdateRequestProvider, Outcome Authority, or the unified runtime coordinator.
