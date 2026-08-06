@@ -11,19 +11,29 @@ import com.devil.core.runtime.trust.TrustResult
 import com.devil.core.runtime.understanding.UnderstandingAuthorityResult
 
 /**
- * Default Stage 2 implementation of Executive readiness evaluation.
+ * Default Stage 11 constitutional Executive Readiness Authority coordinator.
  *
- * The current runtime has no Executive readiness engine capable of proving that
- * constitutionally ordered work is ready to approach execution. This
- * implementation therefore preserves trace continuity and defers readiness
- * without inventing readiness.
+ * This authority obtains one bounded Executive-readiness request, delegates
+ * constitutional readiness evaluation, and maps the evaluation into the stable
+ * operational readiness result contract.
  *
- * It performs no identity resolution, trust evaluation, authorization,
- * understanding, decision selection, task creation, planning, capability
- * selection, execution, observation, verification, or outcome reporting.
+ * It does not resolve identity, evaluate trust, grant authorization, produce
+ * understanding, select decisions, create tasks or plans, select capabilities,
+ * invent readiness policy, establish capability availability or health, check
+ * operating-system permission, execute actions, observe results, verify
+ * outcomes, or report final outcomes.
  */
-class DefaultExecutiveReadinessAuthority :
-    ExecutiveReadinessAuthority {
+class DefaultExecutiveReadinessAuthority(
+    private val requestProvider:
+        ExecutiveReadinessRequestProvider =
+        DefaultExecutiveReadinessRequestProvider(),
+    private val evaluator:
+        ExecutiveReadinessEvaluator =
+        DefaultExecutiveReadinessEvaluator(),
+    private val resultMapper:
+        ExecutiveReadinessResultMapper =
+        DefaultExecutiveReadinessResultMapper(),
+) : ExecutiveReadinessAuthority {
 
     override fun evaluate(
         context: ContextEnvelope,
@@ -68,9 +78,50 @@ class DefaultExecutiveReadinessAuthority :
             "Context and capability selection result must use the same trace identity."
         }
 
-        return ExecutiveReadinessResult.create(
-            traceId = context.traceId,
-            status = ExecutiveReadinessStatus.DEFERRED,
+        val requestResult = requestProvider.provide(
+            plan = plan,
+            capability = capability,
         )
+
+        require(requestResult.traceId == context.traceId) {
+            "Context and Executive readiness request result must use the same trace identity."
+        }
+
+        return when (requestResult.status) {
+            ExecutiveReadinessRequestStatus.AVAILABLE -> {
+                val evaluation = evaluator.evaluate(
+                    traceId = context.traceId,
+                    request = requireNotNull(requestResult.request),
+                )
+
+                require(evaluation.traceId == context.traceId) {
+                    "Context and Executive readiness evaluation result must use the same trace identity."
+                }
+
+                val result = resultMapper.map(
+                    traceId = context.traceId,
+                    evaluation = evaluation,
+                )
+
+                require(result.traceId == context.traceId) {
+                    "Context and mapped Executive readiness result must use the same trace identity."
+                }
+
+                result
+            }
+
+            ExecutiveReadinessRequestStatus.UNAVAILABLE ->
+                ExecutiveReadinessResult.create(
+                    traceId = context.traceId,
+                    status = ExecutiveReadinessStatus.DEFERRED,
+                )
+
+            ExecutiveReadinessRequestStatus.FAILED ->
+                ExecutiveReadinessResult.create(
+                    traceId = context.traceId,
+                    status = ExecutiveReadinessStatus.FAILED,
+                    error = requireNotNull(requestResult.error),
+                )
+        }
     }
 }
