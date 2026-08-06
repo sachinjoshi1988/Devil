@@ -18,6 +18,9 @@ import com.devil.core.runtime.execution.DefaultExecutionAuthority
 import com.devil.core.runtime.execution.ExecutionAuthority
 import com.devil.core.runtime.identity.DefaultIdentityAuthority
 import com.devil.core.runtime.identity.IdentityAuthority
+import com.devil.core.runtime.learning.DefaultLearningAuthority
+import com.devil.core.runtime.learning.LearningAuthority
+import com.devil.core.runtime.learning.LearningStatus
 import com.devil.core.runtime.observation.DefaultObservationAuthority
 import com.devil.core.runtime.observation.ObservationAuthority
 import com.devil.core.runtime.outcome.DefaultOutcomeAuthority
@@ -34,24 +37,23 @@ import com.devil.core.runtime.verification.DefaultVerificationAuthority
 import com.devil.core.runtime.verification.VerificationAuthority
 import com.devil.core.runtime.worldmodel.DefaultWorldModelUpdateAuthority
 import com.devil.core.runtime.worldmodel.WorldModelUpdateAuthority
-import com.devil.core.runtime.worldmodel.WorldModelUpdateStatus
 
 /**
  * Default constitutional runtime coordinator.
  *
  * This implementation preserves one ordered runtime path from constitutional
- * validation through bounded World Model update evaluation. Conversation intake
- * is positioned after authorization and before understanding.
+ * validation through bounded learning evaluation. Conversation intake is
+ * positioned after authorization and before understanding.
  *
  * The supplied ConversationInput owns the authoritative constitutional context.
  * This coordinator does not absorb the responsibilities of its bounded
  * authorities.
  *
  * It activates no capability, invokes no platform API, fabricates no execution
- * attempt, observation, verification, outcome, or World Model update evidence,
- * mutates no world state, changes no task or plan state, creates no memory or
- * learning, performs no external communication, and makes no unverified success
- * claim.
+ * attempt, observation, verification, outcome, World Model update, or learning
+ * evidence, mutates no world state, changes no task or plan state, creates or
+ * commits no memory, performs no external communication, and makes no
+ * unverified success claim.
  */
 class DefaultUnifiedDevilRuntime(
     private val constitutionValidationAuthority:
@@ -97,6 +99,9 @@ class DefaultUnifiedDevilRuntime(
     private val worldModelUpdateAuthority:
         WorldModelUpdateAuthority =
         DefaultWorldModelUpdateAuthority(),
+    private val learningAuthority:
+        LearningAuthority =
+        DefaultLearningAuthority(),
 ) : UnifiedDevilRuntime {
 
     override fun accept(
@@ -313,25 +318,48 @@ class DefaultUnifiedDevilRuntime(
             "Context and World Model update result must use the same trace identity."
         }
 
-        return when (worldModelUpdate.status) {
-            WorldModelUpdateStatus.APPLICABLE ->
+        val learning =
+            learningAuthority.evaluateLearning(
+                context = context,
+                identity = identity,
+                trust = trust,
+                authorization = authorization,
+                understanding = understanding,
+                decision = decision,
+                task = task,
+                plan = plan,
+                capability = capability,
+                readiness = readiness,
+                execution = execution,
+                observation = observation,
+                verification = verification,
+                outcome = outcome,
+                worldModelUpdate = worldModelUpdate,
+            )
+
+        require(learning.traceId == context.traceId) {
+            "Context and learning result must use the same trace identity."
+        }
+
+        return when (learning.status) {
+            LearningStatus.LEARNABLE ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.ACCEPTED,
                 )
 
-            WorldModelUpdateStatus.DEFERRED ->
+            LearningStatus.DEFERRED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.DEFERRED,
                 )
 
-            WorldModelUpdateStatus.FAILED ->
+            LearningStatus.FAILED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.REJECTED,
                     error = requireNotNull(
-                        worldModelUpdate.error,
+                        learning.error,
                     ),
                 )
         }

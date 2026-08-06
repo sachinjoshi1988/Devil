@@ -16,6 +16,7 @@ import com.devil.core.model.decision.DecisionState
 import com.devil.core.model.error.ErrorCode
 import com.devil.core.model.error.UniversalErrorRecord
 import com.devil.core.model.execution.ExecutionRequest
+import com.devil.core.model.learning.LearningRequest
 import com.devil.core.model.observation.ObservationRequest
 import com.devil.core.model.outcome.OutcomeRequest
 import com.devil.core.model.plan.PlanId
@@ -36,6 +37,9 @@ import com.devil.core.runtime.execution.ExecutionAuthority
 import com.devil.core.runtime.execution.ExecutionResult
 import com.devil.core.runtime.execution.ExecutionStatus
 import com.devil.core.runtime.identity.IdentityResult
+import com.devil.core.runtime.learning.LearningAuthority
+import com.devil.core.runtime.learning.LearningResult
+import com.devil.core.runtime.learning.LearningStatus
 import com.devil.core.runtime.observation.ObservationAuthority
 import com.devil.core.runtime.observation.ObservationResult
 import com.devil.core.runtime.observation.ObservationStatus
@@ -67,21 +71,15 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val result = runtime.accept(input)
 
-        assertEquals(
-            input.context.traceId,
-            result.traceId,
-        )
-        assertEquals(
-            RuntimeStatus.DEFERRED,
-            result.status,
-        )
+        assertEquals(input.context.traceId, result.traceId)
+        assertEquals(RuntimeStatus.DEFERRED, result.status)
         assertNull(result.error)
     }
 
     @Test
     fun `accept does not treat approved execution as later constitutional work`() {
         val input = createInput(
-            "trace-runtime-world-model-002",
+            "trace-runtime-learning-002",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -98,32 +96,9 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept does not treat observation as later constitutional work`() {
+    fun `accept does not treat verification as outcome World Model update or learning`() {
         val input = createInput(
-            "trace-runtime-world-model-003",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-        )
-
-        val result = runtime.accept(input)
-
-        assertEquals(input.context.traceId, result.traceId)
-        assertEquals(RuntimeStatus.DEFERRED, result.status)
-        assertNull(result.error)
-    }
-
-    @Test
-    fun `accept does not treat verification as an established outcome or World Model update`() {
-        val input = createInput(
-            "trace-runtime-world-model-004",
+            "trace-runtime-learning-003",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -148,9 +123,9 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept does not treat established outcome as an applied World Model update`() {
+    fun `accept does not treat established outcome as World Model update or learning`() {
         val input = createInput(
-            "trace-runtime-world-model-005",
+            "trace-runtime-learning-004",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -179,9 +154,9 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept maps applicable World Model update to accepted runtime result`() {
+    fun `accept does not treat applicable World Model update as completed learning`() {
         val input = createInput(
-            "trace-runtime-world-model-006",
+            "trace-runtime-learning-005",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -209,6 +184,45 @@ class DefaultUnifiedDevilRuntimeTest {
         val result = runtime.accept(input)
 
         assertEquals(input.context.traceId, result.traceId)
+        assertEquals(RuntimeStatus.DEFERRED, result.status)
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `accept maps learnable learning result to accepted runtime result`() {
+        val input = createInput(
+            "trace-runtime-learning-006",
+        )
+        val runtime = DefaultUnifiedDevilRuntime(
+            executionAuthority =
+                fixedExecutionAuthority(
+                    status = ExecutionStatus.APPROVED,
+                ),
+            observationAuthority =
+                fixedObservationAuthority(
+                    status = ObservationStatus.OBSERVED,
+                ),
+            verificationAuthority =
+                fixedVerificationAuthority(
+                    status = VerificationStatus.VERIFIED,
+                ),
+            outcomeAuthority =
+                fixedOutcomeAuthority(
+                    status = OutcomeStatus.ESTABLISHED,
+                ),
+            worldModelUpdateAuthority =
+                fixedWorldModelUpdateAuthority(
+                    status = WorldModelUpdateStatus.APPLICABLE,
+                ),
+            learningAuthority =
+                fixedLearningAuthority(
+                    status = LearningStatus.LEARNABLE,
+                ),
+        )
+
+        val result = runtime.accept(input)
+
+        assertEquals(input.context.traceId, result.traceId)
         assertEquals(RuntimeStatus.ACCEPTED, result.status)
         assertNull(result.error)
     }
@@ -216,7 +230,7 @@ class DefaultUnifiedDevilRuntimeTest {
     @Test
     fun `accept maps failed execution through later authorities to rejected result`() {
         val input = createInput(
-            "trace-runtime-world-model-007",
+            "trace-runtime-learning-007",
         )
         val error = createError(
             traceId = input.context.traceId,
@@ -239,108 +253,9 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept maps failed observation through later authorities to rejected result`() {
+    fun `accept maps failed World Model update through learning authority to rejected result`() {
         val input = createInput(
-            "trace-runtime-world-model-008",
-        )
-        val error = createError(
-            traceId = input.context.traceId,
-            code = "UNIFIED_RUNTIME_OBSERVATION_FAILED",
-            summary = "Bounded observation evaluation failed.",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.FAILED,
-                    error = error,
-                ),
-        )
-
-        val result = runtime.accept(input)
-
-        assertEquals(input.context.traceId, result.traceId)
-        assertEquals(RuntimeStatus.REJECTED, result.status)
-        assertEquals(error, result.error)
-    }
-
-    @Test
-    fun `accept maps failed verification through later authorities to rejected result`() {
-        val input = createInput(
-            "trace-runtime-world-model-009",
-        )
-        val error = createError(
-            traceId = input.context.traceId,
-            code = "UNIFIED_RUNTIME_VERIFICATION_FAILED",
-            summary = "Bounded verification evaluation failed.",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-            verificationAuthority =
-                fixedVerificationAuthority(
-                    status = VerificationStatus.FAILED,
-                    error = error,
-                ),
-        )
-
-        val result = runtime.accept(input)
-
-        assertEquals(input.context.traceId, result.traceId)
-        assertEquals(RuntimeStatus.REJECTED, result.status)
-        assertEquals(error, result.error)
-    }
-
-    @Test
-    fun `accept maps failed outcome through World Model authority to rejected result`() {
-        val input = createInput(
-            "trace-runtime-world-model-010",
-        )
-        val error = createError(
-            traceId = input.context.traceId,
-            code = "UNIFIED_RUNTIME_OUTCOME_FAILED",
-            summary = "Bounded outcome evaluation failed.",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-            verificationAuthority =
-                fixedVerificationAuthority(
-                    status = VerificationStatus.VERIFIED,
-                ),
-            outcomeAuthority =
-                fixedOutcomeAuthority(
-                    status = OutcomeStatus.FAILED,
-                    error = error,
-                ),
-        )
-
-        val result = runtime.accept(input)
-
-        assertEquals(input.context.traceId, result.traceId)
-        assertEquals(RuntimeStatus.REJECTED, result.status)
-        assertEquals(error, result.error)
-    }
-
-    @Test
-    fun `accept maps failed World Model update to rejected runtime result`() {
-        val input = createInput(
-            "trace-runtime-world-model-011",
+            "trace-runtime-learning-008",
         )
         val error = createError(
             traceId = input.context.traceId,
@@ -379,9 +294,54 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
+    fun `accept maps failed learning to rejected runtime result`() {
+        val input = createInput(
+            "trace-runtime-learning-009",
+        )
+        val error = createError(
+            traceId = input.context.traceId,
+            code = "UNIFIED_RUNTIME_LEARNING_FAILED",
+            summary = "Bounded constitutional learning evaluation failed.",
+        )
+        val runtime = DefaultUnifiedDevilRuntime(
+            executionAuthority =
+                fixedExecutionAuthority(
+                    status = ExecutionStatus.APPROVED,
+                ),
+            observationAuthority =
+                fixedObservationAuthority(
+                    status = ObservationStatus.OBSERVED,
+                ),
+            verificationAuthority =
+                fixedVerificationAuthority(
+                    status = VerificationStatus.VERIFIED,
+                ),
+            outcomeAuthority =
+                fixedOutcomeAuthority(
+                    status = OutcomeStatus.ESTABLISHED,
+                ),
+            worldModelUpdateAuthority =
+                fixedWorldModelUpdateAuthority(
+                    status = WorldModelUpdateStatus.APPLICABLE,
+                ),
+            learningAuthority =
+                fixedLearningAuthority(
+                    status = LearningStatus.FAILED,
+                    error = error,
+                ),
+        )
+
+        val result = runtime.accept(input)
+
+        assertEquals(input.context.traceId, result.traceId)
+        assertEquals(RuntimeStatus.REJECTED, result.status)
+        assertEquals(error, result.error)
+    }
+
+    @Test
     fun `accept rejects execution result from a different trace`() {
         val input = createInput(
-            "trace-runtime-world-model-012",
+            "trace-runtime-learning-010",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -399,93 +359,9 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept rejects observation result from a different trace`() {
-        val input = createInput(
-            "trace-runtime-world-model-013",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.DEFERRED,
-                    traceId = TraceId.from(
-                        "trace-runtime-observation-other",
-                    ),
-                ),
-        )
-
-        assertFailsWith<IllegalArgumentException> {
-            runtime.accept(input)
-        }
-    }
-
-    @Test
-    fun `accept rejects verification result from a different trace`() {
-        val input = createInput(
-            "trace-runtime-world-model-014",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-            verificationAuthority =
-                fixedVerificationAuthority(
-                    status = VerificationStatus.DEFERRED,
-                    traceId = TraceId.from(
-                        "trace-runtime-verification-other",
-                    ),
-                ),
-        )
-
-        assertFailsWith<IllegalArgumentException> {
-            runtime.accept(input)
-        }
-    }
-
-    @Test
-    fun `accept rejects outcome result from a different trace`() {
-        val input = createInput(
-            "trace-runtime-world-model-015",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-            verificationAuthority =
-                fixedVerificationAuthority(
-                    status = VerificationStatus.VERIFIED,
-                ),
-            outcomeAuthority =
-                fixedOutcomeAuthority(
-                    status = OutcomeStatus.DEFERRED,
-                    traceId = TraceId.from(
-                        "trace-runtime-outcome-other",
-                    ),
-                ),
-        )
-
-        assertFailsWith<IllegalArgumentException> {
-            runtime.accept(input)
-        }
-    }
-
-    @Test
     fun `accept rejects World Model update result from a different trace`() {
         val input = createInput(
-            "trace-runtime-world-model-016",
+            "trace-runtime-learning-011",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -509,6 +385,46 @@ class DefaultUnifiedDevilRuntimeTest {
                     status = WorldModelUpdateStatus.DEFERRED,
                     traceId = TraceId.from(
                         "trace-runtime-world-model-update-other",
+                    ),
+                ),
+        )
+
+        assertFailsWith<IllegalArgumentException> {
+            runtime.accept(input)
+        }
+    }
+
+    @Test
+    fun `accept rejects learning result from a different trace`() {
+        val input = createInput(
+            "trace-runtime-learning-012",
+        )
+        val runtime = DefaultUnifiedDevilRuntime(
+            executionAuthority =
+                fixedExecutionAuthority(
+                    status = ExecutionStatus.APPROVED,
+                ),
+            observationAuthority =
+                fixedObservationAuthority(
+                    status = ObservationStatus.OBSERVED,
+                ),
+            verificationAuthority =
+                fixedVerificationAuthority(
+                    status = VerificationStatus.VERIFIED,
+                ),
+            outcomeAuthority =
+                fixedOutcomeAuthority(
+                    status = OutcomeStatus.ESTABLISHED,
+                ),
+            worldModelUpdateAuthority =
+                fixedWorldModelUpdateAuthority(
+                    status = WorldModelUpdateStatus.APPLICABLE,
+                ),
+            learningAuthority =
+                fixedLearningAuthority(
+                    status = LearningStatus.DEFERRED,
+                    traceId = TraceId.from(
+                        "trace-runtime-learning-other",
                     ),
                 ),
         )
@@ -781,6 +697,62 @@ class DefaultUnifiedDevilRuntimeTest {
         }
     }
 
+    private fun fixedLearningAuthority(
+        status: LearningStatus,
+        traceId: TraceId? = null,
+        error: UniversalErrorRecord? = null,
+    ): LearningAuthority {
+        return object : LearningAuthority {
+            override fun evaluateLearning(
+                context: ContextEnvelope,
+                identity: IdentityResult,
+                trust: TrustResult,
+                authorization: AuthorizationResult,
+                understanding: UnderstandingAuthorityResult,
+                decision: DecisionAuthorityResult,
+                task: TaskAuthorityResult,
+                plan: PlanAuthorityResult,
+                capability: CapabilitySelectionResult,
+                readiness: ExecutiveReadinessResult,
+                execution: ExecutionResult,
+                observation: ObservationResult,
+                verification: VerificationResult,
+                outcome: OutcomeResult,
+                worldModelUpdate: WorldModelUpdateResult,
+            ): LearningResult {
+                val resultTraceId =
+                    traceId ?: context.traceId
+
+                return when (status) {
+                    LearningStatus.LEARNABLE ->
+                        LearningResult.create(
+                            traceId = resultTraceId,
+                            status = LearningStatus.LEARNABLE,
+                            request = LearningRequest.create(
+                                worldModelUpdate =
+                                    requireNotNull(
+                                        worldModelUpdate.request,
+                                    ),
+                            ),
+                        )
+
+                    LearningStatus.DEFERRED ->
+                        LearningResult.create(
+                            traceId = resultTraceId,
+                            status = LearningStatus.DEFERRED,
+                        )
+
+                    LearningStatus.FAILED ->
+                        LearningResult.create(
+                            traceId = resultTraceId,
+                            status = LearningStatus.FAILED,
+                            error = requireNotNull(error),
+                        )
+                }
+            }
+        }
+    }
+
     private fun createExecutionRequest(
         context: ContextEnvelope,
     ): ExecutionRequest {
@@ -800,7 +772,7 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val task = TaskRecord.create(
             taskId = TaskId.from(
-                "task-runtime-world-model-update",
+                "task-runtime-learning",
             ),
             decision = decision,
             state = TaskState.CREATED,
@@ -810,7 +782,7 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val plan = PlanRecord.create(
             planId = PlanId.from(
-                "plan-runtime-world-model-update",
+                "plan-runtime-learning",
             ),
             task = task,
             state = PlanState.CREATED,
@@ -844,7 +816,7 @@ class DefaultUnifiedDevilRuntimeTest {
             traceId = traceId,
             occurredAt =
                 DevilTimestamp.fromEpochMilliseconds(
-                    1_754_000_145_500L,
+                    1_754_000_154_500L,
                 ),
             summary = summary,
         )
@@ -865,7 +837,7 @@ class DefaultUnifiedDevilRuntimeTest {
                     ContextSecurityLevel.RESTRICTED,
                 observedAt =
                     DevilTimestamp.fromEpochMilliseconds(
-                        1_754_000_145_000L,
+                        1_754_000_154_000L,
                     ),
             ),
             content =
