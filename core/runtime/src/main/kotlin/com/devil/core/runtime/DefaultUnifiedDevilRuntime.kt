@@ -14,7 +14,9 @@ import com.devil.core.runtime.decision.DecisionAuthority
 import com.devil.core.runtime.decision.DefaultDecisionAuthority
 import com.devil.core.runtime.executive.DefaultExecutiveReadinessAuthority
 import com.devil.core.runtime.executive.ExecutiveReadinessAuthority
-import com.devil.core.runtime.executive.ExecutiveReadinessStatus
+import com.devil.core.runtime.execution.DefaultExecutionAuthority
+import com.devil.core.runtime.execution.ExecutionAuthority
+import com.devil.core.runtime.execution.ExecutionStatus
 import com.devil.core.runtime.identity.DefaultIdentityAuthority
 import com.devil.core.runtime.identity.IdentityAuthority
 import com.devil.core.runtime.plan.DefaultPlanAuthority
@@ -30,15 +32,16 @@ import com.devil.core.runtime.understanding.UnderstandingAuthority
  * Default constitutional runtime coordinator.
  *
  * This implementation preserves one ordered runtime path from constitutional
- * validation through Executive readiness. Conversation intake is positioned
- * after authorization and before understanding.
+ * validation through bounded execution evaluation. Conversation intake is
+ * positioned after authorization and before understanding.
  *
  * The supplied ConversationInput owns the authoritative constitutional context.
  * This coordinator does not absorb the responsibilities of its bounded
  * authorities.
  *
- * It performs no platform execution, invents no observations, verifies no
- * outcomes, and makes no unverified success claim.
+ * It activates no capability, invokes no platform API, invents no execution
+ * attempt or observation, verifies no outcome, and makes no unverified success
+ * claim.
  */
 class DefaultUnifiedDevilRuntime(
     private val constitutionValidationAuthority:
@@ -48,12 +51,14 @@ class DefaultUnifiedDevilRuntime(
         DefaultIdentityAuthority(),
     private val trustAuthority: TrustAuthority =
         DefaultTrustAuthority(),
-    private val authorizationAuthority: AuthorizationAuthority =
+    private val authorizationAuthority:
+        AuthorizationAuthority =
         DefaultAuthorizationAuthority(),
     private val conversationIntakeAuthority:
         ConversationIntakeAuthority =
         DefaultConversationIntakeAuthority(),
-    private val understandingAuthority: UnderstandingAuthority =
+    private val understandingAuthority:
+        UnderstandingAuthority =
         DefaultUnderstandingAuthority(),
     private val decisionAuthority: DecisionAuthority =
         DefaultDecisionAuthority(),
@@ -67,12 +72,16 @@ class DefaultUnifiedDevilRuntime(
     private val executiveReadinessAuthority:
         ExecutiveReadinessAuthority =
         DefaultExecutiveReadinessAuthority(),
+    private val executionAuthority:
+        ExecutionAuthority =
+        DefaultExecutionAuthority(),
 ) : UnifiedDevilRuntime {
 
     override fun accept(
         input: ConversationInput,
     ): RuntimeResult {
         val context = input.context
+
         val validation =
             constitutionValidationAuthority.validate(context)
 
@@ -80,7 +89,8 @@ class DefaultUnifiedDevilRuntime(
             "Context and constitutional validation result must use the same trace identity."
         }
 
-        if (validation.status ==
+        if (
+            validation.status ==
             ConstitutionValidationStatus.INVALID
         ) {
             return RuntimeResult.create(
@@ -90,18 +100,20 @@ class DefaultUnifiedDevilRuntime(
             )
         }
 
-        val identity = identityAuthority.resolve(context)
+        val identity =
+            identityAuthority.resolve(context)
 
         val trust = trustAuthority.evaluate(
             context = context,
             identity = identity,
         )
 
-        val authorization = authorizationAuthority.authorize(
-            context = context,
-            identity = identity,
-            trust = trust,
-        )
+        val authorization =
+            authorizationAuthority.authorize(
+                context = context,
+                identity = identity,
+                trust = trust,
+            )
 
         val conversationIntake =
             conversationIntakeAuthority.intake(
@@ -111,17 +123,21 @@ class DefaultUnifiedDevilRuntime(
                 authorization = authorization,
             )
 
-        require(conversationIntake.traceId == context.traceId) {
+        require(
+            conversationIntake.traceId ==
+                context.traceId,
+        ) {
             "Context and conversation-intake result must use the same trace identity."
         }
 
-        val understanding = understandingAuthority.understand(
-            context = context,
-            identity = identity,
-            trust = trust,
-            authorization = authorization,
-            conversationIntake = conversationIntake,
-        )
+        val understanding =
+            understandingAuthority.understand(
+                context = context,
+                identity = identity,
+                trust = trust,
+                authorization = authorization,
+                conversationIntake = conversationIntake,
+            )
 
         val decision = decisionAuthority.decide(
             context = context,
@@ -179,24 +195,41 @@ class DefaultUnifiedDevilRuntime(
             "Context and Executive readiness result must use the same trace identity."
         }
 
-        return when (readiness.status) {
-            ExecutiveReadinessStatus.READY ->
+        val execution = executionAuthority.evaluate(
+            context = context,
+            identity = identity,
+            trust = trust,
+            authorization = authorization,
+            understanding = understanding,
+            decision = decision,
+            task = task,
+            plan = plan,
+            capability = capability,
+            readiness = readiness,
+        )
+
+        require(execution.traceId == context.traceId) {
+            "Context and execution result must use the same trace identity."
+        }
+
+        return when (execution.status) {
+            ExecutionStatus.APPROVED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.ACCEPTED,
                 )
 
-            ExecutiveReadinessStatus.DEFERRED ->
+            ExecutionStatus.DEFERRED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.DEFERRED,
                 )
 
-            ExecutiveReadinessStatus.FAILED ->
+            ExecutionStatus.FAILED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.REJECTED,
-                    error = requireNotNull(readiness.error),
+                    error = requireNotNull(execution.error),
                 )
         }
     }
