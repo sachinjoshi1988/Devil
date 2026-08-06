@@ -20,7 +20,9 @@ import com.devil.core.runtime.identity.DefaultIdentityAuthority
 import com.devil.core.runtime.identity.IdentityAuthority
 import com.devil.core.runtime.learning.DefaultLearningAuthority
 import com.devil.core.runtime.learning.LearningAuthority
-import com.devil.core.runtime.learning.LearningStatus
+import com.devil.core.runtime.memory.DefaultMemoryProposalAuthority
+import com.devil.core.runtime.memory.MemoryProposalAuthority
+import com.devil.core.runtime.memory.MemoryProposalStatus
 import com.devil.core.runtime.observation.DefaultObservationAuthority
 import com.devil.core.runtime.observation.ObservationAuthority
 import com.devil.core.runtime.outcome.DefaultOutcomeAuthority
@@ -42,7 +44,7 @@ import com.devil.core.runtime.worldmodel.WorldModelUpdateAuthority
  * Default constitutional runtime coordinator.
  *
  * This implementation preserves one ordered runtime path from constitutional
- * validation through bounded learning evaluation. Conversation intake is
+ * validation through bounded memory-proposal evaluation. Conversation intake is
  * positioned after authorization and before understanding.
  *
  * The supplied ConversationInput owns the authoritative constitutional context.
@@ -50,10 +52,10 @@ import com.devil.core.runtime.worldmodel.WorldModelUpdateAuthority
  * authorities.
  *
  * It activates no capability, invokes no platform API, fabricates no execution
- * attempt, observation, verification, outcome, World Model update, or learning
- * evidence, mutates no world state, changes no task or plan state, creates or
- * commits no memory, performs no external communication, and makes no
- * unverified success claim.
+ * attempt, observation, verification, outcome, World Model update, learning, or
+ * memory-proposal evidence, mutates no world state, changes no task or plan
+ * state, creates or commits no logical memory, performs no external
+ * communication, and makes no unverified success claim.
  */
 class DefaultUnifiedDevilRuntime(
     private val constitutionValidationAuthority:
@@ -102,6 +104,9 @@ class DefaultUnifiedDevilRuntime(
     private val learningAuthority:
         LearningAuthority =
         DefaultLearningAuthority(),
+    private val memoryProposalAuthority:
+        MemoryProposalAuthority =
+        DefaultMemoryProposalAuthority(),
 ) : UnifiedDevilRuntime {
 
     override fun accept(
@@ -341,25 +346,49 @@ class DefaultUnifiedDevilRuntime(
             "Context and learning result must use the same trace identity."
         }
 
-        return when (learning.status) {
-            LearningStatus.LEARNABLE ->
+        val memoryProposal =
+            memoryProposalAuthority.evaluateProposal(
+                context = context,
+                identity = identity,
+                trust = trust,
+                authorization = authorization,
+                understanding = understanding,
+                decision = decision,
+                task = task,
+                plan = plan,
+                capability = capability,
+                readiness = readiness,
+                execution = execution,
+                observation = observation,
+                verification = verification,
+                outcome = outcome,
+                worldModelUpdate = worldModelUpdate,
+                learning = learning,
+            )
+
+        require(memoryProposal.traceId == context.traceId) {
+            "Context and memory proposal result must use the same trace identity."
+        }
+
+        return when (memoryProposal.status) {
+            MemoryProposalStatus.PROPOSABLE ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.ACCEPTED,
                 )
 
-            LearningStatus.DEFERRED ->
+            MemoryProposalStatus.DEFERRED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.DEFERRED,
                 )
 
-            LearningStatus.FAILED ->
+            MemoryProposalStatus.FAILED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.REJECTED,
                     error = requireNotNull(
-                        learning.error,
+                        memoryProposal.error,
                     ),
                 )
         }

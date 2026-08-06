@@ -17,6 +17,7 @@ import com.devil.core.model.error.ErrorCode
 import com.devil.core.model.error.UniversalErrorRecord
 import com.devil.core.model.execution.ExecutionRequest
 import com.devil.core.model.learning.LearningRequest
+import com.devil.core.model.memory.MemoryProposalRequest
 import com.devil.core.model.observation.ObservationRequest
 import com.devil.core.model.outcome.OutcomeRequest
 import com.devil.core.model.plan.PlanId
@@ -33,29 +34,20 @@ import com.devil.core.runtime.authorization.AuthorizationResult
 import com.devil.core.runtime.capability.CapabilitySelectionResult
 import com.devil.core.runtime.decision.DecisionAuthorityResult
 import com.devil.core.runtime.executive.ExecutiveReadinessResult
-import com.devil.core.runtime.execution.ExecutionAuthority
 import com.devil.core.runtime.execution.ExecutionResult
-import com.devil.core.runtime.execution.ExecutionStatus
 import com.devil.core.runtime.identity.IdentityResult
-import com.devil.core.runtime.learning.LearningAuthority
 import com.devil.core.runtime.learning.LearningResult
-import com.devil.core.runtime.learning.LearningStatus
-import com.devil.core.runtime.observation.ObservationAuthority
+import com.devil.core.runtime.memory.MemoryProposalAuthority
+import com.devil.core.runtime.memory.MemoryProposalResult
+import com.devil.core.runtime.memory.MemoryProposalStatus
 import com.devil.core.runtime.observation.ObservationResult
-import com.devil.core.runtime.observation.ObservationStatus
-import com.devil.core.runtime.outcome.OutcomeAuthority
 import com.devil.core.runtime.outcome.OutcomeResult
-import com.devil.core.runtime.outcome.OutcomeStatus
 import com.devil.core.runtime.plan.PlanAuthorityResult
 import com.devil.core.runtime.task.TaskAuthorityResult
 import com.devil.core.runtime.trust.TrustResult
 import com.devil.core.runtime.understanding.UnderstandingAuthorityResult
-import com.devil.core.runtime.verification.VerificationAuthority
 import com.devil.core.runtime.verification.VerificationResult
-import com.devil.core.runtime.verification.VerificationStatus
-import com.devil.core.runtime.worldmodel.WorldModelUpdateAuthority
 import com.devil.core.runtime.worldmodel.WorldModelUpdateResult
-import com.devil.core.runtime.worldmodel.WorldModelUpdateStatus
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -64,12 +56,12 @@ import kotlin.test.assertNull
 class DefaultUnifiedDevilRuntimeTest {
 
     @Test
-    fun `accept coordinates conversation input through one runtime path`() {
-        val input = createInput()
-        val runtime: UnifiedDevilRuntime =
-            DefaultUnifiedDevilRuntime()
+    fun `accept coordinates conversation input through one constitutional runtime path`() {
+        val input = createInput(
+            "trace-runtime-memory-proposal-001",
+        )
 
-        val result = runtime.accept(input)
+        val result = DefaultUnifiedDevilRuntime().accept(input)
 
         assertEquals(input.context.traceId, result.traceId)
         assertEquals(RuntimeStatus.DEFERRED, result.status)
@@ -77,18 +69,12 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept does not treat approved execution as later constitutional work`() {
+    fun `accept does not treat learning as an approved memory proposal`() {
         val input = createInput(
-            "trace-runtime-learning-002",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
+            "trace-runtime-memory-proposal-002",
         )
 
-        val result = runtime.accept(input)
+        val result = DefaultUnifiedDevilRuntime().accept(input)
 
         assertEquals(input.context.traceId, result.traceId)
         assertEquals(RuntimeStatus.DEFERRED, result.status)
@@ -96,127 +82,14 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept does not treat verification as outcome World Model update or learning`() {
+    fun `accept maps proposable memory result to accepted runtime result`() {
         val input = createInput(
-            "trace-runtime-learning-003",
+            "trace-runtime-memory-proposal-003",
         )
         val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-            verificationAuthority =
-                fixedVerificationAuthority(
-                    status = VerificationStatus.VERIFIED,
-                ),
-        )
-
-        val result = runtime.accept(input)
-
-        assertEquals(input.context.traceId, result.traceId)
-        assertEquals(RuntimeStatus.DEFERRED, result.status)
-        assertNull(result.error)
-    }
-
-    @Test
-    fun `accept does not treat established outcome as World Model update or learning`() {
-        val input = createInput(
-            "trace-runtime-learning-004",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-            verificationAuthority =
-                fixedVerificationAuthority(
-                    status = VerificationStatus.VERIFIED,
-                ),
-            outcomeAuthority =
-                fixedOutcomeAuthority(
-                    status = OutcomeStatus.ESTABLISHED,
-                ),
-        )
-
-        val result = runtime.accept(input)
-
-        assertEquals(input.context.traceId, result.traceId)
-        assertEquals(RuntimeStatus.DEFERRED, result.status)
-        assertNull(result.error)
-    }
-
-    @Test
-    fun `accept does not treat applicable World Model update as completed learning`() {
-        val input = createInput(
-            "trace-runtime-learning-005",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-            verificationAuthority =
-                fixedVerificationAuthority(
-                    status = VerificationStatus.VERIFIED,
-                ),
-            outcomeAuthority =
-                fixedOutcomeAuthority(
-                    status = OutcomeStatus.ESTABLISHED,
-                ),
-            worldModelUpdateAuthority =
-                fixedWorldModelUpdateAuthority(
-                    status = WorldModelUpdateStatus.APPLICABLE,
-                ),
-        )
-
-        val result = runtime.accept(input)
-
-        assertEquals(input.context.traceId, result.traceId)
-        assertEquals(RuntimeStatus.DEFERRED, result.status)
-        assertNull(result.error)
-    }
-
-    @Test
-    fun `accept maps learnable learning result to accepted runtime result`() {
-        val input = createInput(
-            "trace-runtime-learning-006",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-            verificationAuthority =
-                fixedVerificationAuthority(
-                    status = VerificationStatus.VERIFIED,
-                ),
-            outcomeAuthority =
-                fixedOutcomeAuthority(
-                    status = OutcomeStatus.ESTABLISHED,
-                ),
-            worldModelUpdateAuthority =
-                fixedWorldModelUpdateAuthority(
-                    status = WorldModelUpdateStatus.APPLICABLE,
-                ),
-            learningAuthority =
-                fixedLearningAuthority(
-                    status = LearningStatus.LEARNABLE,
+            memoryProposalAuthority =
+                fixedMemoryProposalAuthority(
+                    status = MemoryProposalStatus.PROPOSABLE,
                 ),
         )
 
@@ -228,19 +101,39 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept maps failed execution through later authorities to rejected result`() {
+    fun `accept maps deferred memory proposal to deferred runtime result`() {
         val input = createInput(
-            "trace-runtime-learning-007",
+            "trace-runtime-memory-proposal-004",
+        )
+        val runtime = DefaultUnifiedDevilRuntime(
+            memoryProposalAuthority =
+                fixedMemoryProposalAuthority(
+                    status = MemoryProposalStatus.DEFERRED,
+                ),
+        )
+
+        val result = runtime.accept(input)
+
+        assertEquals(input.context.traceId, result.traceId)
+        assertEquals(RuntimeStatus.DEFERRED, result.status)
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `accept maps failed memory proposal to rejected runtime result`() {
+        val input = createInput(
+            "trace-runtime-memory-proposal-005",
         )
         val error = createError(
             traceId = input.context.traceId,
-            code = "UNIFIED_RUNTIME_EXECUTION_FAILED",
-            summary = "Bounded execution evaluation failed.",
+            code = "UNIFIED_RUNTIME_MEMORY_PROPOSAL_FAILED",
+            summary =
+                "Bounded constitutional memory proposal evaluation failed.",
         )
         val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.FAILED,
+            memoryProposalAuthority =
+                fixedMemoryProposalAuthority(
+                    status = MemoryProposalStatus.FAILED,
                     error = error,
                 ),
         )
@@ -253,102 +146,16 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept maps failed World Model update through learning authority to rejected result`() {
+    fun `accept rejects memory proposal result from another trace`() {
         val input = createInput(
-            "trace-runtime-learning-008",
-        )
-        val error = createError(
-            traceId = input.context.traceId,
-            code = "UNIFIED_RUNTIME_WORLD_MODEL_UPDATE_FAILED",
-            summary = "Bounded World Model update evaluation failed.",
+            "trace-runtime-memory-proposal-006",
         )
         val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-            verificationAuthority =
-                fixedVerificationAuthority(
-                    status = VerificationStatus.VERIFIED,
-                ),
-            outcomeAuthority =
-                fixedOutcomeAuthority(
-                    status = OutcomeStatus.ESTABLISHED,
-                ),
-            worldModelUpdateAuthority =
-                fixedWorldModelUpdateAuthority(
-                    status = WorldModelUpdateStatus.FAILED,
-                    error = error,
-                ),
-        )
-
-        val result = runtime.accept(input)
-
-        assertEquals(input.context.traceId, result.traceId)
-        assertEquals(RuntimeStatus.REJECTED, result.status)
-        assertEquals(error, result.error)
-    }
-
-    @Test
-    fun `accept maps failed learning to rejected runtime result`() {
-        val input = createInput(
-            "trace-runtime-learning-009",
-        )
-        val error = createError(
-            traceId = input.context.traceId,
-            code = "UNIFIED_RUNTIME_LEARNING_FAILED",
-            summary = "Bounded constitutional learning evaluation failed.",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-            verificationAuthority =
-                fixedVerificationAuthority(
-                    status = VerificationStatus.VERIFIED,
-                ),
-            outcomeAuthority =
-                fixedOutcomeAuthority(
-                    status = OutcomeStatus.ESTABLISHED,
-                ),
-            worldModelUpdateAuthority =
-                fixedWorldModelUpdateAuthority(
-                    status = WorldModelUpdateStatus.APPLICABLE,
-                ),
-            learningAuthority =
-                fixedLearningAuthority(
-                    status = LearningStatus.FAILED,
-                    error = error,
-                ),
-        )
-
-        val result = runtime.accept(input)
-
-        assertEquals(input.context.traceId, result.traceId)
-        assertEquals(RuntimeStatus.REJECTED, result.status)
-        assertEquals(error, result.error)
-    }
-
-    @Test
-    fun `accept rejects execution result from a different trace`() {
-        val input = createInput(
-            "trace-runtime-learning-010",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.DEFERRED,
+            memoryProposalAuthority =
+                fixedMemoryProposalAuthority(
+                    status = MemoryProposalStatus.DEFERRED,
                     traceId = TraceId.from(
-                        "trace-runtime-execution-other",
+                        "trace-runtime-memory-proposal-other",
                     ),
                 ),
         )
@@ -358,352 +165,13 @@ class DefaultUnifiedDevilRuntimeTest {
         }
     }
 
-    @Test
-    fun `accept rejects World Model update result from a different trace`() {
-        val input = createInput(
-            "trace-runtime-learning-011",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-            verificationAuthority =
-                fixedVerificationAuthority(
-                    status = VerificationStatus.VERIFIED,
-                ),
-            outcomeAuthority =
-                fixedOutcomeAuthority(
-                    status = OutcomeStatus.ESTABLISHED,
-                ),
-            worldModelUpdateAuthority =
-                fixedWorldModelUpdateAuthority(
-                    status = WorldModelUpdateStatus.DEFERRED,
-                    traceId = TraceId.from(
-                        "trace-runtime-world-model-update-other",
-                    ),
-                ),
-        )
-
-        assertFailsWith<IllegalArgumentException> {
-            runtime.accept(input)
-        }
-    }
-
-    @Test
-    fun `accept rejects learning result from a different trace`() {
-        val input = createInput(
-            "trace-runtime-learning-012",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            executionAuthority =
-                fixedExecutionAuthority(
-                    status = ExecutionStatus.APPROVED,
-                ),
-            observationAuthority =
-                fixedObservationAuthority(
-                    status = ObservationStatus.OBSERVED,
-                ),
-            verificationAuthority =
-                fixedVerificationAuthority(
-                    status = VerificationStatus.VERIFIED,
-                ),
-            outcomeAuthority =
-                fixedOutcomeAuthority(
-                    status = OutcomeStatus.ESTABLISHED,
-                ),
-            worldModelUpdateAuthority =
-                fixedWorldModelUpdateAuthority(
-                    status = WorldModelUpdateStatus.APPLICABLE,
-                ),
-            learningAuthority =
-                fixedLearningAuthority(
-                    status = LearningStatus.DEFERRED,
-                    traceId = TraceId.from(
-                        "trace-runtime-learning-other",
-                    ),
-                ),
-        )
-
-        assertFailsWith<IllegalArgumentException> {
-            runtime.accept(input)
-        }
-    }
-
-    private fun fixedExecutionAuthority(
-        status: ExecutionStatus,
+    private fun fixedMemoryProposalAuthority(
+        status: MemoryProposalStatus,
         traceId: TraceId? = null,
         error: UniversalErrorRecord? = null,
-    ): ExecutionAuthority {
-        return object : ExecutionAuthority {
-            override fun evaluate(
-                context: ContextEnvelope,
-                identity: IdentityResult,
-                trust: TrustResult,
-                authorization: AuthorizationResult,
-                understanding: UnderstandingAuthorityResult,
-                decision: DecisionAuthorityResult,
-                task: TaskAuthorityResult,
-                plan: PlanAuthorityResult,
-                capability: CapabilitySelectionResult,
-                readiness: ExecutiveReadinessResult,
-            ): ExecutionResult {
-                val resultTraceId =
-                    traceId ?: context.traceId
-
-                return when (status) {
-                    ExecutionStatus.APPROVED ->
-                        ExecutionResult.create(
-                            traceId = resultTraceId,
-                            status = ExecutionStatus.APPROVED,
-                            request =
-                                createExecutionRequest(context),
-                        )
-
-                    ExecutionStatus.DEFERRED ->
-                        ExecutionResult.create(
-                            traceId = resultTraceId,
-                            status = ExecutionStatus.DEFERRED,
-                        )
-
-                    ExecutionStatus.FAILED ->
-                        ExecutionResult.create(
-                            traceId = resultTraceId,
-                            status = ExecutionStatus.FAILED,
-                            error = requireNotNull(error),
-                        )
-                }
-            }
-        }
-    }
-
-    private fun fixedObservationAuthority(
-        status: ObservationStatus,
-        traceId: TraceId? = null,
-        error: UniversalErrorRecord? = null,
-    ): ObservationAuthority {
-        return object : ObservationAuthority {
-            override fun observe(
-                context: ContextEnvelope,
-                identity: IdentityResult,
-                trust: TrustResult,
-                authorization: AuthorizationResult,
-                understanding: UnderstandingAuthorityResult,
-                decision: DecisionAuthorityResult,
-                task: TaskAuthorityResult,
-                plan: PlanAuthorityResult,
-                capability: CapabilitySelectionResult,
-                readiness: ExecutiveReadinessResult,
-                execution: ExecutionResult,
-            ): ObservationResult {
-                val resultTraceId =
-                    traceId ?: context.traceId
-
-                return when (status) {
-                    ObservationStatus.OBSERVED ->
-                        ObservationResult.create(
-                            traceId = resultTraceId,
-                            status = ObservationStatus.OBSERVED,
-                            request = ObservationRequest.create(
-                                execution =
-                                    requireNotNull(execution.request),
-                            ),
-                        )
-
-                    ObservationStatus.DEFERRED ->
-                        ObservationResult.create(
-                            traceId = resultTraceId,
-                            status = ObservationStatus.DEFERRED,
-                        )
-
-                    ObservationStatus.FAILED ->
-                        ObservationResult.create(
-                            traceId = resultTraceId,
-                            status = ObservationStatus.FAILED,
-                            error = requireNotNull(error),
-                        )
-                }
-            }
-        }
-    }
-
-    private fun fixedVerificationAuthority(
-        status: VerificationStatus,
-        traceId: TraceId? = null,
-        error: UniversalErrorRecord? = null,
-    ): VerificationAuthority {
-        return object : VerificationAuthority {
-            override fun verify(
-                context: ContextEnvelope,
-                identity: IdentityResult,
-                trust: TrustResult,
-                authorization: AuthorizationResult,
-                understanding: UnderstandingAuthorityResult,
-                decision: DecisionAuthorityResult,
-                task: TaskAuthorityResult,
-                plan: PlanAuthorityResult,
-                capability: CapabilitySelectionResult,
-                readiness: ExecutiveReadinessResult,
-                execution: ExecutionResult,
-                observation: ObservationResult,
-            ): VerificationResult {
-                val resultTraceId =
-                    traceId ?: context.traceId
-
-                return when (status) {
-                    VerificationStatus.VERIFIED ->
-                        VerificationResult.create(
-                            traceId = resultTraceId,
-                            status = VerificationStatus.VERIFIED,
-                            request = VerificationRequest.create(
-                                observation =
-                                    requireNotNull(
-                                        observation.request,
-                                    ),
-                            ),
-                        )
-
-                    VerificationStatus.DEFERRED ->
-                        VerificationResult.create(
-                            traceId = resultTraceId,
-                            status = VerificationStatus.DEFERRED,
-                        )
-
-                    VerificationStatus.FAILED ->
-                        VerificationResult.create(
-                            traceId = resultTraceId,
-                            status = VerificationStatus.FAILED,
-                            error = requireNotNull(error),
-                        )
-                }
-            }
-        }
-    }
-
-    private fun fixedOutcomeAuthority(
-        status: OutcomeStatus,
-        traceId: TraceId? = null,
-        error: UniversalErrorRecord? = null,
-    ): OutcomeAuthority {
-        return object : OutcomeAuthority {
-            override fun establish(
-                context: ContextEnvelope,
-                identity: IdentityResult,
-                trust: TrustResult,
-                authorization: AuthorizationResult,
-                understanding: UnderstandingAuthorityResult,
-                decision: DecisionAuthorityResult,
-                task: TaskAuthorityResult,
-                plan: PlanAuthorityResult,
-                capability: CapabilitySelectionResult,
-                readiness: ExecutiveReadinessResult,
-                execution: ExecutionResult,
-                observation: ObservationResult,
-                verification: VerificationResult,
-            ): OutcomeResult {
-                val resultTraceId =
-                    traceId ?: context.traceId
-
-                return when (status) {
-                    OutcomeStatus.ESTABLISHED ->
-                        OutcomeResult.create(
-                            traceId = resultTraceId,
-                            status = OutcomeStatus.ESTABLISHED,
-                            request = OutcomeRequest.create(
-                                verification =
-                                    requireNotNull(
-                                        verification.request,
-                                    ),
-                            ),
-                        )
-
-                    OutcomeStatus.DEFERRED ->
-                        OutcomeResult.create(
-                            traceId = resultTraceId,
-                            status = OutcomeStatus.DEFERRED,
-                        )
-
-                    OutcomeStatus.FAILED ->
-                        OutcomeResult.create(
-                            traceId = resultTraceId,
-                            status = OutcomeStatus.FAILED,
-                            error = requireNotNull(error),
-                        )
-                }
-            }
-        }
-    }
-
-    private fun fixedWorldModelUpdateAuthority(
-        status: WorldModelUpdateStatus,
-        traceId: TraceId? = null,
-        error: UniversalErrorRecord? = null,
-    ): WorldModelUpdateAuthority {
-        return object : WorldModelUpdateAuthority {
-            override fun evaluateUpdate(
-                context: ContextEnvelope,
-                identity: IdentityResult,
-                trust: TrustResult,
-                authorization: AuthorizationResult,
-                understanding: UnderstandingAuthorityResult,
-                decision: DecisionAuthorityResult,
-                task: TaskAuthorityResult,
-                plan: PlanAuthorityResult,
-                capability: CapabilitySelectionResult,
-                readiness: ExecutiveReadinessResult,
-                execution: ExecutionResult,
-                observation: ObservationResult,
-                verification: VerificationResult,
-                outcome: OutcomeResult,
-            ): WorldModelUpdateResult {
-                val resultTraceId =
-                    traceId ?: context.traceId
-
-                return when (status) {
-                    WorldModelUpdateStatus.APPLICABLE ->
-                        WorldModelUpdateResult.create(
-                            traceId = resultTraceId,
-                            status =
-                                WorldModelUpdateStatus.APPLICABLE,
-                            request =
-                                WorldModelUpdateRequest.create(
-                                    outcome =
-                                        requireNotNull(
-                                            outcome.request,
-                                        ),
-                                ),
-                        )
-
-                    WorldModelUpdateStatus.DEFERRED ->
-                        WorldModelUpdateResult.create(
-                            traceId = resultTraceId,
-                            status =
-                                WorldModelUpdateStatus.DEFERRED,
-                        )
-
-                    WorldModelUpdateStatus.FAILED ->
-                        WorldModelUpdateResult.create(
-                            traceId = resultTraceId,
-                            status =
-                                WorldModelUpdateStatus.FAILED,
-                            error = requireNotNull(error),
-                        )
-                }
-            }
-        }
-    }
-
-    private fun fixedLearningAuthority(
-        status: LearningStatus,
-        traceId: TraceId? = null,
-        error: UniversalErrorRecord? = null,
-    ): LearningAuthority {
-        return object : LearningAuthority {
-            override fun evaluateLearning(
+    ): MemoryProposalAuthority {
+        return object : MemoryProposalAuthority {
+            override fun evaluateProposal(
                 context: ContextEnvelope,
                 identity: IdentityResult,
                 trust: TrustResult,
@@ -719,38 +187,61 @@ class DefaultUnifiedDevilRuntimeTest {
                 verification: VerificationResult,
                 outcome: OutcomeResult,
                 worldModelUpdate: WorldModelUpdateResult,
-            ): LearningResult {
+                learning: LearningResult,
+            ): MemoryProposalResult {
                 val resultTraceId =
                     traceId ?: context.traceId
 
                 return when (status) {
-                    LearningStatus.LEARNABLE ->
-                        LearningResult.create(
+                    MemoryProposalStatus.PROPOSABLE ->
+                        MemoryProposalResult.create(
                             traceId = resultTraceId,
-                            status = LearningStatus.LEARNABLE,
-                            request = LearningRequest.create(
-                                worldModelUpdate =
-                                    requireNotNull(
-                                        worldModelUpdate.request,
-                                    ),
-                            ),
+                            status = MemoryProposalStatus.PROPOSABLE,
+                            request =
+                                createMemoryProposalRequest(
+                                    context = context,
+                                ),
                         )
 
-                    LearningStatus.DEFERRED ->
-                        LearningResult.create(
+                    MemoryProposalStatus.DEFERRED ->
+                        MemoryProposalResult.create(
                             traceId = resultTraceId,
-                            status = LearningStatus.DEFERRED,
+                            status = MemoryProposalStatus.DEFERRED,
                         )
 
-                    LearningStatus.FAILED ->
-                        LearningResult.create(
+                    MemoryProposalStatus.FAILED ->
+                        MemoryProposalResult.create(
                             traceId = resultTraceId,
-                            status = LearningStatus.FAILED,
+                            status = MemoryProposalStatus.FAILED,
                             error = requireNotNull(error),
                         )
                 }
             }
         }
+    }
+
+    private fun createMemoryProposalRequest(
+        context: ContextEnvelope,
+    ): MemoryProposalRequest {
+        return MemoryProposalRequest.create(
+            learning = LearningRequest.create(
+                worldModelUpdate =
+                    WorldModelUpdateRequest.create(
+                        outcome = OutcomeRequest.create(
+                            verification =
+                                VerificationRequest.create(
+                                    observation =
+                                        ObservationRequest.create(
+                                            execution =
+                                                createExecutionRequest(
+                                                    context = context,
+                                                ),
+                                        ),
+                                ),
+                        ),
+                    ),
+            ),
+        )
     }
 
     private fun createExecutionRequest(
@@ -772,7 +263,7 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val task = TaskRecord.create(
             taskId = TaskId.from(
-                "task-runtime-learning",
+                "task-runtime-memory-proposal",
             ),
             decision = decision,
             state = TaskState.CREATED,
@@ -782,7 +273,7 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val plan = PlanRecord.create(
             planId = PlanId.from(
-                "plan-runtime-learning",
+                "plan-runtime-memory-proposal",
             ),
             task = task,
             state = PlanState.CREATED,
@@ -792,10 +283,10 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val capability = CapabilityContract.create(
             capabilityId = CapabilityId.from(
-                "capability-runtime-test",
+                "capability-runtime-memory-proposal",
             ),
             category = CapabilityCategory.ACTION,
-            name = "Runtime Test Capability",
+            name = "Runtime Memory Proposal Test Capability",
             description =
                 "Represents one bounded test capability without platform execution.",
         )
@@ -816,15 +307,14 @@ class DefaultUnifiedDevilRuntimeTest {
             traceId = traceId,
             occurredAt =
                 DevilTimestamp.fromEpochMilliseconds(
-                    1_754_000_154_500L,
+                    1_754_000_163_500L,
                 ),
             summary = summary,
         )
     }
 
     private fun createInput(
-        traceValue: String =
-            "trace-runtime-conversation-001",
+        traceValue: String,
     ): ConversationInput {
         return ConversationInput.create(
             context = ContextEnvelope.create(
@@ -837,7 +327,7 @@ class DefaultUnifiedDevilRuntimeTest {
                     ContextSecurityLevel.RESTRICTED,
                 observedAt =
                     DevilTimestamp.fromEpochMilliseconds(
-                        1_754_000_154_000L,
+                        1_754_000_163_000L,
                     ),
             ),
             content =
