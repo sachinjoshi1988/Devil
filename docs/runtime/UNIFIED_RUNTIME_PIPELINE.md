@@ -665,3 +665,51 @@ Constitutional Execution does not mean:
 Those responsibilities remain with their own later authorities.
 
 Future constitutional execution policy must enter through bounded ExecutionEvaluator implementations. It must not be hidden inside DefaultExecutionAuthority, DefaultExecutionResultMapper, ExecutionRequestProvider, or the unified runtime coordinator.
+
+## Stage 13 Constitutional Observation Runtime Meaning
+
+Stage 13 establishes the bounded Constitutional Observation Foundation without introducing fabricated execution evidence, outcome verification, world-state mutation, success reporting, or final-outcome responsibilities.
+
+The runtime now coordinates the following bounded chain:
+
+ExecutionResult
+        ↓
+ObservationRequestProvider
+        ↓
+ObservationRequestResult
+        ↓
+ObservationEvaluator
+        ↓
+ObservationEvaluationResult
+        ↓
+ObservationResultMapper
+        ↓
+ObservationResult
+
+An Observation Request is available only when the Execution Authority has produced one APPROVED ExecutionResult containing one bounded ExecutionRequest.
+
+The ObservationRequestProvider prepares one bounded ObservationRequest only from constitutionally approved execution evaluation. It does not claim that a capability was activated, an action was attempted, execution occurred, or observable evidence exists.
+
+DefaultObservationEvaluator evaluates at most one bounded ObservationRequest. No genuine execution-observation source or approved constitutional observation policy exists yet, so the default evaluator intentionally returns UNAVAILABLE rather than claiming that execution occurred or inventing observation evidence.
+
+DefaultObservationResultMapper converts bounded observation evaluation into the stable operational ObservationResult contract. Genuine observation evidence becomes OBSERVED, evaluation unavailability becomes DEFERRED, and evaluation failure preserves its matching error.
+
+DefaultObservationAuthority coordinates request preparation, observation evaluation, and result mapping while preserving trace continuity across every constitutional handoff.
+
+The unified runtime now passes the bounded ExecutionResult into the Observation Authority. Execution approval alone no longer produces runtime acceptance. Runtime acceptance requires an OBSERVED ObservationResult, while observation unavailability safely defers and observation failure rejects with its matching error.
+
+Constitutional Observation does not mean:
+
+- activating capabilities,
+- invoking operating-system APIs,
+- performing platform actions,
+- fabricating execution attempts,
+- inventing observation evidence,
+- verifying outcomes,
+- updating world state,
+- reporting success,
+- or producing final outcomes.
+
+Those responsibilities remain with their own later authorities.
+
+Future constitutional observation policy and genuine execution-observation evidence must enter through bounded ObservationEvaluator implementations. They must not be hidden inside DefaultObservationAuthority, DefaultObservationResultMapper, ObservationRequestProvider, Execution Authority, or the unified runtime coordinator.
