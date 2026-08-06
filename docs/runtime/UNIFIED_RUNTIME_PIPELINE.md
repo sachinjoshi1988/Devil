@@ -759,3 +759,51 @@ Constitutional Verification does not mean:
 Those responsibilities remain with their own later authorities.
 
 Future constitutional verification policy and genuine verification evidence must enter through bounded VerificationEvaluator implementations. They must not be hidden inside DefaultVerificationAuthority, DefaultVerificationResultMapper, VerificationRequestProvider, Observation Authority, or the unified runtime coordinator.
+
+## Stage 15 Constitutional Outcome Runtime Meaning
+
+Stage 15 establishes the bounded Constitutional Outcome Foundation without introducing fabricated outcome evidence, world-state mutation, task or plan state mutation, memory creation, learning, external communication, or any authority beyond bounded outcome evaluation.
+
+The runtime now coordinates the following bounded chain:
+
+VerificationResult
+        ↓
+OutcomeRequestProvider
+        ↓
+OutcomeRequestResult
+        ↓
+OutcomeEvaluator
+        ↓
+OutcomeEvaluationResult
+        ↓
+OutcomeResultMapper
+        ↓
+OutcomeResult
+
+An Outcome Request is available only when the Verification Authority has produced one VERIFIED VerificationResult containing one bounded VerificationRequest.
+
+The OutcomeRequestProvider prepares one bounded OutcomeRequest only from constitutionally established verification evidence. It does not determine final task success or failure, update world state, change task or plan state, create memory or learning, communicate an outcome, or produce the final runtime result.
+
+DefaultOutcomeEvaluator evaluates at most one bounded OutcomeRequest. No approved constitutional outcome policy or genuine outcome-determination source exists yet, so the default evaluator intentionally returns UNAVAILABLE rather than treating verification as proof of final task success or failure or inventing an outcome.
+
+DefaultOutcomeResultMapper converts bounded outcome evaluation into the stable operational OutcomeResult contract. Genuine constitutional outcome evidence becomes ESTABLISHED, evaluation unavailability becomes DEFERRED, and evaluation failure preserves its matching error.
+
+DefaultOutcomeAuthority coordinates request preparation, outcome evaluation, and result mapping while preserving trace continuity across every constitutional handoff.
+
+The unified runtime now passes the bounded VerificationResult into the Outcome Authority. Verification alone no longer produces runtime acceptance. Runtime acceptance requires an ESTABLISHED OutcomeResult, while outcome unavailability safely defers and outcome failure rejects with its matching error.
+
+Constitutional Outcome evaluation does not mean:
+
+- fabricating outcome evidence,
+- assuming verification proves final task success or failure,
+- updating world state,
+- changing task or plan state,
+- creating or committing memory,
+- creating learning,
+- communicating externally,
+- bypassing unified runtime handling,
+- or absorbing the responsibilities of earlier constitutional authorities.
+
+Those responsibilities remain with their own explicitly defined later authorities.
+
+Future constitutional outcome policy and genuine outcome-determination evidence must enter through bounded OutcomeEvaluator implementations. They must not be hidden inside DefaultOutcomeAuthority, DefaultOutcomeResultMapper, OutcomeRequestProvider, Verification Authority, or the unified runtime coordinator.

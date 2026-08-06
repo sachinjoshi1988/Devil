@@ -6,17 +6,17 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Devil Coding Stage 14 — Complete
+Devil Coding Stage 15 — Complete
 
-Stage 14 completed the Constitutional Verification Foundation and integrated the bounded verification-request provider, verification evaluator, result mapper, and unified Verification Authority into the single constitutional runtime path.
+Stage 15 completed the Constitutional Outcome Foundation and integrated the bounded outcome-request provider, outcome evaluator, result mapper, and unified Outcome Authority into the single constitutional runtime path.
 
-The default runtime does not treat execution approval or observation as proof that an intended outcome was achieved. It does not fabricate verification evidence, update world state, change task or plan state, report final success, or produce the final Outcome. Constitutional verification therefore safely defers until a genuine verification-evidence source and approved verification policy are available.
+The default runtime does not treat execution approval, observation, or verification as proof of final task success or failure. It does not fabricate outcome evidence, update world state, change task or plan state, create memory or learning, or communicate externally. Constitutional outcome evaluation therefore safely defers until a genuine outcome-determination source and approved constitutional outcome policy are available.
 
-Stage 14 — Constitutional Verification Foundation is complete.
+Stage 15 — Constitutional Outcome Foundation is complete.
 
 ## Official resume point
 
-Tag: `devil-stage-14-complete`
+Tag: `devil-stage-15-complete`
 
 ## Core rule
 
