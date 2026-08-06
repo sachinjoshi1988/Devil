@@ -713,3 +713,49 @@ Constitutional Observation does not mean:
 Those responsibilities remain with their own later authorities.
 
 Future constitutional observation policy and genuine execution-observation evidence must enter through bounded ObservationEvaluator implementations. They must not be hidden inside DefaultObservationAuthority, DefaultObservationResultMapper, ObservationRequestProvider, Execution Authority, or the unified runtime coordinator.
+
+## Stage 14 Constitutional Verification Runtime Meaning
+
+Stage 14 establishes the bounded Constitutional Verification Foundation without introducing fabricated verification evidence, world-state mutation, final task-success reporting, task or plan state mutation, or final-Outcome responsibilities.
+
+The runtime now coordinates the following bounded chain:
+
+ObservationResult
+        ↓
+VerificationRequestProvider
+        ↓
+VerificationRequestResult
+        ↓
+VerificationEvaluator
+        ↓
+VerificationEvaluationResult
+        ↓
+VerificationResultMapper
+        ↓
+VerificationResult
+
+A Verification Request is available only when the Observation Authority has produced one OBSERVED ObservationResult containing one bounded ObservationRequest.
+
+The VerificationRequestProvider prepares one bounded VerificationRequest only from constitutionally established observation evidence. It does not establish verification evidence, infer that an intended outcome was achieved, update world state, report success or failure, change task or plan state, or produce a final Outcome.
+
+DefaultVerificationEvaluator evaluates at most one bounded VerificationRequest. No genuine verification-evidence source or approved constitutional verification policy exists yet, so the default evaluator intentionally returns UNAVAILABLE rather than treating observation as proof that the intended outcome was achieved or inventing verification evidence.
+
+DefaultVerificationResultMapper converts bounded verification evaluation into the stable operational VerificationResult contract. Genuine verification evidence becomes VERIFIED, evaluation unavailability becomes DEFERRED, and evaluation failure preserves its matching error.
+
+DefaultVerificationAuthority coordinates request preparation, verification evaluation, and result mapping while preserving trace continuity across every constitutional handoff.
+
+The unified runtime now passes the bounded ObservationResult into the Verification Authority. Observation alone no longer produces runtime acceptance. Runtime acceptance requires a VERIFIED VerificationResult, while verification unavailability safely defers and verification failure rejects with its matching error.
+
+Constitutional Verification does not mean:
+
+- fabricating verification evidence,
+- assuming observation proves the intended outcome,
+- updating world state,
+- changing task or plan state,
+- reporting final task success or failure,
+- weakening earlier constitutional authorities,
+- or producing the final Outcome.
+
+Those responsibilities remain with their own later authorities.
+
+Future constitutional verification policy and genuine verification evidence must enter through bounded VerificationEvaluator implementations. They must not be hidden inside DefaultVerificationAuthority, DefaultVerificationResultMapper, VerificationRequestProvider, Observation Authority, or the unified runtime coordinator.
