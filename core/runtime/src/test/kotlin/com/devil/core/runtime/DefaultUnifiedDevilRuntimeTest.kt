@@ -17,6 +17,7 @@ import com.devil.core.model.error.ErrorCode
 import com.devil.core.model.error.UniversalErrorRecord
 import com.devil.core.model.execution.ExecutionRequest
 import com.devil.core.model.observation.ObservationRequest
+import com.devil.core.model.outcome.OutcomeRequest
 import com.devil.core.model.plan.PlanId
 import com.devil.core.model.plan.PlanRecord
 import com.devil.core.model.plan.PlanState
@@ -37,6 +38,9 @@ import com.devil.core.runtime.identity.IdentityResult
 import com.devil.core.runtime.observation.ObservationAuthority
 import com.devil.core.runtime.observation.ObservationResult
 import com.devil.core.runtime.observation.ObservationStatus
+import com.devil.core.runtime.outcome.OutcomeAuthority
+import com.devil.core.runtime.outcome.OutcomeResult
+import com.devil.core.runtime.outcome.OutcomeStatus
 import com.devil.core.runtime.plan.PlanAuthorityResult
 import com.devil.core.runtime.task.TaskAuthorityResult
 import com.devil.core.runtime.trust.TrustResult
@@ -71,9 +75,9 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept does not treat approved execution as observed or verified work`() {
+    fun `accept does not treat approved execution as observed verified or established work`() {
         val input = createInput(
-            "trace-runtime-verification-002",
+            "trace-runtime-outcome-002",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -90,9 +94,9 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept does not treat observation as verified work`() {
+    fun `accept does not treat observation as verified or established work`() {
         val input = createInput(
-            "trace-runtime-verification-003",
+            "trace-runtime-outcome-003",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -113,9 +117,9 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept maps verified result to accepted runtime result`() {
+    fun `accept does not treat verification as an established outcome`() {
         val input = createInput(
-            "trace-runtime-verification-004",
+            "trace-runtime-outcome-004",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -135,6 +139,37 @@ class DefaultUnifiedDevilRuntimeTest {
         val result = runtime.accept(input)
 
         assertEquals(input.context.traceId, result.traceId)
+        assertEquals(RuntimeStatus.DEFERRED, result.status)
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `accept maps established outcome to accepted runtime result`() {
+        val input = createInput(
+            "trace-runtime-outcome-005",
+        )
+        val runtime = DefaultUnifiedDevilRuntime(
+            executionAuthority =
+                fixedExecutionAuthority(
+                    status = ExecutionStatus.APPROVED,
+                ),
+            observationAuthority =
+                fixedObservationAuthority(
+                    status = ObservationStatus.OBSERVED,
+                ),
+            verificationAuthority =
+                fixedVerificationAuthority(
+                    status = VerificationStatus.VERIFIED,
+                ),
+            outcomeAuthority =
+                fixedOutcomeAuthority(
+                    status = OutcomeStatus.ESTABLISHED,
+                ),
+        )
+
+        val result = runtime.accept(input)
+
+        assertEquals(input.context.traceId, result.traceId)
         assertEquals(RuntimeStatus.ACCEPTED, result.status)
         assertNull(result.error)
     }
@@ -142,7 +177,7 @@ class DefaultUnifiedDevilRuntimeTest {
     @Test
     fun `accept maps failed execution through later authorities to rejected result`() {
         val input = createInput(
-            "trace-runtime-verification-005",
+            "trace-runtime-outcome-006",
         )
         val error = createError(
             traceId = input.context.traceId,
@@ -165,9 +200,9 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept maps failed observation through verification to rejected result`() {
+    fun `accept maps failed observation through later authorities to rejected result`() {
         val input = createInput(
-            "trace-runtime-verification-006",
+            "trace-runtime-outcome-007",
         )
         val error = createError(
             traceId = input.context.traceId,
@@ -194,9 +229,9 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept maps failed verification to rejected runtime result`() {
+    fun `accept maps failed verification through outcome to rejected result`() {
         val input = createInput(
-            "trace-runtime-verification-007",
+            "trace-runtime-outcome-008",
         )
         val error = createError(
             traceId = input.context.traceId,
@@ -227,9 +262,46 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
+    fun `accept maps failed outcome to rejected runtime result`() {
+        val input = createInput(
+            "trace-runtime-outcome-009",
+        )
+        val error = createError(
+            traceId = input.context.traceId,
+            code = "UNIFIED_RUNTIME_OUTCOME_FAILED",
+            summary = "Bounded outcome evaluation failed.",
+        )
+        val runtime = DefaultUnifiedDevilRuntime(
+            executionAuthority =
+                fixedExecutionAuthority(
+                    status = ExecutionStatus.APPROVED,
+                ),
+            observationAuthority =
+                fixedObservationAuthority(
+                    status = ObservationStatus.OBSERVED,
+                ),
+            verificationAuthority =
+                fixedVerificationAuthority(
+                    status = VerificationStatus.VERIFIED,
+                ),
+            outcomeAuthority =
+                fixedOutcomeAuthority(
+                    status = OutcomeStatus.FAILED,
+                    error = error,
+                ),
+        )
+
+        val result = runtime.accept(input)
+
+        assertEquals(input.context.traceId, result.traceId)
+        assertEquals(RuntimeStatus.REJECTED, result.status)
+        assertEquals(error, result.error)
+    }
+
+    @Test
     fun `accept rejects execution result from a different trace`() {
         val input = createInput(
-            "trace-runtime-verification-008",
+            "trace-runtime-outcome-010",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -249,7 +321,7 @@ class DefaultUnifiedDevilRuntimeTest {
     @Test
     fun `accept rejects observation result from a different trace`() {
         val input = createInput(
-            "trace-runtime-verification-009",
+            "trace-runtime-outcome-011",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -273,7 +345,7 @@ class DefaultUnifiedDevilRuntimeTest {
     @Test
     fun `accept rejects verification result from a different trace`() {
         val input = createInput(
-            "trace-runtime-verification-010",
+            "trace-runtime-outcome-012",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -289,6 +361,38 @@ class DefaultUnifiedDevilRuntimeTest {
                     status = VerificationStatus.DEFERRED,
                     traceId = TraceId.from(
                         "trace-runtime-verification-other",
+                    ),
+                ),
+        )
+
+        assertFailsWith<IllegalArgumentException> {
+            runtime.accept(input)
+        }
+    }
+
+    @Test
+    fun `accept rejects outcome result from a different trace`() {
+        val input = createInput(
+            "trace-runtime-outcome-013",
+        )
+        val runtime = DefaultUnifiedDevilRuntime(
+            executionAuthority =
+                fixedExecutionAuthority(
+                    status = ExecutionStatus.APPROVED,
+                ),
+            observationAuthority =
+                fixedObservationAuthority(
+                    status = ObservationStatus.OBSERVED,
+                ),
+            verificationAuthority =
+                fixedVerificationAuthority(
+                    status = VerificationStatus.VERIFIED,
+                ),
+            outcomeAuthority =
+                fixedOutcomeAuthority(
+                    status = OutcomeStatus.DEFERRED,
+                    traceId = TraceId.from(
+                        "trace-runtime-outcome-other",
                     ),
                 ),
         )
@@ -446,6 +550,58 @@ class DefaultUnifiedDevilRuntimeTest {
         }
     }
 
+    private fun fixedOutcomeAuthority(
+        status: OutcomeStatus,
+        traceId: TraceId? = null,
+        error: UniversalErrorRecord? = null,
+    ): OutcomeAuthority {
+        return object : OutcomeAuthority {
+            override fun establish(
+                context: ContextEnvelope,
+                identity: IdentityResult,
+                trust: TrustResult,
+                authorization: AuthorizationResult,
+                understanding: UnderstandingAuthorityResult,
+                decision: DecisionAuthorityResult,
+                task: TaskAuthorityResult,
+                plan: PlanAuthorityResult,
+                capability: CapabilitySelectionResult,
+                readiness: ExecutiveReadinessResult,
+                execution: ExecutionResult,
+                observation: ObservationResult,
+                verification: VerificationResult,
+            ): OutcomeResult {
+                val resultTraceId =
+                    traceId ?: context.traceId
+
+                return when (status) {
+                    OutcomeStatus.ESTABLISHED ->
+                        OutcomeResult.create(
+                            traceId = resultTraceId,
+                            status = OutcomeStatus.ESTABLISHED,
+                            request = OutcomeRequest.create(
+                                verification =
+                                    requireNotNull(verification.request),
+                            ),
+                        )
+
+                    OutcomeStatus.DEFERRED ->
+                        OutcomeResult.create(
+                            traceId = resultTraceId,
+                            status = OutcomeStatus.DEFERRED,
+                        )
+
+                    OutcomeStatus.FAILED ->
+                        OutcomeResult.create(
+                            traceId = resultTraceId,
+                            status = OutcomeStatus.FAILED,
+                            error = requireNotNull(error),
+                        )
+                }
+            }
+        }
+    }
+
     private fun createExecutionRequest(
         context: ContextEnvelope,
     ): ExecutionRequest {
@@ -465,7 +621,7 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val task = TaskRecord.create(
             taskId = TaskId.from(
-                "task-runtime-verification",
+                "task-runtime-outcome",
             ),
             decision = decision,
             state = TaskState.CREATED,
@@ -475,7 +631,7 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val plan = PlanRecord.create(
             planId = PlanId.from(
-                "plan-runtime-verification",
+                "plan-runtime-outcome",
             ),
             task = task,
             state = PlanState.CREATED,
@@ -509,7 +665,7 @@ class DefaultUnifiedDevilRuntimeTest {
             traceId = traceId,
             occurredAt =
                 DevilTimestamp.fromEpochMilliseconds(
-                    1_754_000_127_500L,
+                    1_754_000_136_500L,
                 ),
             summary = summary,
         )
@@ -530,7 +686,7 @@ class DefaultUnifiedDevilRuntimeTest {
                     ContextSecurityLevel.RESTRICTED,
                 observedAt =
                     DevilTimestamp.fromEpochMilliseconds(
-                        1_754_000_127_000L,
+                        1_754_000_136_000L,
                     ),
             ),
             content =

@@ -20,6 +20,9 @@ import com.devil.core.runtime.identity.DefaultIdentityAuthority
 import com.devil.core.runtime.identity.IdentityAuthority
 import com.devil.core.runtime.observation.DefaultObservationAuthority
 import com.devil.core.runtime.observation.ObservationAuthority
+import com.devil.core.runtime.outcome.DefaultOutcomeAuthority
+import com.devil.core.runtime.outcome.OutcomeAuthority
+import com.devil.core.runtime.outcome.OutcomeStatus
 import com.devil.core.runtime.plan.DefaultPlanAuthority
 import com.devil.core.runtime.plan.PlanAuthority
 import com.devil.core.runtime.task.DefaultTaskAuthority
@@ -30,13 +33,12 @@ import com.devil.core.runtime.understanding.DefaultUnderstandingAuthority
 import com.devil.core.runtime.understanding.UnderstandingAuthority
 import com.devil.core.runtime.verification.DefaultVerificationAuthority
 import com.devil.core.runtime.verification.VerificationAuthority
-import com.devil.core.runtime.verification.VerificationStatus
 
 /**
  * Default constitutional runtime coordinator.
  *
  * This implementation preserves one ordered runtime path from constitutional
- * validation through bounded verification evaluation. Conversation intake is
+ * validation through bounded outcome evaluation. Conversation intake is
  * positioned after authorization and before understanding.
  *
  * The supplied ConversationInput owns the authoritative constitutional context.
@@ -44,8 +46,9 @@ import com.devil.core.runtime.verification.VerificationStatus
  * authorities.
  *
  * It activates no capability, invokes no platform API, fabricates no execution
- * attempt, observation, or verification evidence, updates no world state,
- * produces no final Outcome, and makes no unverified success claim.
+ * attempt, observation, verification evidence, or outcome evidence, updates no
+ * world state, changes no task or plan state, creates no memory or learning,
+ * performs no external communication, and makes no unverified success claim.
  */
 class DefaultUnifiedDevilRuntime(
     private val constitutionValidationAuthority:
@@ -85,6 +88,9 @@ class DefaultUnifiedDevilRuntime(
     private val verificationAuthority:
         VerificationAuthority =
         DefaultVerificationAuthority(),
+    private val outcomeAuthority:
+        OutcomeAuthority =
+        DefaultOutcomeAuthority(),
 ) : UnifiedDevilRuntime {
 
     override fun accept(
@@ -259,24 +265,44 @@ class DefaultUnifiedDevilRuntime(
             "Context and verification result must use the same trace identity."
         }
 
-        return when (verification.status) {
-            VerificationStatus.VERIFIED ->
+        val outcome = outcomeAuthority.establish(
+            context = context,
+            identity = identity,
+            trust = trust,
+            authorization = authorization,
+            understanding = understanding,
+            decision = decision,
+            task = task,
+            plan = plan,
+            capability = capability,
+            readiness = readiness,
+            execution = execution,
+            observation = observation,
+            verification = verification,
+        )
+
+        require(outcome.traceId == context.traceId) {
+            "Context and outcome result must use the same trace identity."
+        }
+
+        return when (outcome.status) {
+            OutcomeStatus.ESTABLISHED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.ACCEPTED,
                 )
 
-            VerificationStatus.DEFERRED ->
+            OutcomeStatus.DEFERRED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.DEFERRED,
                 )
 
-            VerificationStatus.FAILED ->
+            OutcomeStatus.FAILED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.REJECTED,
-                    error = requireNotNull(verification.error),
+                    error = requireNotNull(outcome.error),
                 )
         }
     }
