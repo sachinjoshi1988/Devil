@@ -16,9 +16,11 @@ import com.devil.core.runtime.executive.DefaultExecutiveReadinessAuthority
 import com.devil.core.runtime.executive.ExecutiveReadinessAuthority
 import com.devil.core.runtime.execution.DefaultExecutionAuthority
 import com.devil.core.runtime.execution.ExecutionAuthority
-import com.devil.core.runtime.execution.ExecutionStatus
 import com.devil.core.runtime.identity.DefaultIdentityAuthority
 import com.devil.core.runtime.identity.IdentityAuthority
+import com.devil.core.runtime.observation.DefaultObservationAuthority
+import com.devil.core.runtime.observation.ObservationAuthority
+import com.devil.core.runtime.observation.ObservationStatus
 import com.devil.core.runtime.plan.DefaultPlanAuthority
 import com.devil.core.runtime.plan.PlanAuthority
 import com.devil.core.runtime.task.DefaultTaskAuthority
@@ -32,16 +34,16 @@ import com.devil.core.runtime.understanding.UnderstandingAuthority
  * Default constitutional runtime coordinator.
  *
  * This implementation preserves one ordered runtime path from constitutional
- * validation through bounded execution evaluation. Conversation intake is
+ * validation through bounded observation evaluation. Conversation intake is
  * positioned after authorization and before understanding.
  *
  * The supplied ConversationInput owns the authoritative constitutional context.
  * This coordinator does not absorb the responsibilities of its bounded
  * authorities.
  *
- * It activates no capability, invokes no platform API, invents no execution
- * attempt or observation, verifies no outcome, and makes no unverified success
- * claim.
+ * It activates no capability, invokes no platform API, fabricates no execution
+ * attempt or observation, verifies no outcome, updates no world state, and makes
+ * no unverified success claim.
  */
 class DefaultUnifiedDevilRuntime(
     private val constitutionValidationAuthority:
@@ -75,6 +77,9 @@ class DefaultUnifiedDevilRuntime(
     private val executionAuthority:
         ExecutionAuthority =
         DefaultExecutionAuthority(),
+    private val observationAuthority:
+        ObservationAuthority =
+        DefaultObservationAuthority(),
 ) : UnifiedDevilRuntime {
 
     override fun accept(
@@ -212,24 +217,42 @@ class DefaultUnifiedDevilRuntime(
             "Context and execution result must use the same trace identity."
         }
 
-        return when (execution.status) {
-            ExecutionStatus.APPROVED ->
+        val observation = observationAuthority.observe(
+            context = context,
+            identity = identity,
+            trust = trust,
+            authorization = authorization,
+            understanding = understanding,
+            decision = decision,
+            task = task,
+            plan = plan,
+            capability = capability,
+            readiness = readiness,
+            execution = execution,
+        )
+
+        require(observation.traceId == context.traceId) {
+            "Context and observation result must use the same trace identity."
+        }
+
+        return when (observation.status) {
+            ObservationStatus.OBSERVED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.ACCEPTED,
                 )
 
-            ExecutionStatus.DEFERRED ->
+            ObservationStatus.DEFERRED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.DEFERRED,
                 )
 
-            ExecutionStatus.FAILED ->
+            ObservationStatus.FAILED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.REJECTED,
-                    error = requireNotNull(execution.error),
+                    error = requireNotNull(observation.error),
                 )
         }
     }

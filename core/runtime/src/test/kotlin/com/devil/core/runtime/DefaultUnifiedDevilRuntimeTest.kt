@@ -16,6 +16,7 @@ import com.devil.core.model.decision.DecisionState
 import com.devil.core.model.error.ErrorCode
 import com.devil.core.model.error.UniversalErrorRecord
 import com.devil.core.model.execution.ExecutionRequest
+import com.devil.core.model.observation.ObservationRequest
 import com.devil.core.model.plan.PlanId
 import com.devil.core.model.plan.PlanRecord
 import com.devil.core.model.plan.PlanState
@@ -32,6 +33,9 @@ import com.devil.core.runtime.execution.ExecutionAuthority
 import com.devil.core.runtime.execution.ExecutionResult
 import com.devil.core.runtime.execution.ExecutionStatus
 import com.devil.core.runtime.identity.IdentityResult
+import com.devil.core.runtime.observation.ObservationAuthority
+import com.devil.core.runtime.observation.ObservationResult
+import com.devil.core.runtime.observation.ObservationStatus
 import com.devil.core.runtime.plan.PlanAuthorityResult
 import com.devil.core.runtime.task.TaskAuthorityResult
 import com.devil.core.runtime.trust.TrustResult
@@ -63,9 +67,9 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept maps approved execution evaluation to accepted runtime result`() {
+    fun `accept does not treat approved execution as observed execution`() {
         val input = createInput(
-            "trace-runtime-execution-002",
+            "trace-runtime-observation-002",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -77,16 +81,43 @@ class DefaultUnifiedDevilRuntimeTest {
         val result = runtime.accept(input)
 
         assertEquals(input.context.traceId, result.traceId)
+        assertEquals(RuntimeStatus.DEFERRED, result.status)
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `accept maps observed result to accepted runtime result`() {
+        val input = createInput(
+            "trace-runtime-observation-003",
+        )
+        val runtime = DefaultUnifiedDevilRuntime(
+            executionAuthority =
+                fixedExecutionAuthority(
+                    status = ExecutionStatus.APPROVED,
+                ),
+            observationAuthority =
+                fixedObservationAuthority(
+                    status = ObservationStatus.OBSERVED,
+                ),
+        )
+
+        val result = runtime.accept(input)
+
+        assertEquals(input.context.traceId, result.traceId)
         assertEquals(RuntimeStatus.ACCEPTED, result.status)
         assertNull(result.error)
     }
 
     @Test
-    fun `accept maps failed execution evaluation to rejected runtime result`() {
+    fun `accept maps failed execution through observation to rejected result`() {
         val input = createInput(
-            "trace-runtime-execution-003",
+            "trace-runtime-observation-004",
         )
-        val error = createError(input.context.traceId)
+        val error = createError(
+            traceId = input.context.traceId,
+            code = "UNIFIED_RUNTIME_EXECUTION_FAILED",
+            summary = "Bounded execution evaluation failed.",
+        )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
                 fixedExecutionAuthority(
@@ -103,9 +134,38 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
+    fun `accept maps failed observation to rejected runtime result`() {
+        val input = createInput(
+            "trace-runtime-observation-005",
+        )
+        val error = createError(
+            traceId = input.context.traceId,
+            code = "UNIFIED_RUNTIME_OBSERVATION_FAILED",
+            summary = "Bounded observation evaluation failed.",
+        )
+        val runtime = DefaultUnifiedDevilRuntime(
+            executionAuthority =
+                fixedExecutionAuthority(
+                    status = ExecutionStatus.APPROVED,
+                ),
+            observationAuthority =
+                fixedObservationAuthority(
+                    status = ObservationStatus.FAILED,
+                    error = error,
+                ),
+        )
+
+        val result = runtime.accept(input)
+
+        assertEquals(input.context.traceId, result.traceId)
+        assertEquals(RuntimeStatus.REJECTED, result.status)
+        assertEquals(error, result.error)
+    }
+
+    @Test
     fun `accept rejects execution result from a different trace`() {
         val input = createInput(
-            "trace-runtime-execution-004",
+            "trace-runtime-observation-006",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             executionAuthority =
@@ -113,6 +173,30 @@ class DefaultUnifiedDevilRuntimeTest {
                     status = ExecutionStatus.DEFERRED,
                     traceId = TraceId.from(
                         "trace-runtime-execution-other",
+                    ),
+                ),
+        )
+
+        assertFailsWith<IllegalArgumentException> {
+            runtime.accept(input)
+        }
+    }
+
+    @Test
+    fun `accept rejects observation result from a different trace`() {
+        val input = createInput(
+            "trace-runtime-observation-007",
+        )
+        val runtime = DefaultUnifiedDevilRuntime(
+            executionAuthority =
+                fixedExecutionAuthority(
+                    status = ExecutionStatus.APPROVED,
+                ),
+            observationAuthority =
+                fixedObservationAuthority(
+                    status = ObservationStatus.DEFERRED,
+                    traceId = TraceId.from(
+                        "trace-runtime-observation-other",
                     ),
                 ),
         )
@@ -169,6 +253,56 @@ class DefaultUnifiedDevilRuntimeTest {
         }
     }
 
+    private fun fixedObservationAuthority(
+        status: ObservationStatus,
+        traceId: TraceId? = null,
+        error: UniversalErrorRecord? = null,
+    ): ObservationAuthority {
+        return object : ObservationAuthority {
+            override fun observe(
+                context: ContextEnvelope,
+                identity: IdentityResult,
+                trust: TrustResult,
+                authorization: AuthorizationResult,
+                understanding: UnderstandingAuthorityResult,
+                decision: DecisionAuthorityResult,
+                task: TaskAuthorityResult,
+                plan: PlanAuthorityResult,
+                capability: CapabilitySelectionResult,
+                readiness: ExecutiveReadinessResult,
+                execution: ExecutionResult,
+            ): ObservationResult {
+                val resultTraceId =
+                    traceId ?: context.traceId
+
+                return when (status) {
+                    ObservationStatus.OBSERVED ->
+                        ObservationResult.create(
+                            traceId = resultTraceId,
+                            status = ObservationStatus.OBSERVED,
+                            request = ObservationRequest.create(
+                                execution =
+                                    requireNotNull(execution.request),
+                            ),
+                        )
+
+                    ObservationStatus.DEFERRED ->
+                        ObservationResult.create(
+                            traceId = resultTraceId,
+                            status = ObservationStatus.DEFERRED,
+                        )
+
+                    ObservationStatus.FAILED ->
+                        ObservationResult.create(
+                            traceId = resultTraceId,
+                            status = ObservationStatus.FAILED,
+                            error = requireNotNull(error),
+                        )
+                }
+            }
+        }
+    }
+
     private fun createExecutionRequest(
         context: ContextEnvelope,
     ): ExecutionRequest {
@@ -188,7 +322,7 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val task = TaskRecord.create(
             taskId = TaskId.from(
-                "task-runtime-execution",
+                "task-runtime-observation",
             ),
             decision = decision,
             state = TaskState.CREATED,
@@ -198,7 +332,7 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val plan = PlanRecord.create(
             planId = PlanId.from(
-                "plan-runtime-execution",
+                "plan-runtime-observation",
             ),
             task = task,
             state = PlanState.CREATED,
@@ -224,18 +358,17 @@ class DefaultUnifiedDevilRuntimeTest {
 
     private fun createError(
         traceId: TraceId,
+        code: String,
+        summary: String,
     ): UniversalErrorRecord {
         return UniversalErrorRecord.create(
-            errorCode = ErrorCode.from(
-                "UNIFIED_RUNTIME_EXECUTION_FAILED",
-            ),
+            errorCode = ErrorCode.from(code),
             traceId = traceId,
             occurredAt =
                 DevilTimestamp.fromEpochMilliseconds(
-                    1_754_000_109_500L,
+                    1_754_000_118_500L,
                 ),
-            summary =
-                "Bounded execution evaluation failed.",
+            summary = summary,
         )
     }
 
@@ -254,7 +387,7 @@ class DefaultUnifiedDevilRuntimeTest {
                     ContextSecurityLevel.RESTRICTED,
                 observedAt =
                     DevilTimestamp.fromEpochMilliseconds(
-                        1_754_000_109_000L,
+                        1_754_000_118_000L,
                     ),
             ),
             content =
