@@ -908,3 +908,33 @@ A LEARNABLE result preserves only one bounded LearningRequest for which genuine 
 Actual controlled learning and logical memory commitment remain separate future responsibilities. Learning must require genuine evidence, approved constitutional policy, bounded proposal generation, security review, and submission to the single Memory Authority. No learning component may directly commit logical memory.
 
 Future constitutional learning policy, genuine learning-evidence sources, and controlled learning mechanisms must enter through bounded LearningEvaluator implementations. They must not be hidden inside DefaultLearningAuthority, DefaultLearningResultMapper, LearningRequestProvider, World Model Update Authority, Memory Authority, or the unified runtime coordinator.
+
+## Stage 18 Constitutional Memory Proposal Runtime Meaning
+
+Stage 18 establishes the bounded Constitutional Memory Proposal Foundation.
+
+The runtime now coordinates:
+
+LearningResult
+        ↓
+MemoryProposalRequestProvider
+        ↓
+MemoryProposalRequestResult
+        ↓
+MemoryProposalEvaluator
+        ↓
+MemoryProposalEvaluationResult
+        ↓
+MemoryProposalResultMapper
+        ↓
+MemoryProposalResult
+
+A Memory Proposal Request is available only when constitutional learning has produced one bounded LearningRequest.
+
+The Memory Proposal Authority prepares and evaluates at most one bounded proposal. It does not create or commit logical memory, mutate world state, change task or plan state, communicate externally, or weaken the single Memory Authority.
+
+Runtime acceptance now requires a PROPOSABLE MemoryProposalResult.
+
+A PROPOSABLE result preserves only one bounded proposal for future review by the single Memory Authority. It is not a memory commit.
+
+Logical memory commitment remains a separate constitutional responsibility.
