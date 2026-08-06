@@ -856,3 +856,55 @@ Constitutional World Model update evaluation does not mean:
 Actual World Model mutation remains a separate future responsibility and must occur only through explicitly approved constitutional policy and a genuine bounded update mechanism.
 
 Future constitutional World Model update policy and genuine update mechanisms must enter through bounded WorldModelUpdateEvaluator implementations. They must not be hidden inside DefaultWorldModelUpdateAuthority, DefaultWorldModelUpdateResultMapper, WorldModelUpdateRequestProvider, Outcome Authority, or the unified runtime coordinator.
+
+## Stage 17 Constitutional Learning Runtime Meaning
+
+Stage 17 establishes the bounded Constitutional Learning Foundation without introducing fabricated learning evidence, uncontrolled learning, memory creation or commitment, world-state mutation, task or plan state mutation, external communication, or any authority beyond bounded learning evaluation.
+
+The runtime now coordinates the following bounded chain:
+
+WorldModelUpdateResult
+        ↓
+LearningRequestProvider
+        ↓
+LearningRequestResult
+        ↓
+LearningEvaluator
+        ↓
+LearningEvaluationResult
+        ↓
+LearningResultMapper
+        ↓
+LearningResult
+
+A Learning Request is available only when the World Model Update Authority has produced one APPLICABLE WorldModelUpdateResult containing one bounded WorldModelUpdateRequest.
+
+The LearningRequestProvider prepares one bounded LearningRequest only from constitutionally established World Model update applicability evidence. It does not claim that world state was mutated, create learning, create or commit memory, change task or plan state, communicate externally, or produce a runtime result.
+
+DefaultLearningEvaluator evaluates at most one bounded LearningRequest. No approved constitutional learning policy, genuine learning-evidence source, or controlled learning mechanism exists yet, so the default evaluator intentionally returns UNAVAILABLE rather than treating an applicable World Model update as proof that learning should occur.
+
+DefaultLearningResultMapper converts bounded learning evaluation into the stable operational LearningResult contract. Genuine constitutional learning evidence becomes LEARNABLE, evaluation unavailability becomes DEFERRED, and evaluation failure preserves its matching error.
+
+DefaultLearningAuthority coordinates request preparation, learning evaluation, and result mapping while preserving trace continuity across every constitutional handoff.
+
+The unified runtime now passes the bounded WorldModelUpdateResult into the Learning Authority. An applicable World Model update alone no longer produces runtime acceptance. Runtime acceptance requires a LEARNABLE LearningResult, while learning unavailability safely defers and learning failure rejects with its matching error.
+
+Constitutional Learning evaluation does not mean:
+
+- fabricating learning evidence,
+- assuming an applicable World Model update proves learning should occur,
+- creating or applying learning,
+- creating or committing memory,
+- mutating world state,
+- claiming that world state changed,
+- changing task or plan state,
+- communicating externally,
+- bypassing the unified runtime path,
+- weakening the Memory Authority,
+- or absorbing the responsibilities of earlier constitutional authorities.
+
+A LEARNABLE result preserves only one bounded LearningRequest for which genuine constitutional learning evidence was established. It does not itself create learning or authorize memory commitment.
+
+Actual controlled learning and logical memory commitment remain separate future responsibilities. Learning must require genuine evidence, approved constitutional policy, bounded proposal generation, security review, and submission to the single Memory Authority. No learning component may directly commit logical memory.
+
+Future constitutional learning policy, genuine learning-evidence sources, and controlled learning mechanisms must enter through bounded LearningEvaluator implementations. They must not be hidden inside DefaultLearningAuthority, DefaultLearningResultMapper, LearningRequestProvider, World Model Update Authority, Memory Authority, or the unified runtime coordinator.

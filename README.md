@@ -6,20 +6,20 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Devil Coding Stage 16 — Complete
+Devil Coding Stage 17 — Complete
 
-Stage 16 completed the Constitutional World Model Update Foundation and integrated the bounded World Model update-request provider, update evaluator, result mapper, and unified World Model Update Authority into the single constitutional runtime path.
+Stage 17 completed the Constitutional Learning Foundation and integrated the bounded learning-request provider, learning evaluator, result mapper, and unified Learning Authority into the single constitutional runtime path.
 
-The default runtime does not treat execution approval, observation, verification, or an established outcome as permission to mutate world state. It does not fabricate World Model update evidence, claim that world state changed, change task or plan state, create memory or learning, or communicate externally. Constitutional World Model update evaluation therefore safely defers until a genuine update mechanism and approved constitutional World Model update policy are available.
+The default runtime does not treat an applicable World Model update as proof that learning should occur. It does not fabricate learning evidence, create learning, create or commit memory, mutate world state, change task or plan state, or communicate externally. Constitutional learning evaluation therefore safely defers until genuine learning evidence, an approved constitutional learning policy, and a controlled learning mechanism are available.
 
-Stage 16 — Constitutional World Model Update Foundation is complete.
+Stage 17 — Constitutional Learning Foundation is complete.
 
 ## Official resume point
 
-Tag: `devil-stage-16-complete`
+Tag: `devil-stage-17-complete`
 
 ## Core rule
 
 No implementation may bypass:
 
-Constitution → Identity → Trust → Authorization → Understanding → Decision → Task → Plan → Capability → Execution → Observation → Verification → Outcome → World Model Update
+Constitution → Identity → Trust → Authorization → Understanding → Decision → Task → Plan → Capability → Execution → Observation → Verification → Outcome → World Model Update → Learning
