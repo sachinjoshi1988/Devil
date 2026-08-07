@@ -30,5 +30,12 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":core:model"))
     implementation(project(":core:runtime"))
+
+    testImplementation(kotlin("test"))
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
