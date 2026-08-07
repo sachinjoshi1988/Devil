@@ -22,10 +22,12 @@ import com.devil.core.runtime.learning.DefaultLearningAuthority
 import com.devil.core.runtime.learning.LearningAuthority
 import com.devil.core.runtime.memory.DefaultMemoryAuthority
 import com.devil.core.runtime.memory.DefaultMemoryCommitmentAuthority
+import com.devil.core.runtime.memory.DefaultMemoryPersistenceAuthority
 import com.devil.core.runtime.memory.DefaultMemoryProposalAuthority
 import com.devil.core.runtime.memory.MemoryAuthority
 import com.devil.core.runtime.memory.MemoryCommitmentAuthority
-import com.devil.core.runtime.memory.MemoryCommitmentStatus
+import com.devil.core.runtime.memory.MemoryPersistenceAuthority
+import com.devil.core.runtime.memory.MemoryPersistenceStatus
 import com.devil.core.runtime.memory.MemoryProposalAuthority
 import com.devil.core.runtime.observation.DefaultObservationAuthority
 import com.devil.core.runtime.observation.ObservationAuthority
@@ -48,7 +50,7 @@ import com.devil.core.runtime.worldmodel.WorldModelUpdateAuthority
  * Default constitutional runtime coordinator.
  *
  * This implementation preserves one ordered runtime path from constitutional
- * validation through bounded logical-memory commitment evaluation. Conversation
+ * validation through bounded logical-memory persistence evaluation. Conversation
  * intake is positioned after authorization and before understanding.
  *
  * The supplied ConversationInput owns the authoritative constitutional context.
@@ -57,10 +59,10 @@ import com.devil.core.runtime.worldmodel.WorldModelUpdateAuthority
  *
  * It activates no capability, invokes no platform API, fabricates no execution
  * attempt, observation, verification, outcome, World Model update, learning,
- * memory-proposal, Memory Authority, or memory-commitment evidence, mutates no
- * world state, changes no task or plan state, creates, persists, stores, exposes,
- * recalls, or commits no logical memory, performs no external communication, and
- * makes no unverified success claim.
+ * memory-proposal, Memory Authority, memory-commitment, or memory-persistence
+ * evidence, mutates no world state, changes no task or plan state, creates,
+ * persists, stores, exposes, recalls, deletes, or commits no logical memory,
+ * performs no external communication, and makes no unverified success claim.
  */
 class DefaultUnifiedDevilRuntime(
     private val constitutionValidationAuthority:
@@ -117,6 +119,9 @@ class DefaultUnifiedDevilRuntime(
     private val memoryCommitmentAuthority:
         MemoryCommitmentAuthority =
         DefaultMemoryCommitmentAuthority(),
+    private val memoryPersistenceAuthority:
+        MemoryPersistenceAuthority =
+        DefaultMemoryPersistenceAuthority(),
 ) : UnifiedDevilRuntime {
 
     override fun accept(
@@ -430,25 +435,52 @@ class DefaultUnifiedDevilRuntime(
             "Context and memory commitment result must use the same trace identity."
         }
 
-        return when (memoryCommitment.status) {
-            MemoryCommitmentStatus.COMMITTABLE ->
+        val memoryPersistence =
+            memoryPersistenceAuthority.evaluatePersistence(
+                context = context,
+                identity = identity,
+                trust = trust,
+                authorization = authorization,
+                understanding = understanding,
+                decision = decision,
+                task = task,
+                plan = plan,
+                capability = capability,
+                readiness = readiness,
+                execution = execution,
+                observation = observation,
+                verification = verification,
+                outcome = outcome,
+                worldModelUpdate = worldModelUpdate,
+                learning = learning,
+                memoryProposal = memoryProposal,
+                memory = memory,
+                memoryCommitment = memoryCommitment,
+            )
+
+        require(memoryPersistence.traceId == context.traceId) {
+            "Context and memory persistence result must use the same trace identity."
+        }
+
+        return when (memoryPersistence.status) {
+            MemoryPersistenceStatus.PERSISTABLE ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.ACCEPTED,
                 )
 
-            MemoryCommitmentStatus.DEFERRED ->
+            MemoryPersistenceStatus.DEFERRED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.DEFERRED,
                 )
 
-            MemoryCommitmentStatus.FAILED ->
+            MemoryPersistenceStatus.FAILED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.REJECTED,
                     error = requireNotNull(
-                        memoryCommitment.error,
+                        memoryPersistence.error,
                     ),
                 )
         }
