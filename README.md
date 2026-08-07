@@ -6,24 +6,24 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Devil Coding Stage 20 — Complete
+Devil Coding Stage 21 — Complete
 
-Stage 20 completed the Constitutional Logical-Memory Commitment Evaluation Foundation and integrated the bounded Memory Commitment Request Provider, Memory Commitment Evaluator, Result Mapper, and Memory Commitment Authority into the unified constitutional runtime path.
+Stage 21 completed the Constitutional Logical-Memory Persistence Evaluation Foundation and integrated the bounded Memory Persistence Request Provider, Memory Persistence Evaluator, Result Mapper, and Memory Persistence Authority into the unified constitutional runtime path.
 
-The default Memory Commitment Authority does not treat a COMMITTABLE MemoryAuthorityResult or an available MemoryCommitmentRequest as proof that logical memory may be persisted or committed.
+The default Memory Persistence Authority does not treat a PERSISTABLE MemoryPersistenceResult or an available MemoryPersistenceRequest as proof that logical memory has been created, written, stored, exposed, recalled, deleted, or committed.
 
-It does not fabricate commitment evidence, invoke storage, create logical memory, persist data, assign memory metadata, expose or recall memory, or claim that memory was committed.
+It does not invoke a database, filesystem, cloud service, Android platform API, network service, or other persistence mechanism. It does not fabricate persistence evidence, assign or alter memory metadata, or claim that logical memory was persisted.
 
-Constitutional logical-memory commitment evaluation therefore safely defers until genuine commitment evidence, approved constitutional policy, completed security review, complete memory metadata, storage-destination approval, deletion-policy handling, and a controlled persistence mechanism are available.
+Constitutional logical-memory persistence evaluation therefore safely defers until genuine persistence evidence, approved constitutional policy, completed security review, complete memory classification, sensitivity and confidence assessment, retention handling, source attribution, owner-visible reasoning, storage-destination approval, deletion-policy handling, encryption-policy handling, replication-policy handling, and an explicitly authorized persistence mechanism are available.
 
-Stage 20 — Constitutional Logical-Memory Commitment Evaluation Foundation is complete.
+Stage 21 — Constitutional Logical-Memory Persistence Evaluation Foundation is complete.
 
 ## Official resume point
 
-Tag: `devil-stage-20-complete`
+Tag: `devil-stage-21-complete`
 
 ## Core rule
 
 No implementation may bypass:
 
-Constitution → Identity → Trust → Authorization → Understanding → Decision → Task → Plan → Capability → Execution → Observation → Verification → Outcome → World Model Update → Learning → Memory Proposal → Memory Authority → Memory Commitment
+Constitution → Identity → Trust → Authorization → Understanding → Decision → Task → Plan → Capability → Execution → Observation → Verification → Outcome → World Model Update → Learning → Memory Proposal → Memory Authority → Memory Commitment → Memory Persistence
