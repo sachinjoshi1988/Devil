@@ -6,20 +6,22 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Devil Coding Stage 18 — Complete
+Devil Coding Stage 19 — Complete
 
-Stage 18 completed the Constitutional Memory Proposal Foundation and integrated the bounded Memory Proposal Request Provider, Memory Proposal Evaluator, Result Mapper, and unified Memory Proposal Authority into the single constitutional runtime path.
+Stage 19 completed the Constitutional Memory Authority Foundation and integrated the bounded Memory Authority Request Provider, Memory Authority Evaluator, Result Mapper, and single Memory Authority coordinator into the unified constitutional runtime path.
 
-The default runtime does not treat learnable learning as proof that a logical memory should be created. It does not fabricate memory proposals, create or commit logical memory, mutate world state, change task or plan state, or communicate externally. Constitutional memory proposal evaluation therefore safely defers until genuine constitutional learning evidence, approved proposal policy, and the single Memory Authority are available.
+The default Memory Authority does not treat a proposable memory as permission to create, persist, or commit logical memory. It does not fabricate commitment evidence, assign memory class, sensitivity, confidence, retention policy, source, owner-visible reason, or storage destination.
 
-Stage 18 — Constitutional Memory Proposal Foundation is complete.
+Constitutional Memory Authority evaluation therefore safely defers until genuine commitment evidence, approved constitutional memory policy, security review, complete memory metadata, and a controlled logical-memory commitment mechanism are available.
+
+Stage 19 — Constitutional Memory Authority Foundation is complete.
 
 ## Official resume point
 
-Tag: `devil-stage-18-complete`
+Tag: `devil-stage-19-complete`
 
 ## Core rule
 
 No implementation may bypass:
 
-Constitution → Identity → Trust → Authorization → Understanding → Decision → Task → Plan → Capability → Execution → Observation → Verification → Outcome → World Model Update → Learning → Memory Proposal
+Constitution → Identity → Trust → Authorization → Understanding → Decision → Task → Plan → Capability → Execution → Observation → Verification → Outcome → World Model Update → Learning → Memory Proposal → Memory Authority

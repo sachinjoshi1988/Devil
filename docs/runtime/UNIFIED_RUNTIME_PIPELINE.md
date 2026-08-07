@@ -938,3 +938,77 @@ Runtime acceptance now requires a PROPOSABLE MemoryProposalResult.
 A PROPOSABLE result preserves only one bounded proposal for future review by the single Memory Authority. It is not a memory commit.
 
 Logical memory commitment remains a separate constitutional responsibility.
+
+## Stage 19 Constitutional Memory Authority Runtime Meaning
+
+Stage 19 establishes the bounded Constitutional Memory Authority Foundation without introducing fabricated commitment evidence, logical-memory persistence, logical-memory commitment, uncontrolled metadata assignment, world-state mutation, task or plan state mutation, external communication, or authority outside the single Memory Authority.
+
+The runtime now coordinates the following bounded chain:
+
+MemoryProposalResult
+        ↓
+MemoryAuthorityRequestProvider
+        ↓
+MemoryAuthorityRequestResult
+        ↓
+MemoryAuthorityEvaluator
+        ↓
+MemoryAuthorityEvaluationResult
+        ↓
+MemoryAuthorityResultMapper
+        ↓
+MemoryAuthorityResult
+
+A Memory Authority Request is available only when constitutional memory-proposal evaluation has produced one PROPOSABLE MemoryProposalResult containing one bounded MemoryProposalRequest.
+
+The MemoryAuthorityRequestProvider preserves that bounded proposal inside one MemoryAuthorityRequest. It does not approve, create, persist, or commit logical memory. It does not assign memory class, sensitivity, confidence, retention policy, source, owner-visible reason, storage destination, or any other logical-memory metadata.
+
+DefaultMemoryAuthorityEvaluator evaluates at most one bounded MemoryAuthorityRequest.
+
+No approved constitutional memory-commitment policy, complete security-review path, memory-classification process, sensitivity assessment, confidence assessment, retention-policy evaluation, source-attribution process, owner-visible reason generation, storage-destination selection, or persistent logical-memory mechanism exists yet.
+
+The default evaluator therefore intentionally returns UNAVAILABLE rather than treating a proposable memory as permission to create, persist, or commit logical memory.
+
+DefaultMemoryAuthorityResultMapper converts bounded Memory Authority evaluation into the stable operational MemoryAuthorityResult contract.
+
+Genuine constitutional commitment eligibility becomes COMMITTABLE and preserves one bounded MemoryAuthorityRequest. Evaluation unavailability becomes DEFERRED. Evaluation failure preserves its matching error.
+
+DefaultMemoryAuthority coordinates request preparation, Memory Authority evaluation, and result mapping while preserving trace continuity across every constitutional handoff.
+
+The unified runtime now passes the bounded MemoryProposalResult into the single Memory Authority.
+
+A PROPOSABLE MemoryProposalResult alone no longer produces runtime acceptance. Runtime acceptance requires a COMMITTABLE MemoryAuthorityResult. Memory Authority unavailability safely defers, and Memory Authority failure rejects with its matching error.
+
+Constitutional Memory Authority evaluation does not mean:
+
+- fabricating memory-commitment evidence,
+- assuming a proposable memory must be committed,
+- creating logical memory,
+- persisting logical memory,
+- committing logical memory,
+- assigning a memory class,
+- assigning sensitivity,
+- assigning confidence,
+- assigning a retention policy,
+- assigning source attribution,
+- inventing an owner-visible reason,
+- selecting a storage destination,
+- bypassing constitutional security review,
+- mutating world state,
+- changing task or plan state,
+- communicating externally,
+- bypassing the unified runtime path,
+- creating a second Memory Authority,
+- or absorbing responsibilities belonging to earlier constitutional authorities.
+
+A COMMITTABLE result preserves only one bounded MemoryAuthorityRequest for which genuine constitutional commitment eligibility was established.
+
+COMMITTABLE is not a logical-memory commit. It does not claim that memory was created, persisted, stored, or made available for later recall.
+
+Actual logical-memory commitment remains a separate controlled responsibility. It must occur only through the single Memory Authority after approved constitutional policy, security review, complete memory metadata, explicit retention handling, source attribution, owner-visible reasoning, and a genuine bounded persistence mechanism are established.
+
+No subsystem may commit logical memory directly. Other domains may submit bounded proposals, but only the single Memory Authority may govern logical-memory commitment.
+
+Future constitutional memory policy, security review, classification, sensitivity assessment, confidence assessment, retention evaluation, source attribution, owner-visible reason generation, storage selection, and controlled persistence must enter through explicit bounded Memory Authority components.
+
+They must not be hidden inside MemoryProposalAuthority, MemoryAuthorityRequestProvider, DefaultMemoryAuthority, DefaultMemoryAuthorityResultMapper, Learning Authority, World Model Update Authority, or the unified runtime coordinator.
