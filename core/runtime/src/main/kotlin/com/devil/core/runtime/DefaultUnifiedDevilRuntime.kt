@@ -20,9 +20,11 @@ import com.devil.core.runtime.identity.DefaultIdentityAuthority
 import com.devil.core.runtime.identity.IdentityAuthority
 import com.devil.core.runtime.learning.DefaultLearningAuthority
 import com.devil.core.runtime.learning.LearningAuthority
+import com.devil.core.runtime.memory.DefaultMemoryAuthority
 import com.devil.core.runtime.memory.DefaultMemoryProposalAuthority
+import com.devil.core.runtime.memory.MemoryAuthority
+import com.devil.core.runtime.memory.MemoryAuthorityStatus
 import com.devil.core.runtime.memory.MemoryProposalAuthority
-import com.devil.core.runtime.memory.MemoryProposalStatus
 import com.devil.core.runtime.observation.DefaultObservationAuthority
 import com.devil.core.runtime.observation.ObservationAuthority
 import com.devil.core.runtime.outcome.DefaultOutcomeAuthority
@@ -44,7 +46,7 @@ import com.devil.core.runtime.worldmodel.WorldModelUpdateAuthority
  * Default constitutional runtime coordinator.
  *
  * This implementation preserves one ordered runtime path from constitutional
- * validation through bounded memory-proposal evaluation. Conversation intake is
+ * validation through bounded Memory Authority evaluation. Conversation intake is
  * positioned after authorization and before understanding.
  *
  * The supplied ConversationInput owns the authoritative constitutional context.
@@ -53,7 +55,7 @@ import com.devil.core.runtime.worldmodel.WorldModelUpdateAuthority
  *
  * It activates no capability, invokes no platform API, fabricates no execution
  * attempt, observation, verification, outcome, World Model update, learning, or
- * memory-proposal evidence, mutates no world state, changes no task or plan
+ * memory-proposal or Memory Authority evidence, mutates no world state, changes no task or plan
  * state, creates or commits no logical memory, performs no external
  * communication, and makes no unverified success claim.
  */
@@ -107,6 +109,8 @@ class DefaultUnifiedDevilRuntime(
     private val memoryProposalAuthority:
         MemoryProposalAuthority =
         DefaultMemoryProposalAuthority(),
+    private val memoryAuthority: MemoryAuthority =
+        DefaultMemoryAuthority(),
 ) : UnifiedDevilRuntime {
 
     override fun accept(
@@ -370,26 +374,48 @@ class DefaultUnifiedDevilRuntime(
             "Context and memory proposal result must use the same trace identity."
         }
 
-        return when (memoryProposal.status) {
-            MemoryProposalStatus.PROPOSABLE ->
+        val memory = memoryAuthority.evaluateMemory(
+            context = context,
+            identity = identity,
+            trust = trust,
+            authorization = authorization,
+            understanding = understanding,
+            decision = decision,
+            task = task,
+            plan = plan,
+            capability = capability,
+            readiness = readiness,
+            execution = execution,
+            observation = observation,
+            verification = verification,
+            outcome = outcome,
+            worldModelUpdate = worldModelUpdate,
+            learning = learning,
+            memoryProposal = memoryProposal,
+        )
+
+        require(memory.traceId == context.traceId) {
+            "Context and Memory Authority result must use the same trace identity."
+        }
+
+        return when (memory.status) {
+            MemoryAuthorityStatus.COMMITTABLE ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.ACCEPTED,
                 )
 
-            MemoryProposalStatus.DEFERRED ->
+            MemoryAuthorityStatus.DEFERRED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.DEFERRED,
                 )
 
-            MemoryProposalStatus.FAILED ->
+            MemoryAuthorityStatus.FAILED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.REJECTED,
-                    error = requireNotNull(
-                        memoryProposal.error,
-                    ),
+                    error = requireNotNull(memory.error),
                 )
         }
     }
