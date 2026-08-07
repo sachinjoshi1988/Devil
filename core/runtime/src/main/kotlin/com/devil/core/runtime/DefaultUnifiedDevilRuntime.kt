@@ -21,9 +21,11 @@ import com.devil.core.runtime.identity.IdentityAuthority
 import com.devil.core.runtime.learning.DefaultLearningAuthority
 import com.devil.core.runtime.learning.LearningAuthority
 import com.devil.core.runtime.memory.DefaultMemoryAuthority
+import com.devil.core.runtime.memory.DefaultMemoryCommitmentAuthority
 import com.devil.core.runtime.memory.DefaultMemoryProposalAuthority
 import com.devil.core.runtime.memory.MemoryAuthority
-import com.devil.core.runtime.memory.MemoryAuthorityStatus
+import com.devil.core.runtime.memory.MemoryCommitmentAuthority
+import com.devil.core.runtime.memory.MemoryCommitmentStatus
 import com.devil.core.runtime.memory.MemoryProposalAuthority
 import com.devil.core.runtime.observation.DefaultObservationAuthority
 import com.devil.core.runtime.observation.ObservationAuthority
@@ -46,18 +48,19 @@ import com.devil.core.runtime.worldmodel.WorldModelUpdateAuthority
  * Default constitutional runtime coordinator.
  *
  * This implementation preserves one ordered runtime path from constitutional
- * validation through bounded Memory Authority evaluation. Conversation intake is
- * positioned after authorization and before understanding.
+ * validation through bounded logical-memory commitment evaluation. Conversation
+ * intake is positioned after authorization and before understanding.
  *
  * The supplied ConversationInput owns the authoritative constitutional context.
  * This coordinator does not absorb the responsibilities of its bounded
  * authorities.
  *
  * It activates no capability, invokes no platform API, fabricates no execution
- * attempt, observation, verification, outcome, World Model update, learning, or
- * memory-proposal or Memory Authority evidence, mutates no world state, changes no task or plan
- * state, creates or commits no logical memory, performs no external
- * communication, and makes no unverified success claim.
+ * attempt, observation, verification, outcome, World Model update, learning,
+ * memory-proposal, Memory Authority, or memory-commitment evidence, mutates no
+ * world state, changes no task or plan state, creates, persists, stores, exposes,
+ * recalls, or commits no logical memory, performs no external communication, and
+ * makes no unverified success claim.
  */
 class DefaultUnifiedDevilRuntime(
     private val constitutionValidationAuthority:
@@ -111,6 +114,9 @@ class DefaultUnifiedDevilRuntime(
         DefaultMemoryProposalAuthority(),
     private val memoryAuthority: MemoryAuthority =
         DefaultMemoryAuthority(),
+    private val memoryCommitmentAuthority:
+        MemoryCommitmentAuthority =
+        DefaultMemoryCommitmentAuthority(),
 ) : UnifiedDevilRuntime {
 
     override fun accept(
@@ -398,24 +404,52 @@ class DefaultUnifiedDevilRuntime(
             "Context and Memory Authority result must use the same trace identity."
         }
 
-        return when (memory.status) {
-            MemoryAuthorityStatus.COMMITTABLE ->
+        val memoryCommitment =
+            memoryCommitmentAuthority.evaluateCommitment(
+                context = context,
+                identity = identity,
+                trust = trust,
+                authorization = authorization,
+                understanding = understanding,
+                decision = decision,
+                task = task,
+                plan = plan,
+                capability = capability,
+                readiness = readiness,
+                execution = execution,
+                observation = observation,
+                verification = verification,
+                outcome = outcome,
+                worldModelUpdate = worldModelUpdate,
+                learning = learning,
+                memoryProposal = memoryProposal,
+                memory = memory,
+            )
+
+        require(memoryCommitment.traceId == context.traceId) {
+            "Context and memory commitment result must use the same trace identity."
+        }
+
+        return when (memoryCommitment.status) {
+            MemoryCommitmentStatus.COMMITTABLE ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.ACCEPTED,
                 )
 
-            MemoryAuthorityStatus.DEFERRED ->
+            MemoryCommitmentStatus.DEFERRED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.DEFERRED,
                 )
 
-            MemoryAuthorityStatus.FAILED ->
+            MemoryCommitmentStatus.FAILED ->
                 RuntimeResult.create(
                     traceId = context.traceId,
                     status = RuntimeStatus.REJECTED,
-                    error = requireNotNull(memory.error),
+                    error = requireNotNull(
+                        memoryCommitment.error,
+                    ),
                 )
         }
     }

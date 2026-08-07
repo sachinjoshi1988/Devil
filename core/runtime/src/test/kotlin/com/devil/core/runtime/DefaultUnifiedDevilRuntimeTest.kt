@@ -18,6 +18,7 @@ import com.devil.core.model.error.UniversalErrorRecord
 import com.devil.core.model.execution.ExecutionRequest
 import com.devil.core.model.learning.LearningRequest
 import com.devil.core.model.memory.MemoryAuthorityRequest
+import com.devil.core.model.memory.MemoryCommitmentRequest
 import com.devil.core.model.memory.MemoryProposalRequest
 import com.devil.core.model.observation.ObservationRequest
 import com.devil.core.model.outcome.OutcomeRequest
@@ -41,6 +42,9 @@ import com.devil.core.runtime.learning.LearningResult
 import com.devil.core.runtime.memory.MemoryAuthority
 import com.devil.core.runtime.memory.MemoryAuthorityResult
 import com.devil.core.runtime.memory.MemoryAuthorityStatus
+import com.devil.core.runtime.memory.MemoryCommitmentAuthority
+import com.devil.core.runtime.memory.MemoryCommitmentResult
+import com.devil.core.runtime.memory.MemoryCommitmentStatus
 import com.devil.core.runtime.memory.MemoryProposalAuthority
 import com.devil.core.runtime.memory.MemoryProposalResult
 import com.devil.core.runtime.memory.MemoryProposalStatus
@@ -62,7 +66,7 @@ class DefaultUnifiedDevilRuntimeTest {
     @Test
     fun `accept coordinates conversation input through one constitutional runtime path`() {
         val input = createInput(
-            "trace-runtime-memory-authority-001",
+            "trace-runtime-memory-commitment-001",
         )
 
         val result = DefaultUnifiedDevilRuntime().accept(input)
@@ -73,28 +77,9 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept does not treat proposable memory as committed logical memory`() {
+    fun `accept does not treat committable Memory Authority result as committed logical memory`() {
         val input = createInput(
-            "trace-runtime-memory-authority-002",
-        )
-        val runtime = DefaultUnifiedDevilRuntime(
-            memoryProposalAuthority =
-                fixedMemoryProposalAuthority(
-                    status = MemoryProposalStatus.PROPOSABLE,
-                ),
-        )
-
-        val result = runtime.accept(input)
-
-        assertEquals(input.context.traceId, result.traceId)
-        assertEquals(RuntimeStatus.DEFERRED, result.status)
-        assertNull(result.error)
-    }
-
-    @Test
-    fun `accept maps committable Memory Authority result to accepted runtime result`() {
-        val input = createInput(
-            "trace-runtime-memory-authority-003",
+            "trace-runtime-memory-commitment-002",
         )
         val runtime = DefaultUnifiedDevilRuntime(
             memoryProposalAuthority =
@@ -110,19 +95,46 @@ class DefaultUnifiedDevilRuntimeTest {
         val result = runtime.accept(input)
 
         assertEquals(input.context.traceId, result.traceId)
+        assertEquals(RuntimeStatus.DEFERRED, result.status)
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `accept maps committable memory commitment result to accepted runtime result`() {
+        val input = createInput(
+            "trace-runtime-memory-commitment-003",
+        )
+        val runtime = DefaultUnifiedDevilRuntime(
+            memoryProposalAuthority =
+                fixedMemoryProposalAuthority(
+                    status = MemoryProposalStatus.PROPOSABLE,
+                ),
+            memoryAuthority =
+                fixedMemoryAuthority(
+                    status = MemoryAuthorityStatus.COMMITTABLE,
+                ),
+            memoryCommitmentAuthority =
+                fixedMemoryCommitmentAuthority(
+                    status = MemoryCommitmentStatus.COMMITTABLE,
+                ),
+        )
+
+        val result = runtime.accept(input)
+
+        assertEquals(input.context.traceId, result.traceId)
         assertEquals(RuntimeStatus.ACCEPTED, result.status)
         assertNull(result.error)
     }
 
     @Test
-    fun `accept maps deferred Memory Authority result to deferred runtime result`() {
+    fun `accept maps deferred memory commitment result to deferred runtime result`() {
         val input = createInput(
-            "trace-runtime-memory-authority-004",
+            "trace-runtime-memory-commitment-004",
         )
         val runtime = DefaultUnifiedDevilRuntime(
-            memoryAuthority =
-                fixedMemoryAuthority(
-                    status = MemoryAuthorityStatus.DEFERRED,
+            memoryCommitmentAuthority =
+                fixedMemoryCommitmentAuthority(
+                    status = MemoryCommitmentStatus.DEFERRED,
                 ),
         )
 
@@ -134,20 +146,20 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept maps failed Memory Authority result to rejected runtime result`() {
+    fun `accept maps failed memory commitment result to rejected runtime result`() {
         val input = createInput(
-            "trace-runtime-memory-authority-005",
+            "trace-runtime-memory-commitment-005",
         )
         val error = createError(
             traceId = input.context.traceId,
-            code = "UNIFIED_RUNTIME_MEMORY_AUTHORITY_FAILED",
+            code = "UNIFIED_RUNTIME_MEMORY_COMMITMENT_FAILED",
             summary =
-                "Bounded constitutional Memory Authority evaluation failed.",
+                "Bounded constitutional memory commitment evaluation failed.",
         )
         val runtime = DefaultUnifiedDevilRuntime(
-            memoryAuthority =
-                fixedMemoryAuthority(
-                    status = MemoryAuthorityStatus.FAILED,
+            memoryCommitmentAuthority =
+                fixedMemoryCommitmentAuthority(
+                    status = MemoryCommitmentStatus.FAILED,
                     error = error,
                 ),
         )
@@ -160,16 +172,16 @@ class DefaultUnifiedDevilRuntimeTest {
     }
 
     @Test
-    fun `accept rejects Memory Authority result from another trace`() {
+    fun `accept rejects memory commitment result from another trace`() {
         val input = createInput(
-            "trace-runtime-memory-authority-006",
+            "trace-runtime-memory-commitment-006",
         )
         val runtime = DefaultUnifiedDevilRuntime(
-            memoryAuthority =
-                fixedMemoryAuthority(
-                    status = MemoryAuthorityStatus.DEFERRED,
+            memoryCommitmentAuthority =
+                fixedMemoryCommitmentAuthority(
+                    status = MemoryCommitmentStatus.DEFERRED,
                     traceId = TraceId.from(
-                        "trace-runtime-memory-authority-other",
+                        "trace-runtime-memory-commitment-other",
                     ),
                 ),
         )
@@ -210,7 +222,8 @@ class DefaultUnifiedDevilRuntimeTest {
                     MemoryProposalStatus.PROPOSABLE ->
                         MemoryProposalResult.create(
                             traceId = resultTraceId,
-                            status = MemoryProposalStatus.PROPOSABLE,
+                            status =
+                                MemoryProposalStatus.PROPOSABLE,
                             request =
                                 createMemoryProposalRequest(
                                     context = context,
@@ -220,13 +233,15 @@ class DefaultUnifiedDevilRuntimeTest {
                     MemoryProposalStatus.DEFERRED ->
                         MemoryProposalResult.create(
                             traceId = resultTraceId,
-                            status = MemoryProposalStatus.DEFERRED,
+                            status =
+                                MemoryProposalStatus.DEFERRED,
                         )
 
                     MemoryProposalStatus.FAILED ->
                         MemoryProposalResult.create(
                             traceId = resultTraceId,
-                            status = MemoryProposalStatus.FAILED,
+                            status =
+                                MemoryProposalStatus.FAILED,
                             error = requireNotNull(error),
                         )
                 }
@@ -266,25 +281,95 @@ class DefaultUnifiedDevilRuntimeTest {
                     MemoryAuthorityStatus.COMMITTABLE ->
                         MemoryAuthorityResult.create(
                             traceId = resultTraceId,
-                            status = MemoryAuthorityStatus.COMMITTABLE,
-                            request = MemoryAuthorityRequest.create(
-                                proposal =
-                                    createMemoryProposalRequest(
-                                        context = context,
-                                    ),
-                            ),
+                            status =
+                                MemoryAuthorityStatus.COMMITTABLE,
+                            request =
+                                MemoryAuthorityRequest.create(
+                                    proposal =
+                                        createMemoryProposalRequest(
+                                            context = context,
+                                        ),
+                                ),
                         )
 
                     MemoryAuthorityStatus.DEFERRED ->
                         MemoryAuthorityResult.create(
                             traceId = resultTraceId,
-                            status = MemoryAuthorityStatus.DEFERRED,
+                            status =
+                                MemoryAuthorityStatus.DEFERRED,
                         )
 
                     MemoryAuthorityStatus.FAILED ->
                         MemoryAuthorityResult.create(
                             traceId = resultTraceId,
-                            status = MemoryAuthorityStatus.FAILED,
+                            status =
+                                MemoryAuthorityStatus.FAILED,
+                            error = requireNotNull(error),
+                        )
+                }
+            }
+        }
+    }
+
+    private fun fixedMemoryCommitmentAuthority(
+        status: MemoryCommitmentStatus,
+        traceId: TraceId? = null,
+        error: UniversalErrorRecord? = null,
+    ): MemoryCommitmentAuthority {
+        return object : MemoryCommitmentAuthority {
+            override fun evaluateCommitment(
+                context: ContextEnvelope,
+                identity: IdentityResult,
+                trust: TrustResult,
+                authorization: AuthorizationResult,
+                understanding: UnderstandingAuthorityResult,
+                decision: DecisionAuthorityResult,
+                task: TaskAuthorityResult,
+                plan: PlanAuthorityResult,
+                capability: CapabilitySelectionResult,
+                readiness: ExecutiveReadinessResult,
+                execution: ExecutionResult,
+                observation: ObservationResult,
+                verification: VerificationResult,
+                outcome: OutcomeResult,
+                worldModelUpdate: WorldModelUpdateResult,
+                learning: LearningResult,
+                memoryProposal: MemoryProposalResult,
+                memory: MemoryAuthorityResult,
+            ): MemoryCommitmentResult {
+                val resultTraceId =
+                    traceId ?: context.traceId
+
+                return when (status) {
+                    MemoryCommitmentStatus.COMMITTABLE ->
+                        MemoryCommitmentResult.create(
+                            traceId = resultTraceId,
+                            status =
+                                MemoryCommitmentStatus.COMMITTABLE,
+                            request =
+                                MemoryCommitmentRequest.create(
+                                    authorityRequest =
+                                        MemoryAuthorityRequest.create(
+                                            proposal =
+                                                createMemoryProposalRequest(
+                                                    context = context,
+                                                ),
+                                        ),
+                                ),
+                        )
+
+                    MemoryCommitmentStatus.DEFERRED ->
+                        MemoryCommitmentResult.create(
+                            traceId = resultTraceId,
+                            status =
+                                MemoryCommitmentStatus.DEFERRED,
+                        )
+
+                    MemoryCommitmentStatus.FAILED ->
+                        MemoryCommitmentResult.create(
+                            traceId = resultTraceId,
+                            status =
+                                MemoryCommitmentStatus.FAILED,
                             error = requireNotNull(error),
                         )
                 }
@@ -335,7 +420,7 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val task = TaskRecord.create(
             taskId = TaskId.from(
-                "task-runtime-memory-authority",
+                "task-runtime-memory-commitment",
             ),
             decision = decision,
             state = TaskState.CREATED,
@@ -345,7 +430,7 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val plan = PlanRecord.create(
             planId = PlanId.from(
-                "plan-runtime-memory-authority",
+                "plan-runtime-memory-commitment",
             ),
             task = task,
             state = PlanState.CREATED,
@@ -355,12 +440,13 @@ class DefaultUnifiedDevilRuntimeTest {
 
         val capability = CapabilityContract.create(
             capabilityId = CapabilityId.from(
-                "capability-runtime-memory-authority",
+                "capability-runtime-memory-commitment",
             ),
             category = CapabilityCategory.ACTION,
-            name = "Runtime Memory Authority Test Capability",
+            name =
+                "Runtime Memory Commitment Test Capability",
             description =
-                "Represents one bounded test capability without platform execution.",
+                "Represents one bounded test capability without platform execution or persistence.",
         )
 
         return ExecutionRequest.create(
@@ -379,7 +465,7 @@ class DefaultUnifiedDevilRuntimeTest {
             traceId = traceId,
             occurredAt =
                 DevilTimestamp.fromEpochMilliseconds(
-                    1_754_000_172_500L,
+                    1_754_000_180_500L,
                 ),
             summary = summary,
         )
@@ -399,7 +485,7 @@ class DefaultUnifiedDevilRuntimeTest {
                     ContextSecurityLevel.RESTRICTED,
                 observedAt =
                     DevilTimestamp.fromEpochMilliseconds(
-                        1_754_000_172_000L,
+                        1_754_000_180_000L,
                     ),
             ),
             content =
