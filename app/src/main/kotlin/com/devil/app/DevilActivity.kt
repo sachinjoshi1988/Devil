@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.devil.app.conversation.ConversationScreen
 import com.devil.app.conversation.ConversationUiState
@@ -14,17 +14,17 @@ import com.devil.app.conversation.ConversationUiState
 /**
  * Android launcher surface for Devil.
  *
- * Stage 24 hosts the bounded Compose conversation presentation surface.
+ * Stage 24 hosts the bounded Compose conversation presentation surface and
+ * delegates user interaction through the process-scoped conversation
+ * coordinators owned by DevilApplication.
  *
- * This Activity remains an Android UI boundary. It does not create
- * constitutional context, choose schema version, assign provenance, trust, or
- * security classification, generate trace identity, submit conversation input,
- * invoke the UnifiedDevilRuntime, execute capabilities, create or persist
+ * This Activity does not create constitutional context, choose schema version,
+ * assign provenance, trust, or security classification, generate TraceId,
+ * invoke UnifiedDevilRuntime directly, execute capabilities, create or persist
  * logical memory, or fabricate runtime outcomes.
  *
- * Draft text is currently UI-local and survives ordinary Activity recreation.
- * No draft content enters the constitutional runtime until a later explicitly
- * connected submission boundary is implemented.
+ * ConversationUiState remains UI-local presentation state. No conversation
+ * persistence is introduced by this Activity.
  */
 class DevilActivity : ComponentActivity() {
 
@@ -33,19 +33,35 @@ class DevilActivity : ComponentActivity() {
     ) {
         super.onCreate(savedInstanceState)
 
+        val devilApplication =
+            application as DevilApplication
+
         setContent {
             MaterialTheme {
-                var draft by rememberSaveable {
-                    mutableStateOf("")
+                var conversationState by remember {
+                    mutableStateOf(
+                        ConversationUiState(),
+                    )
                 }
 
                 ConversationScreen(
-                    state =
-                        ConversationUiState(
-                            draft = draft,
-                        ),
+                    state = conversationState,
                     onDraftChange = { updatedDraft ->
-                        draft = updatedDraft
+                        conversationState =
+                            devilApplication
+                                .conversationInteractionCoordinator
+                                .updateDraft(
+                                    state = conversationState,
+                                    draft = updatedDraft,
+                                )
+                    },
+                    onSubmit = {
+                        conversationState =
+                            devilApplication
+                                .conversationSubmissionFlowCoordinator
+                                .submit(
+                                    state = conversationState,
+                                )
                     },
                 )
             }

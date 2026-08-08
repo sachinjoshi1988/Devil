@@ -24,20 +24,21 @@ import androidx.compose.ui.unit.dp
  * Stage 24 Compose conversation presentation surface.
  *
  * This screen renders only supplied ConversationUiState and reports draft edits
- * to its caller.
+ * and submission intent to its caller.
  *
- * The Send control remains deliberately disabled until the bounded runtime
- * submission path is connected in a later Stage 24 step.
+ * It does not invoke UnifiedDevilRuntime, create constitutional context, choose
+ * runtime-input metadata, generate TraceId, execute capabilities, persist
+ * conversation data, mutate logical memory, or fabricate Devil responses or
+ * verified outcomes.
  *
- * This composable does not invoke the UnifiedDevilRuntime, create
- * constitutional context, generate trace identity, execute capabilities,
- * persist conversation data, mutate logical memory, or fabricate Devil
- * responses or verified outcomes.
+ * Any submission notice rendered here is UI-local presentation truth and is not
+ * represented as a runtime result.
  */
 @Composable
 fun ConversationScreen(
     state: ConversationUiState,
     onDraftChange: (String) -> Unit,
+    onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -86,9 +87,11 @@ fun ConversationScreen(
             )
 
             Button(
-                onClick = {},
+                onClick = onSubmit,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = false,
+                enabled =
+                    !state.isSubmitting &&
+                        state.draft.isNotBlank(),
             ) {
                 Text(
                     text =
@@ -100,10 +103,12 @@ fun ConversationScreen(
                 )
             }
 
-            Text(
-                text = "Runtime submission is not connected yet.",
-                style = MaterialTheme.typography.bodySmall,
-            )
+            state.submissionNotice?.let { notice ->
+                Text(
+                    text = notice.message,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
     }
 }
