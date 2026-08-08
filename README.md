@@ -6,41 +6,41 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Devil Coding Stage 22 — Complete
+Devil Coding Stage 23 — Complete
 
-Stage 22 established the Android Application and Unified Runtime Boundary Foundation.
+Stage 23 established the Constitutional Security and Session Foundation.
 
-The repository now contains a real Android application module with one Android
-Application bootstrap, one minimal launcher Activity, and one bounded Android
-runtime-entry chain into the existing single UnifiedDevilRuntime.
+The repository now contains explicit constitutional security-stage, security-state,
+security-transition, session-identity, session-lifecycle, session-record, and
+session-validity contracts.
 
-The Android boundary provides bounded trace-identity generation, observation-time
-capture, ContextEnvelope composition, ConversationInput adaptation, runtime
-submission, and Android input coordination.
+Security transition handling is separated into bounded request, evaluation,
+result-mapping, and authority layers. The default transition evaluator safely
+defers when genuine transition policy or required constitutional evidence is not
+available.
 
-Exactly one DefaultUnifiedDevilRuntime is constructed by DevilApplication.
-Android runtime submission reaches that same process-scoped runtime only through
-DefaultAndroidRuntimeGateway.
+Session validity handling is likewise separated into bounded request, evaluation,
+result-mapping, and authority layers.
 
-Stage 22 does not introduce a second brain, planner, memory authority, security
-authority, runtime, or execution path.
+The default session-validity evaluator determines validity only from the explicit
+session lifecycle state, approved validity window, and authoritative observation
+time supplied by the request. An ACTIVE session is valid only at or after its
+establishment time and strictly before expiration. EXPIRED and REVOKED sessions
+are invalid.
 
-The launcher Activity performs no runtime submission.
+Stage 23 does not authenticate a subject, prove owner identity, establish trust,
+grant authorization, create, extend, renew, or revoke sessions, advance
+SecurityStage, enter Owner Mode, approve high-security confirmation, grant Android
+permission, invoke Android credentials, or permit capability execution.
 
-Production Android code does not yet choose schema version, provenance, trust
-classification, or security classification. Those values remain explicit
-constitutional inputs that must be established by their proper authorities before
-real Android user input may enter the runtime.
+Security remains a system authority rather than a feature. No evaluator, mapper,
+coordinator, session record, request, or result may grant itself authority.
 
-Stage 22 introduces no Android device capability execution, accessibility actions,
-speech recognition, text-to-speech, networking, filesystem persistence, database
-persistence, cloud persistence, or logical-memory storage.
-
-Stage 22 — Android Application & Unified Runtime Boundary Foundation is complete.
+Stage 23 — Constitutional Security and Session Foundation is complete.
 
 ## Official resume point
 
-Tag: `devil-stage-22-complete`
+Tag: `devil-stage-23-complete`
 
 ## Core rule
 
