@@ -6,21 +6,41 @@ This repository contains the new Devil implementation. It is separate from SJ Li
 
 ## Current milestone
 
-Devil Coding Stage 21 — Complete
+Devil Coding Stage 22 — Complete
 
-Stage 21 completed the Constitutional Logical-Memory Persistence Evaluation Foundation and integrated the bounded Memory Persistence Request Provider, Memory Persistence Evaluator, Result Mapper, and Memory Persistence Authority into the unified constitutional runtime path.
+Stage 22 established the Android Application and Unified Runtime Boundary Foundation.
 
-The default Memory Persistence Authority does not treat a PERSISTABLE MemoryPersistenceResult or an available MemoryPersistenceRequest as proof that logical memory has been created, written, stored, exposed, recalled, deleted, or committed.
+The repository now contains a real Android application module with one Android
+Application bootstrap, one minimal launcher Activity, and one bounded Android
+runtime-entry chain into the existing single UnifiedDevilRuntime.
 
-It does not invoke a database, filesystem, cloud service, Android platform API, network service, or other persistence mechanism. It does not fabricate persistence evidence, assign or alter memory metadata, or claim that logical memory was persisted.
+The Android boundary provides bounded trace-identity generation, observation-time
+capture, ContextEnvelope composition, ConversationInput adaptation, runtime
+submission, and Android input coordination.
 
-Constitutional logical-memory persistence evaluation therefore safely defers until genuine persistence evidence, approved constitutional policy, completed security review, complete memory classification, sensitivity and confidence assessment, retention handling, source attribution, owner-visible reasoning, storage-destination approval, deletion-policy handling, encryption-policy handling, replication-policy handling, and an explicitly authorized persistence mechanism are available.
+Exactly one DefaultUnifiedDevilRuntime is constructed by DevilApplication.
+Android runtime submission reaches that same process-scoped runtime only through
+DefaultAndroidRuntimeGateway.
 
-Stage 21 — Constitutional Logical-Memory Persistence Evaluation Foundation is complete.
+Stage 22 does not introduce a second brain, planner, memory authority, security
+authority, runtime, or execution path.
+
+The launcher Activity performs no runtime submission.
+
+Production Android code does not yet choose schema version, provenance, trust
+classification, or security classification. Those values remain explicit
+constitutional inputs that must be established by their proper authorities before
+real Android user input may enter the runtime.
+
+Stage 22 introduces no Android device capability execution, accessibility actions,
+speech recognition, text-to-speech, networking, filesystem persistence, database
+persistence, cloud persistence, or logical-memory storage.
+
+Stage 22 — Android Application & Unified Runtime Boundary Foundation is complete.
 
 ## Official resume point
 
-Tag: `devil-stage-21-complete`
+Tag: `devil-stage-22-complete`
 
 ## Core rule
 

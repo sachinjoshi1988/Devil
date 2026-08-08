@@ -1192,3 +1192,132 @@ No subsystem may create, write, persist, expose, recall, delete, synchronize, re
 Future constitutional storage policy and genuine persistence mechanisms must enter through explicit bounded Memory Authority components.
 
 They must not be hidden inside MemoryPersistenceRequestProvider, MemoryPersistenceEvaluator, MemoryPersistenceResultMapper, DefaultMemoryPersistenceAuthority, MemoryCommitmentAuthority, MemoryProposalAuthority, Learning Authority, World Model Update Authority, or the unified runtime coordinator.
+
+
+## Stage 22 Android Application and Unified Runtime Boundary Meaning
+
+Stage 22 establishes the Android Application and Unified Runtime Boundary
+Foundation without introducing a second intelligence, independent Android brain,
+independent planner, independent memory authority, independent security authority,
+parallel runtime path, device-action authority, or uncontrolled constitutional
+classification.
+
+The Android application boundary now contains the following bounded structure:
+
+Android launcher lifecycle
+        ↓
+DevilActivity
+        ↓
+DevilApplication
+        ↓
+AndroidRuntimeInputCoordinator
+        ↓
+AndroidContextEnvelopeProvider
+        ├── AndroidTraceIdProvider
+        ├── AndroidObservationTimeProvider
+        └── AndroidContextEnvelopeFactory
+        ↓
+AndroidRuntimeGateway
+        ↓
+AndroidConversationInputAdapter
+        ↓
+ConversationInput
+        ↓
+UnifiedDevilRuntime
+
+DevilApplication owns one process-scoped UnifiedDevilRuntime reference.
+
+The production Android application constructs DefaultUnifiedDevilRuntime exactly
+once. The process-scoped AndroidRuntimeInputCoordinator is composed around that
+same runtime instance.
+
+No Android adapter creates another UnifiedDevilRuntime.
+
+DefaultAndroidTraceIdProvider owns only Android-boundary trace-identity generation.
+It generates one raw UUID and delegates validation and representation to the
+existing TraceId core-model contract.
+
+DefaultAndroidObservationTimeProvider owns only Android-boundary wall-clock
+observation. It obtains epoch-millisecond time and delegates representation and
+validation to DevilTimestamp.
+
+DefaultAndroidContextEnvelopeFactory does not choose constitutional meaning. It
+only composes values that have already been established and supplied to it.
+
+DefaultAndroidContextEnvelopeProvider obtains a fresh trace identity and
+observation timestamp while preserving the explicitly supplied schema version,
+provenance, trust classification, and security classification.
+
+It does not infer or select any of those constitutional classifications.
+
+DefaultAndroidConversationInputAdapter converts bounded textual Android input into
+the existing ConversationInput contract while preserving the supplied
+ContextEnvelope.
+
+DefaultAndroidRuntimeGateway is the only Android production component that calls
+UnifiedDevilRuntime.accept.
+
+It preserves trace continuity between the supplied ContextEnvelope, adapted
+ConversationInput, and RuntimeResult.
+
+DefaultAndroidRuntimeInputCoordinator composes the bounded Android input path. It
+requests one ContextEnvelope and passes that context and the textual content to
+one AndroidRuntimeGateway.
+
+It does not choose constitutional classifications and creates no independent
+authority.
+
+DevilActivity is a minimal Android launcher lifecycle surface only.
+
+The Activity does not currently:
+
+- submit textual input,
+- create ConversationInput,
+- create ContextEnvelope,
+- choose a schema version,
+- choose provenance,
+- assign trust,
+- assign security classification,
+- resolve identity,
+- grant authorization,
+- interpret language,
+- make a Brain decision,
+- create a task,
+- create a plan,
+- select a capability,
+- execute an Android action,
+- create logical memory,
+- persist logical memory,
+- access a database or filesystem,
+- access a network service,
+- invoke accessibility,
+- invoke speech recognition,
+- invoke text-to-speech,
+- or claim any runtime outcome.
+
+Production Android code intentionally contains no hard-coded creation of
+SchemaVersion, ContextSource, ContextTrustLevel, or ContextSecurityLevel.
+
+Real Android user-input submission must therefore remain unavailable until those
+constitutional values can be established through approved upstream policy and
+authority.
+
+Stage 22 provides an Android embodiment around the one Unified Devil Runtime. It
+does not create an Android-specific intelligence.
+
+The architectural invariant remains:
+
+one Constitution,
+one Brain,
+one Planner,
+one Memory Authority,
+one Security Architecture,
+one Executive,
+and one Unified Devil Runtime,
+
+with Android acting only as one bounded device embodiment around that unified
+runtime.
+
+Stage 22 therefore establishes the Android application boundary required for
+future interaction work while preserving the constitutional rule that platform
+code may not invent authority and may not bypass the unified runtime path.
