@@ -1267,9 +1267,10 @@ one AndroidRuntimeGateway.
 It does not choose constitutional classifications and creates no independent
 authority.
 
-DevilActivity is a minimal Android launcher lifecycle surface only.
+At Stage 22 completion, DevilActivity remained a minimal Android launcher
+lifecycle surface only.
 
-The Activity does not currently:
+At that Stage 22 boundary, the Activity did not:
 
 - submit textual input,
 - create ConversationInput,
@@ -1295,12 +1296,12 @@ The Activity does not currently:
 - invoke text-to-speech,
 - or claim any runtime outcome.
 
-Production Android code intentionally contains no hard-coded creation of
-SchemaVersion, ContextSource, ContextTrustLevel, or ContextSecurityLevel.
+Stage 22 production Android code intentionally introduced no hard-coded creation
+of SchemaVersion, ContextSource, ContextTrustLevel, or ContextSecurityLevel.
 
-Real Android user-input submission must therefore remain unavailable until those
-constitutional values can be established through approved upstream policy and
-authority.
+The Stage 22 boundary therefore did not permit real Android user-input runtime
+submission until those constitutional values could be established through
+approved upstream policy and authority.
 
 Stage 22 provides an Android embodiment around the one Unified Devil Runtime. It
 does not create an Android-specific intelligence.
@@ -1321,3 +1322,201 @@ runtime.
 Stage 22 therefore establishes the Android application boundary required for
 future interaction work while preserving the constitutional rule that platform
 code may not invent authority and may not bypass the unified runtime path.
+
+## Stage 24 Android Conversation UI and Submission Boundary Meaning
+
+Stage 24 establishes the first bounded Android Compose conversation interaction
+surface around the existing Stage 22 Android runtime boundary.
+
+It does not create another conversation intelligence, another Brain, another
+Planner, another Memory Authority, another Security Architecture, another
+Executive, or another runtime path.
+
+The Stage 24 Android conversation presentation path is:
+
+Android launcher lifecycle
+        ↓
+DevilActivity
+        ↓
+ConversationScreen
+        ↓
+ConversationUiState
+        ↓
+ConversationInteractionCoordinator
+        ↓
+ConversationSubmissionFlowCoordinator
+        ↓
+ConversationRuntimeSubmissionCoordinator
+        ↓
+ConversationRuntimeInputMetadataProvider
+        ↓
+AndroidRuntimeInputCoordinator
+        ↓
+AndroidContextEnvelopeProvider
+        ↓
+AndroidRuntimeGateway
+        ↓
+AndroidConversationInputAdapter
+        ↓
+ConversationInput
+        ↓
+UnifiedDevilRuntime
+
+DevilApplication composes this conversation path around the same process-scoped
+AndroidRuntimeInputCoordinator and the same single UnifiedDevilRuntime
+established by Stage 22.
+
+No Stage 24 conversation component creates or owns an independent runtime.
+
+ConversationScreen is a presentation surface only.
+
+It renders ConversationUiState, reports draft changes, and reports submission
+intent to its caller. It does not invoke UnifiedDevilRuntime directly, create
+ContextEnvelope, generate TraceId, choose constitutional metadata, execute
+capabilities, persist conversation state, create logical memory, or fabricate
+runtime results or verified outcomes.
+
+ConversationUiState is bounded presentation state.
+
+It may contain:
+
+- immutable USER or RUNTIME presentation entries,
+- UI-local draft text,
+- UI-local submission state,
+- and a truthful UI-local submission notice.
+
+ConversationUiState is not conversation persistence, constitutional memory,
+execution state, or verified outcome state.
+
+ConversationEntryId identifies only one Android presentation entry.
+
+DefaultConversationEntryIdProvider may generate UUID-backed presentation
+identities, but those identities are not TraceId, TaskId, PlanId, SessionId,
+persistence identities, or proof that runtime processing occurred.
+
+ConversationInteractionCoordinator owns only bounded presentation-state
+transitions.
+
+It may:
+
+- update draft text while idle,
+- prepare one normalized USER presentation entry,
+- prevent duplicate UI submission while a submission is active,
+- attach one genuine runtime presentation after runtime submission,
+- or complete a submission attempt truthfully when required metadata was
+  unavailable.
+
+It does not choose constitutional classifications, create ContextEnvelope,
+generate TraceId, invoke UnifiedDevilRuntime directly, execute capabilities,
+persist conversation state, or create logical memory.
+
+ConversationSubmissionFlowCoordinator composes one bounded conversation
+submission attempt.
+
+It delegates:
+
+- presentation-state transitions to ConversationInteractionCoordinator,
+- UI-only entry identity to ConversationEntryIdProvider,
+- and runtime submission to ConversationRuntimeSubmissionCoordinator.
+
+It creates a RUNTIME timeline entry only when a genuine trace-backed
+ConversationRuntimePresentation exists.
+
+ConversationRuntimeSubmissionCoordinator is the Stage 24 bridge from prepared
+text toward the existing AndroidRuntimeInputCoordinator.
+
+It may invoke AndroidRuntimeInputCoordinator only after
+ConversationRuntimeInputMetadataProvider supplies one complete AVAILABLE
+ConversationRuntimeInputMetadata result.
+
+ConversationRuntimeInputMetadata preserves:
+
+- SchemaVersion,
+- ContextSource,
+- ContextTrustLevel,
+- and ContextSecurityLevel.
+
+These values remain constitutionally distinct.
+
+ContextTrustLevel describes supplied-context trust. It must not be substituted
+for SubjectTrustLevel.
+
+ContextSecurityLevel describes supplied-context sensitivity. It must not be
+derived from or substituted for SecurityStage.
+
+ConversationRuntimeInputMetadata does not authenticate a subject, prove
+ownership, establish subject trust, establish a security stage, create a
+session, enter Owner Mode, grant authorization, or permit execution.
+
+The default production
+DefaultConversationRuntimeInputMetadataProvider currently returns UNAVAILABLE.
+
+This is intentional.
+
+Stage 24 contains no approved production mechanism that establishes all metadata
+required by AndroidRuntimeInputCoordinator. The UI therefore must not hard-code
+SchemaVersion, ContextSource, ContextTrustLevel, or ContextSecurityLevel merely
+to force runtime submission.
+
+When metadata is unavailable:
+
+- one normalized USER presentation entry may remain visible,
+- no AndroidRuntimeInputCoordinator invocation occurs,
+- no ContextEnvelope is created for that attempt,
+- no runtime TraceId is fabricated,
+- no RUNTIME timeline entry is fabricated,
+- the UI returns to its idle submission state,
+- and one truthful UI-local metadata-unavailable notice may be shown.
+
+That notice is not a RuntimeResult, constitutional rejection, execution
+failure, or verified outcome.
+
+When complete metadata becomes available through an approved upstream
+mechanism, ConversationRuntimeSubmissionCoordinator may submit the prepared
+content exactly once through AndroidRuntimeInputCoordinator.
+
+AndroidRuntimeInputCoordinator then remains responsible for entering the
+existing Stage 22 Android runtime path.
+
+A genuine RuntimeResult is converted to
+ConversationRuntimePresentation without changing its meaning:
+
+- ACCEPTED means only accepted for constitutional processing,
+- DEFERRED remains deferred,
+- REJECTED remains rejected with its constitutional error.
+
+ACCEPTED does not mean capability execution occurred.
+
+ACCEPTED does not mean an outcome was verified.
+
+Stage 24 therefore connects the Android conversation UI to the bounded
+submission architecture while truthfully preventing actual runtime entry when
+required constitutional metadata is unavailable.
+
+The constitutional invariant remains:
+
+Constitution
+        ↓
+Identity
+        ↓
+Trust
+        ↓
+Authorization
+        ↓
+Understanding
+        ↓
+Decision
+        ↓
+Task
+        ↓
+Plan
+        ↓
+Capability
+        ↓
+Execution
+        ↓
+Observation
+
+No Stage 24 UI component may bypass that order, invent authority, create a
+second intelligence, or claim success without genuine runtime and verification
+evidence.
