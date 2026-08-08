@@ -11,6 +11,10 @@ package com.devil.app.conversation
  * in progress. It does not represent execution progress or verified outcome
  * state.
  *
+ * submissionNotice represents truthful UI-local information about a submission
+ * condition that occurred before runtime submission. It is not a RuntimeResult
+ * and carries no fabricated runtime TraceId.
+ *
  * This contract performs no runtime submission, persistence, memory mutation,
  * capability execution, or outcome fabrication.
  */
@@ -18,6 +22,7 @@ data class ConversationUiState(
     val entries: List<ConversationTimelineEntry> = emptyList(),
     val draft: String = "",
     val isSubmitting: Boolean = false,
+    val submissionNotice: ConversationSubmissionNotice? = null,
 ) {
     init {
         require(

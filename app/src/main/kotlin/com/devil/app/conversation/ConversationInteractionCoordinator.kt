@@ -8,8 +8,10 @@ package com.devil.app.conversation
  * - draft updates,
  * - preparation of one USER timeline entry,
  * - duplicate-submission protection,
- * - and attachment of a truthful runtime presentation after an external
- *   submission boundary has completed.
+ * - attachment of a truthful runtime presentation after an external submission
+ *   boundary has completed,
+ * - and truthful completion of a submission attempt that never entered the
+ *   runtime because required metadata was unavailable.
  *
  * It does not choose constitutional classifications, create ContextEnvelope,
  * generate TraceId, invoke AndroidRuntimeInputCoordinator, call the Unified
@@ -28,6 +30,7 @@ class ConversationInteractionCoordinator {
 
         return state.copy(
             draft = draft,
+            submissionNotice = null,
         )
     }
 
@@ -60,6 +63,7 @@ class ConversationInteractionCoordinator {
                 entries = state.entries + userEntry,
                 draft = "",
                 isSubmitting = true,
+                submissionNotice = null,
             )
 
         return ConversationSubmissionStartResult.started(
@@ -86,6 +90,21 @@ class ConversationInteractionCoordinator {
         return state.copy(
             entries = state.entries + runtimeEntry,
             isSubmitting = false,
+            submissionNotice = null,
+        )
+    }
+
+    fun completeMetadataUnavailable(
+        state: ConversationUiState,
+    ): ConversationUiState {
+        require(state.isSubmitting) {
+            "Metadata-unavailable completion requires submitting UI state."
+        }
+
+        return state.copy(
+            isSubmitting = false,
+            submissionNotice =
+                ConversationSubmissionNotice.metadataUnavailable(),
         )
     }
 }
