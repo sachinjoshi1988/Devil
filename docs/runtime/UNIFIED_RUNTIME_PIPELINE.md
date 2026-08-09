@@ -2877,3 +2877,157 @@ One Unified Devil Runtime.
 One Devil.
 
 The next planned Android responsibility remains Wake and Hands-Free.
+
+### Stage 37 Android Production Hands-Free Wiring
+
+Stage 37 composes the bounded wake and hands-free control architecture into the
+existing Android voice-input and voice-output embodiment.
+
+The production control sequence is:
+
+Hands-Free enabled
+
+→ Android RECORD_AUDIO permission check
+
+→ bounded SpeechRecognizer attempt
+
+→ recognized textual transcript
+
+→ HandsFreeProductionCoordinator
+
+→ approved wake-phrase evaluation
+
+→ attention established
+
+→ bounded spoken presentation
+
+→ resumed recognition
+
+→ Code Red recognition
+
+→ authentication handoff
+
+→ fail closed unless genuine authentication/session evidence exists.
+
+The approved Stage 37 wake phrases are:
+
+- Devil
+- Hey Devil
+- Devil, are you there?
+
+These phrases establish attention only.
+
+Wake != authentication.
+
+After a wake phrase, the bounded Stage 37 presentation is:
+
+I'm here. Say Code Red to request authentication.
+
+The system then resumes bounded recognition for the authentication-request
+phrase.
+
+The approved verbal authentication-request phrase is:
+
+Code Red
+
+Recognition of Code Red does not establish authentication.
+
+Code Red != owner identity.
+
+Code Red != authenticated session.
+
+Code Red != Owner Mode.
+
+Code Red != authorization.
+
+Code Red reaches `HandsFreeAuthenticationHandoff`.
+
+The current default production handoff remains deliberately fail-closed because
+no genuine Android authentication/session bridge has yet been established for
+this Stage 37 path.
+
+Therefore the current default path does not enter
+`HandsFreeConversationState.ACTIVE_SESSION`.
+
+Ordinary recognized speech while the hands-free state is IDLE is not submitted
+to the Unified Devil Runtime.
+
+Ordinary recognized speech while authentication is still required is not
+submitted to the Unified Devil Runtime.
+
+Only textual content permitted by an already genuinely established
+`ACTIVE_SESSION` may reach the existing voice conversation submission path.
+
+That future permitted path still uses:
+
+VoiceConversationResultCoordinator
+
+→ existing Voice Conversation Submission Flow Coordinator
+
+→ VoiceConversationRuntimeInputMetadataProvider
+
+→ AndroidRuntimeInputCoordinator
+
+→ AndroidRuntimeGateway
+
+→ one UnifiedDevilRuntime.
+
+Stage 37 therefore introduces no voice-specific Brain, runtime, planner,
+memory authority, security authority, or execution authority.
+
+`AndroidVoiceInteractionMode` distinguishes one-shot manual Stage 35 voice input
+from Stage 37 hands-free recognition lifecycle only.
+
+It grants no authority.
+
+The Android Activity owns only presentation and lifecycle orchestration:
+
+- requesting RECORD_AUDIO permission;
+- beginning or stopping bounded hands-free listening;
+- preserving the current hands-free control state;
+- speaking already-established Stage 37 control messages;
+- resuming bounded recognition after eligible spoken prompts;
+- and forwarding future authenticated conversation text through the existing
+  voice conversation path.
+
+Android RECORD_AUDIO permission remains Android operating-system permission only.
+
+Android permission != Devil authorization.
+
+The Stage 37 constitutional invariants remain:
+
+Wake
+!= Authentication.
+
+Code Red recognized
+!= Authentication succeeded.
+
+Authentication requested
+!= Session established.
+
+Session established
+!= Owner Mode.
+
+Owner Mode
+!= High-Security Confirmation.
+
+Speech recognized
+!= Understood.
+
+Understood
+!= Authorized.
+
+Authorized
+!= Executed.
+
+Executed
+!= Observed.
+
+Observed
+!= Verified.
+
+Verified
+!= Completed.
+
+Stage 37 therefore establishes bounded wake and hands-free orchestration without
+weakening the existing Devil constitutional security architecture.

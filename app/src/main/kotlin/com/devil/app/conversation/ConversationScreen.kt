@@ -21,20 +21,21 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 
 /**
- * Compose conversation presentation surface for the unified Devil conversation
- * pipeline.
+ * Compose presentation surface for the unified Devil conversation pipeline.
  *
  * Stage 24 established typed conversation presentation.
  *
- * Stage 35 added one bounded voice-input affordance.
+ * Stage 35 added bounded one-shot voice input.
  *
- * Stage 36 adds presentation state for bounded voice output.
+ * Stage 36 added bounded voice-output presentation.
  *
- * The screen itself performs neither speech recognition nor TextToSpeech.
+ * Stage 37 adds an explicit hands-free presentation control.
  *
- * It does not request Android permission, create constitutional context, invoke
- * UnifiedDevilRuntime, authenticate a speaker, generate a Devil response,
- * execute capabilities, or fabricate conversational success.
+ * The screen does not perform SpeechRecognizer work, TextToSpeech work,
+ * authentication, session establishment, runtime submission, authorization,
+ * capability execution, verification, or outcome establishment.
+ *
+ * Hands-free UI state is presentation/control state only.
  */
 @Composable
 fun ConversationScreen(
@@ -48,6 +49,9 @@ fun ConversationScreen(
     voiceInputMessage: String? = null,
     isVoiceSpeaking: Boolean = false,
     voiceOutputMessage: String? = null,
+    onHandsFreeToggle: () -> Unit = {},
+    handsFreeEnabled: Boolean = false,
+    handsFreeMessage: String? = null,
 ) {
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -90,7 +94,8 @@ fun ConversationScreen(
                 enabled =
                     !state.isSubmitting &&
                         !isVoiceListening &&
-                        !isVoiceSpeaking,
+                        !isVoiceSpeaking &&
+                        !handsFreeEnabled,
                 label = {
                     Text("Message")
                 },
@@ -109,6 +114,7 @@ fun ConversationScreen(
                     !state.isSubmitting &&
                         !isVoiceListening &&
                         !isVoiceSpeaking &&
+                        !handsFreeEnabled &&
                         state.draft.isNotBlank(),
             ) {
                 Text(
@@ -129,15 +135,57 @@ fun ConversationScreen(
                     voiceInputEnabled &&
                         !state.isSubmitting &&
                         !isVoiceListening &&
-                        !isVoiceSpeaking,
+                        !isVoiceSpeaking &&
+                        !handsFreeEnabled,
             ) {
                 Text(
                     text =
-                        if (isVoiceListening) {
+                        if (
+                            isVoiceListening &&
+                            !handsFreeEnabled
+                        ) {
                             "Listening"
                         } else {
                             "Speak"
                         },
+                )
+            }
+
+            Button(
+                onClick = onHandsFreeToggle,
+                modifier =
+                    Modifier.fillMaxWidth(),
+                enabled =
+                    !state.isSubmitting &&
+                        !isVoiceSpeaking &&
+                        (
+                            !isVoiceListening ||
+                                handsFreeEnabled
+                        ),
+            ) {
+                Text(
+                    text =
+                        if (handsFreeEnabled) {
+                            "Stop Hands-Free"
+                        } else {
+                            "Hands-Free"
+                        },
+                )
+            }
+
+            if (handsFreeEnabled) {
+                Text(
+                    text = "Hands-Free active",
+                    style =
+                        MaterialTheme.typography.bodySmall,
+                )
+            }
+
+            handsFreeMessage?.let { message ->
+                Text(
+                    text = message,
+                    style =
+                        MaterialTheme.typography.bodySmall,
                 )
             }
 

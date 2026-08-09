@@ -29,6 +29,7 @@ import com.devil.app.verification.AndroidVerificationAdapter
 import com.devil.app.verification.DefaultAndroidVerificationAdapter
 import com.devil.app.voice.AndroidVoiceOutputSource
 import com.devil.app.voice.DefaultAndroidVoiceOutputSource
+import com.devil.app.voice.HandsFreeProductionCoordinator
 import com.devil.app.voice.VoiceConversationOutputCoordinator
 import com.devil.app.voice.VoiceConversationResultCoordinator
 import com.devil.core.runtime.DefaultUnifiedDevilRuntime
@@ -40,44 +41,40 @@ import com.devil.core.runtime.UnifiedDevilRuntime
  * The Android application owns one process-scoped reference to the single
  * UnifiedDevilRuntime and bounded Android embodiment adapters around it.
  *
- * Stage 24 established the Android conversation-submission presentation path.
- *
- * Stage 27 established the Android Capability Registry boundary.
- *
+ * Stage 24 established Android conversation presentation.
+ * Stage 27 established Android Capability Registry.
  * Stage 28 established capability availability and health.
- *
- * Stage 29 established Android runtime-permission assessment.
- *
- * Stage 30 established the first safe Android execution adapter.
- *
- * Stage 31 established Android execution observation.
- *
+ * Stage 29 established Android permission assessment.
+ * Stage 30 established bounded Android execution.
+ * Stage 31 established Android observation.
  * Stage 32 established Android verification.
+ * Stage 33 established Android Outcome embodiment.
+ * Stage 34 established typed-text runtime entry.
+ * Stage 35 established bounded Android voice input.
+ * Stage 36 established bounded Android voice output.
  *
- * Stage 33 established the Android Outcome embodiment boundary.
+ * Stage 37 adds wake and hands-free Android orchestration around those existing
+ * input and output boundaries.
  *
- * Stage 34 established production typed-text runtime entry.
+ * Stage 37 does not create another runtime, another Brain, another Conversation
+ * Domain, or another Security Authority.
  *
- * Stage 35 adds voice-derived textual input while preserving the same
- * Conversation Domain and Unified Devil Runtime.
+ * Approved wake phrases establish attention only.
  *
- * Stage 36 adds bounded Android voice output for already-established runtime
- * presentation truth.
+ * Wake != authentication.
  *
- * Voice input is another bounded input provenance. It is not another Devil.
+ * Recognition of "Code Red" requests the real authentication boundary only.
  *
- * Voice output is another bounded presentation embodiment. It is not another
- * Devil and does not generate conversational meaning.
+ * Code Red != authentication.
  *
  * ContextSource.VOICE does not authenticate the speaker.
  *
  * Android RECORD_AUDIO permission is Android operating-system permission only.
+ *
  * Android permission != Devil authorization.
  *
- * Spoken runtime presentation != understanding.
- * Spoken runtime presentation != execution.
- * Spoken runtime presentation != verified Outcome.
- * Spoken runtime presentation != completion.
+ * No Stage 37 composition may create ACTIVE_SESSION without genuine
+ * authentication/session evidence.
  *
  * No authority is granted and no runtime work is performed merely because the
  * Android process was created.
@@ -247,5 +244,18 @@ class DevilApplication : Application() {
             outputSource =
                 voiceOutputSource,
         )
+    }
+
+    /**
+     * Stage 37 process-scoped wake/hands-free orchestration.
+     *
+     * The default authentication handoff remains fail-closed. Therefore this
+     * coordinator cannot produce ACTIVE_SESSION in current production.
+     */
+    val handsFreeProductionCoordinator:
+        HandsFreeProductionCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        HandsFreeProductionCoordinator()
     }
 }
