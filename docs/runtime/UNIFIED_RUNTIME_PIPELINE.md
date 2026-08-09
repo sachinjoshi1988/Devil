@@ -2292,3 +2292,136 @@ Registered
 != Observed
 != Verified
 != Completed.
+
+## Stage 32 Android Verification Meaning
+
+Stage 32 establishes the bounded Android Verification foundation after Stage 31
+Android execution observation.
+
+It does not replace or bypass the constitutional Verification Authority.
+
+It establishes an Android embodiment boundary that may evaluate genuine
+AndroidObservationResult evidence without treating observation itself as proof
+that the intended outcome was achieved.
+
+The Android embodiment sequence is now:
+
+Registered Capability
+        ↓
+Capability Availability
+        ↓
+Capability Health
+        ↓
+Devil Authorization
+        ↓
+Executive Readiness
+        ↓
+Android Permission Assessment
+        ↓
+Constitutional Execution Approval
+        ↓
+Android Execution Attempt
+        ↓
+Android Observation
+        ↓
+Android Verification
+
+These states remain independent.
+
+Registered
+!= Available
+!= Authorized
+!= Ready
+!= Permission Granted
+!= Execution Approved
+!= Attempted
+!= Observed
+!= Verified
+!= Completed.
+
+AndroidVerificationAdapter accepts one bounded AndroidObservationResult.
+
+A DEFERRED observation produces a DEFERRED verification result without invoking
+the Android verification source.
+
+A FAILED observation preserves its matching operational error.
+
+Only an OBSERVED result containing genuine AndroidObservationEvidence may
+approach AndroidVerificationSource.
+
+AndroidObservationStatus.OBSERVED is not itself verification evidence.
+
+DefaultAndroidVerificationAdapter therefore does not reinterpret OBSERVED as
+VERIFIED.
+
+AndroidVerificationEvidence may preserve only what an approved verification
+mechanism genuinely established for the same CapabilityId.
+
+AndroidVerificationStatus has three bounded outcomes:
+
+- VERIFIED;
+- DEFERRED;
+- FAILED.
+
+VERIFIED means genuine Android verification evidence was produced by an approved
+verification mechanism.
+
+VERIFIED does not by itself mean:
+
+- the constitutional Outcome Authority established a final Outcome;
+- the task completed;
+- the plan completed;
+- world state was updated;
+- learning occurred;
+- logical memory was committed or persisted;
+- or the user-visible operation may be reported as successful without the later
+  constitutional stages.
+
+DEFERRED means no justified Android verification evidence was produced.
+
+FAILED means the bounded Android verification path failed operationally and
+preserves one matching error.
+
+DefaultAndroidVerificationSource currently returns DEFERRED.
+
+This is intentional.
+
+No production capability-specific Android verification mechanism has yet been
+approved, so Stage 32 must not infer verification from an execution attempt,
+Android API return value, observation description, capability health, Android
+permission, or any other indirect signal.
+
+For a genuine observed result, trace identity must remain unchanged throughout
+the Android verification boundary.
+
+Any verification evidence must refer to the same CapabilityId as the Stage 31
+observation evidence.
+
+The Android verification boundary does not:
+
+- grant Devil authorization;
+- grant Android permission;
+- establish Executive readiness;
+- approve execution;
+- perform an Android action;
+- fabricate an execution attempt;
+- fabricate observation evidence;
+- fabricate verification evidence;
+- establish the final constitutional Outcome;
+- mutate world state;
+- complete a task or plan;
+- create learning;
+- commit or persist logical memory;
+- or claim success without later constitutional evidence.
+
+Stage 32 therefore preserves the core constitutional rule:
+
+Observation is evidence about what was observed.
+
+Verification determines whether the required effect was actually established.
+
+An observation must never be silently promoted into verification.
+
+The next Android constitutional responsibility remains Outcome.
+
+Attempted != Observed != Verified != Completed.

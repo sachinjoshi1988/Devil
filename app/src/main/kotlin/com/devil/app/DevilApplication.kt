@@ -22,6 +22,8 @@ import com.devil.app.runtime.AndroidRuntimeInputCoordinator
 import com.devil.app.runtime.DefaultAndroidContextEnvelopeProvider
 import com.devil.app.runtime.DefaultAndroidRuntimeGateway
 import com.devil.app.runtime.DefaultAndroidRuntimeInputCoordinator
+import com.devil.app.verification.AndroidVerificationAdapter
+import com.devil.app.verification.DefaultAndroidVerificationAdapter
 import com.devil.core.runtime.DefaultUnifiedDevilRuntime
 import com.devil.core.runtime.UnifiedDevilRuntime
 
@@ -45,6 +47,9 @@ import com.devil.core.runtime.UnifiedDevilRuntime
  *
  * Stage 31 establishes one process-scoped Android execution-observation boundary.
  *
+ * Stage 32 establishes one process-scoped Android verification boundary after
+ * genuine Android observation evidence.
+ *
  * Registration, availability, health, Devil authorization, Executive readiness,
  * Android permission, execution approval, execution attempt, observation,
  * verification, and outcome remain constitutionally distinct.
@@ -59,9 +64,16 @@ import com.devil.core.runtime.UnifiedDevilRuntime
  * action until an explicitly registered and approved capability-to-platform
  * implementation exists.
  *
- * No capability or execution attempt is fabricated merely because Android
- * exposes an API, permission, application component, service, or hardware
- * feature.
+ * The Stage 31 default observation source truthfully defers until a genuine
+ * capability-specific Android observation mechanism exists.
+ *
+ * The Stage 32 default verification source likewise truthfully defers until an
+ * approved capability-specific verification mechanism and genuine verification
+ * evidence exist. Observation alone must never be interpreted as verification.
+ *
+ * No capability, execution attempt, observation, verification, or successful
+ * outcome is fabricated merely because Android exposes an API, permission,
+ * application component, service, or hardware feature.
  *
  * Conversation composition does not itself create conversation input,
  * constitutional context, trace identity, timestamps, decisions, plans,
@@ -105,6 +117,12 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         DefaultAndroidObservationAdapter()
+    }
+
+    val verificationAdapter: AndroidVerificationAdapter by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidVerificationAdapter()
     }
 
     val runtimeInputCoordinator: AndroidRuntimeInputCoordinator by lazy(
