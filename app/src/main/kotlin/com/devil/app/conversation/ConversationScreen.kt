@@ -26,9 +26,14 @@ import androidx.compose.ui.unit.dp
  *
  * Stage 24 established typed conversation presentation.
  *
- * Stage 35 adds one bounded voice-input affordance. The screen itself still does
- * not perform speech recognition, request Android permission, create
- * constitutional context, invoke UnifiedDevilRuntime, authenticate a speaker,
+ * Stage 35 added one bounded voice-input affordance.
+ *
+ * Stage 36 adds presentation state for bounded voice output.
+ *
+ * The screen itself performs neither speech recognition nor TextToSpeech.
+ *
+ * It does not request Android permission, create constitutional context, invoke
+ * UnifiedDevilRuntime, authenticate a speaker, generate a Devil response,
  * execute capabilities, or fabricate conversational success.
  */
 @Composable
@@ -41,6 +46,8 @@ fun ConversationScreen(
     isVoiceListening: Boolean = false,
     voiceInputEnabled: Boolean = true,
     voiceInputMessage: String? = null,
+    isVoiceSpeaking: Boolean = false,
+    voiceOutputMessage: String? = null,
 ) {
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -50,16 +57,19 @@ fun ConversationScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement =
+                Arrangement.spacedBy(12.dp),
         ) {
             Text(
                 text = "Devil",
-                style = MaterialTheme.typography.headlineMedium,
+                style =
+                    MaterialTheme.typography.headlineMedium,
             )
 
             Text(
                 text = "Conversation",
-                style = MaterialTheme.typography.titleMedium,
+                style =
+                    MaterialTheme.typography.titleMedium,
             )
 
             HorizontalDivider()
@@ -75,8 +85,12 @@ fun ConversationScreen(
             OutlinedTextField(
                 value = state.draft,
                 onValueChange = onDraftChange,
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !state.isSubmitting && !isVoiceListening,
+                modifier =
+                    Modifier.fillMaxWidth(),
+                enabled =
+                    !state.isSubmitting &&
+                        !isVoiceListening &&
+                        !isVoiceSpeaking,
                 label = {
                     Text("Message")
                 },
@@ -89,10 +103,12 @@ fun ConversationScreen(
 
             Button(
                 onClick = onSubmit,
-                modifier = Modifier.fillMaxWidth(),
+                modifier =
+                    Modifier.fillMaxWidth(),
                 enabled =
                     !state.isSubmitting &&
                         !isVoiceListening &&
+                        !isVoiceSpeaking &&
                         state.draft.isNotBlank(),
             ) {
                 Text(
@@ -107,11 +123,13 @@ fun ConversationScreen(
 
             Button(
                 onClick = onVoiceInput,
-                modifier = Modifier.fillMaxWidth(),
+                modifier =
+                    Modifier.fillMaxWidth(),
                 enabled =
                     voiceInputEnabled &&
                         !state.isSubmitting &&
-                        !isVoiceListening,
+                        !isVoiceListening &&
+                        !isVoiceSpeaking,
             ) {
                 Text(
                     text =
@@ -123,17 +141,35 @@ fun ConversationScreen(
                 )
             }
 
+            if (isVoiceSpeaking) {
+                Text(
+                    text = "Speaking",
+                    style =
+                        MaterialTheme.typography.bodySmall,
+                )
+            }
+
+            voiceOutputMessage?.let { message ->
+                Text(
+                    text = message,
+                    style =
+                        MaterialTheme.typography.bodySmall,
+                )
+            }
+
             voiceInputMessage?.let { message ->
                 Text(
                     text = message,
-                    style = MaterialTheme.typography.bodySmall,
+                    style =
+                        MaterialTheme.typography.bodySmall,
                 )
             }
 
             state.submissionNotice?.let { notice ->
                 Text(
                     text = notice.message,
-                    style = MaterialTheme.typography.bodySmall,
+                    style =
+                        MaterialTheme.typography.bodySmall,
                 )
             }
         }
@@ -151,15 +187,19 @@ private fun ConversationTimeline(
     LazyColumn(
         modifier =
             modifier.semantics {
-                contentDescription = "Conversation timeline"
+                contentDescription =
+                    "Conversation timeline"
             },
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement =
+            Arrangement.spacedBy(12.dp),
     ) {
         if (entries.isEmpty()) {
             item {
                 Text(
-                    text = "No conversation entries yet.",
-                    style = MaterialTheme.typography.bodyMedium,
+                    text =
+                        "No conversation entries yet.",
+                    style =
+                        MaterialTheme.typography.bodyMedium,
                 )
             }
         } else {
@@ -185,25 +225,33 @@ private fun ConversationTimelineRow(
     entry: ConversationTimelineEntry,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier =
+            Modifier.fillMaxWidth(),
+        verticalArrangement =
+            Arrangement.spacedBy(4.dp),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+                Modifier.fillMaxWidth(),
         ) {
             Text(
                 text =
                     when (entry.role) {
-                        ConversationEntryRole.USER -> "You"
-                        ConversationEntryRole.RUNTIME -> "Runtime"
+                        ConversationEntryRole.USER ->
+                            "You"
+
+                        ConversationEntryRole.RUNTIME ->
+                            "Runtime"
                     },
-                style = MaterialTheme.typography.labelMedium,
+                style =
+                    MaterialTheme.typography.labelMedium,
             )
         }
 
         Text(
             text = entry.content,
-            style = MaterialTheme.typography.bodyLarge,
+            style =
+                MaterialTheme.typography.bodyLarge,
         )
     }
 }

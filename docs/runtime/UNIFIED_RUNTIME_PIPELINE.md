@@ -2742,3 +2742,138 @@ One constitutional runtime.
 One Devil.
 
 The next planned Android responsibility remains Voice Output.
+
+## Stage 36 Voice Output
+
+Stage 36 establishes the first bounded Android voice-output path.
+
+Voice Output is a presentation embodiment only.
+
+It does not create another intelligence, another conversation system, another
+runtime, another Brain, another Executive, or another authority.
+
+The Stage 36 production path is:
+
+existing truthful RUNTIME conversation timeline entry
+
+→ VoiceOutputPresentationPolicy
+
+→ VoiceConversationOutputCoordinator
+
+→ AndroidVoiceOutputSource
+
+→ Android TextToSpeech
+
+→ spoken presentation.
+
+Only an existing `ConversationEntryRole.RUNTIME` timeline entry may become
+Devil voice output.
+
+A USER entry is never treated as Devil speech.
+
+Stage 36 therefore preserves:
+
+User text
+!= Devil speech.
+
+Runtime presentation
+!= generated conversational answer.
+
+Spoken presentation
+!= semantic understanding.
+
+Spoken presentation
+!= execution.
+
+Spoken presentation
+!= verification.
+
+Spoken presentation
+!= final Outcome.
+
+Spoken presentation
+!= task completion.
+
+`VoiceOutputPresentationPolicy` performs no text generation or rewriting.
+
+It merely determines whether one already-established timeline entry is eligible
+for speech output.
+
+Only RUNTIME entries are eligible.
+
+`VoiceConversationOutputCoordinator` delegates eligible existing presentation
+text to the Android voice-output source without changing that text.
+
+`DefaultAndroidVoiceOutputSource` owns the bounded Android `TextToSpeech`
+platform mechanism.
+
+Its responsibilities are limited to:
+
+- initializing Android TextToSpeech;
+- preserving the supplied text;
+- speaking that exact normalized text;
+- reporting unavailable state;
+- reporting operational failure;
+- reporting cancellation;
+- stopping speech;
+- releasing TextToSpeech resources.
+
+It does not:
+
+- invoke UnifiedDevilRuntime;
+- produce understanding;
+- make a Brain decision;
+- create a task;
+- create a plan;
+- select a capability;
+- execute a capability;
+- observe execution;
+- verify an outcome;
+- establish final Outcome;
+- update world state;
+- learn;
+- create memory;
+- persist memory;
+- authenticate a user;
+- establish subject trust;
+- grant Devil authorization;
+- or fabricate a Devil answer.
+
+Stage 36 speaks existing runtime presentation truth only.
+
+For the current default runtime, that means a genuine trace-backed DEFERRED
+presentation may be spoken as:
+
+Deferred by the Devil runtime.
+
+Speaking those words does not alter their constitutional meaning.
+
+The Stage 36 invariant is:
+
+Presented
+!= Generated
+
+!= Understood
+
+!= Decided
+
+!= Executed
+
+!= Observed
+
+!= Verified
+
+!= Outcome Established
+
+!= Completed.
+
+Typed input, voice input, visual presentation, and spoken presentation remain
+bounded embodiments around one constitutional intelligence.
+
+One Conversation Domain.
+
+One Unified Devil Runtime.
+
+One Devil.
+
+The next planned Android responsibility remains Wake and Hands-Free.

@@ -10,25 +10,35 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.devil.app.conversation.ConversationEntryRole
 import com.devil.app.conversation.ConversationScreen
+import com.devil.app.conversation.ConversationTimelineEntry
 import com.devil.app.conversation.ConversationUiState
 import com.devil.app.voice.AndroidVoiceInputListener
 import com.devil.app.voice.AndroidVoiceInputResult
 import com.devil.app.voice.AndroidVoiceInputSource
-import com.devil.app.voice.AndroidVoiceInputStatus
+import com.devil.app.voice.AndroidVoiceOutputListener
+import com.devil.app.voice.AndroidVoiceOutputResult
+import com.devil.app.voice.AndroidVoiceOutputStatus
 import com.devil.app.voice.DefaultAndroidVoiceInputSource
 
 /**
  * Android launcher surface for Devil.
  *
- * Typed and voice-derived text both enter the same conversation and Unified
- * Devil Runtime architecture.
+ * Typed text and voice-derived text enter the same Conversation Domain and
+ * Unified Devil Runtime.
  *
- * This Activity owns only Android presentation/lifecycle responsibilities around
- * microphone permission and one bounded SpeechRecognizer source.
+ * Stage 35 owns the Android presentation/lifecycle boundary around microphone
+ * permission and bounded speech recognition.
  *
- * Microphone permission does not authenticate a speaker and does not grant Devil
- * authorization.
+ * Stage 36 may speak only already-established RUNTIME presentation entries.
+ *
+ * Voice output does not generate a Devil answer, reinterpret runtime status,
+ * establish execution success, or establish final Outcome.
+ *
+ * Android microphone permission != Devil authorization.
+ *
+ * Spoken runtime presentation != task completion.
  */
 class DevilActivity : ComponentActivity() {
 
@@ -43,7 +53,14 @@ class DevilActivity : ComponentActivity() {
     private var voiceInputMessage by
         mutableStateOf<String?>(null)
 
-    private lateinit var voiceInputSource: AndroidVoiceInputSource
+    private var isVoiceSpeaking by
+        mutableStateOf(false)
+
+    private var voiceOutputMessage by
+        mutableStateOf<String?>(null)
+
+    private lateinit var voiceInputSource:
+        AndroidVoiceInputSource
 
     private val recordAudioPermissionLauncher =
         registerForActivityResult(
@@ -63,7 +80,8 @@ class DevilActivity : ComponentActivity() {
 
             override fun onReady() {
                 isVoiceListening = true
-                voiceInputMessage = "Listening…"
+                voiceInputMessage =
+                    "Listening…"
             }
 
             override fun onResult(
@@ -74,71 +92,127 @@ class DevilActivity : ComponentActivity() {
                 val devilApplication =
                     application as DevilApplication
 
+                val previousEntryCount =
+                    conversationState.entries.size
+
                 val handled =
                     devilApplication
                         .voiceConversationResultCoordinator
                         .handle(
-                            state = conversationState,
-                            result = result,
+                            state =
+                                conversationState,
+                            result =
+                                result,
                         )
 
-                conversationState = handled.state
-                voiceInputMessage = handled.message
+                conversationState =
+                    handled.state
+
+                voiceInputMessage =
+                    handled.message
+
+                speakNewestRuntimeEntry(
+                    previousEntryCount =
+                        previousEntryCount,
+                )
             }
         }
 
     override fun onCreate(
         savedInstanceState: Bundle?,
     ) {
-        super.onCreate(savedInstanceState)
+        super.onCreate(
+            savedInstanceState,
+        )
 
         val devilApplication =
             application as DevilApplication
 
         voiceInputSource =
             DefaultAndroidVoiceInputSource(
-                context = applicationContext,
+                context =
+                    applicationContext,
             )
 
         setContent {
             MaterialTheme {
                 ConversationScreen(
-                    state = conversationState,
-                    onDraftChange = { updatedDraft ->
+                    state =
+                        conversationState,
+                    onDraftChange = {
+                        updatedDraft ->
                         conversationState =
                             devilApplication
                                 .conversationInteractionCoordinator
                                 .updateDraft(
-                                    state = conversationState,
-                                    draft = updatedDraft,
+                                    state =
+                                        conversationState,
+                                    draft =
+                                        updatedDraft,
                                 )
 
                         voiceInputMessage = null
+                        voiceOutputMessage = null
                     },
                     onSubmit = {
+                        val previousEntryCount =
+                            conversationState
+                                .entries
+                                .size
+
                         conversationState =
                             devilApplication
                                 .conversationSubmissionFlowCoordinator
                                 .submit(
-                                    state = conversationState,
+                                    state =
+                                        conversationState,
                                 )
 
                         voiceInputMessage = null
+                        voiceOutputMessage = null
+
+                        speakNewestRuntimeEntry(
+                            previousEntryCount =
+                                previousEntryCount,
+                        )
                     },
                     onVoiceInput = {
                         requestVoiceInput()
                     },
-                    isVoiceListening = isVoiceListening,
-                    voiceInputEnabled = true,
-                    voiceInputMessage = voiceInputMessage,
+                    isVoiceListening =
+                        isVoiceListening,
+                    voiceInputEnabled =
+                        !isVoiceSpeaking,
+                    voiceInputMessage =
+                        voiceInputMessage,
+                    isVoiceSpeaking =
+                        isVoiceSpeaking,
+                    voiceOutputMessage =
+                        voiceOutputMessage,
                 )
             }
         }
     }
 
     override fun onDestroy() {
-        if (::voiceInputSource.isInitialized) {
+        if (
+            ::voiceInputSource
+                .isInitialized
+        ) {
             voiceInputSource.release()
+        }
+
+        val devilApplication =
+            application as DevilApplication
+
+        if (
+            devilApplication
+                .voiceOutputSource
+                .let { true }
+        ) {
+            devilApplication
+                .voiceConversationOutputCoordinator
+                .release()
         }
 
         super.onDestroy()
@@ -148,9 +222,17 @@ class DevilActivity : ComponentActivity() {
         voiceInputMessage = null
 
         if (
+            isVoiceListening ||
+            isVoiceSpeaking
+        ) {
+            return
+        }
+
+        if (
             checkSelfPermission(
                 Manifest.permission.RECORD_AUDIO,
-            ) == PackageManager.PERMISSION_GRANTED
+            ) ==
+            PackageManager.PERMISSION_GRANTED
         ) {
             startVoiceInput()
         } else {
@@ -161,29 +243,106 @@ class DevilActivity : ComponentActivity() {
     }
 
     private fun startVoiceInput() {
-        if (isVoiceListening) {
+        if (
+            isVoiceListening ||
+            isVoiceSpeaking
+        ) {
             return
         }
 
         try {
             isVoiceListening = true
-            voiceInputMessage = "Starting voice input…"
+
+            voiceInputMessage =
+                "Starting voice input…"
 
             voiceInputSource.startListening(
-                listener = voiceInputListener,
+                listener =
+                    voiceInputListener,
             )
         } catch (
             throwable: RuntimeException,
         ) {
             isVoiceListening = false
-            voiceInputMessage =
-                "Voice input is unavailable."
-        } catch (
-            throwable: IllegalStateException,
-        ) {
-            isVoiceListening = false
+
             voiceInputMessage =
                 "Voice input is unavailable."
         }
+    }
+
+    private fun speakNewestRuntimeEntry(
+        previousEntryCount: Int,
+    ) {
+        val newEntries =
+            conversationState
+                .entries
+                .drop(
+                    previousEntryCount,
+                )
+
+        val runtimeEntry =
+            newEntries.lastOrNull {
+                it.role ==
+                    ConversationEntryRole.RUNTIME
+            }
+
+        if (runtimeEntry != null) {
+            speakRuntimeEntry(
+                entry =
+                    runtimeEntry,
+            )
+        }
+    }
+
+    private fun speakRuntimeEntry(
+        entry: ConversationTimelineEntry,
+    ) {
+        if (isVoiceSpeaking) {
+            return
+        }
+
+        val devilApplication =
+            application as DevilApplication
+
+        isVoiceSpeaking = true
+
+        voiceOutputMessage =
+            "Speaking runtime status…"
+
+        devilApplication
+            .voiceConversationOutputCoordinator
+            .speak(
+                entry =
+                    entry,
+                listener =
+                    AndroidVoiceOutputListener {
+                        result ->
+                        handleVoiceOutputResult(
+                            result =
+                                result,
+                        )
+                    },
+            )
+    }
+
+    private fun handleVoiceOutputResult(
+        result: AndroidVoiceOutputResult,
+    ) {
+        isVoiceSpeaking = false
+
+        voiceOutputMessage =
+            when (result.status) {
+                AndroidVoiceOutputStatus.SPOKEN ->
+                    null
+
+                AndroidVoiceOutputStatus.UNAVAILABLE ->
+                    "Voice output is unavailable."
+
+                AndroidVoiceOutputStatus.CANCELLED ->
+                    "Voice output cancelled."
+
+                AndroidVoiceOutputStatus.FAILED ->
+                    "Voice output failed."
+            }
     }
 }

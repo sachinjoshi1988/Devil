@@ -27,6 +27,9 @@ import com.devil.app.runtime.DefaultAndroidRuntimeGateway
 import com.devil.app.runtime.DefaultAndroidRuntimeInputCoordinator
 import com.devil.app.verification.AndroidVerificationAdapter
 import com.devil.app.verification.DefaultAndroidVerificationAdapter
+import com.devil.app.voice.AndroidVoiceOutputSource
+import com.devil.app.voice.DefaultAndroidVoiceOutputSource
+import com.devil.app.voice.VoiceConversationOutputCoordinator
 import com.devil.app.voice.VoiceConversationResultCoordinator
 import com.devil.core.runtime.DefaultUnifiedDevilRuntime
 import com.devil.core.runtime.UnifiedDevilRuntime
@@ -37,18 +40,44 @@ import com.devil.core.runtime.UnifiedDevilRuntime
  * The Android application owns one process-scoped reference to the single
  * UnifiedDevilRuntime and bounded Android embodiment adapters around it.
  *
- * Stage 34 establishes typed text entry into that runtime.
+ * Stage 24 established the Android conversation-submission presentation path.
+ *
+ * Stage 27 established the Android Capability Registry boundary.
+ *
+ * Stage 28 established capability availability and health.
+ *
+ * Stage 29 established Android runtime-permission assessment.
+ *
+ * Stage 30 established the first safe Android execution adapter.
+ *
+ * Stage 31 established Android execution observation.
+ *
+ * Stage 32 established Android verification.
+ *
+ * Stage 33 established the Android Outcome embodiment boundary.
+ *
+ * Stage 34 established production typed-text runtime entry.
  *
  * Stage 35 adds voice-derived textual input while preserving the same
- * conversation, context, runtime, security, decision, planning, execution,
- * verification, outcome, learning, and memory architecture.
+ * Conversation Domain and Unified Devil Runtime.
  *
- * Voice is another bounded input provenance. It is not another Devil.
+ * Stage 36 adds bounded Android voice output for already-established runtime
+ * presentation truth.
+ *
+ * Voice input is another bounded input provenance. It is not another Devil.
+ *
+ * Voice output is another bounded presentation embodiment. It is not another
+ * Devil and does not generate conversational meaning.
  *
  * ContextSource.VOICE does not authenticate the speaker.
  *
  * Android RECORD_AUDIO permission is Android operating-system permission only.
- * It is not Devil authorization.
+ * Android permission != Devil authorization.
+ *
+ * Spoken runtime presentation != understanding.
+ * Spoken runtime presentation != execution.
+ * Spoken runtime presentation != verified Outcome.
+ * Spoken runtime presentation != completion.
  *
  * No authority is granted and no runtime work is performed merely because the
  * Android process was created.
@@ -199,6 +228,24 @@ class DevilApplication : Application() {
                 conversationInteractionCoordinator,
             submissionFlowCoordinator =
                 voiceConversationSubmissionFlowCoordinator,
+        )
+    }
+
+    val voiceOutputSource: AndroidVoiceOutputSource by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidVoiceOutputSource(
+            context = applicationContext,
+        )
+    }
+
+    val voiceConversationOutputCoordinator:
+        VoiceConversationOutputCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        VoiceConversationOutputCoordinator(
+            outputSource =
+                voiceOutputSource,
         )
     }
 }
