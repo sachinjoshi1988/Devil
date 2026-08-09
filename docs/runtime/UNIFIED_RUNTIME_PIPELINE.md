@@ -1925,3 +1925,129 @@ exist.
 Stage 28 therefore establishes capability availability and health semantics
 without collapsing registration, availability, authorization, readiness,
 permission, and execution into one state.
+
+## Stage 29 Android Permission Authority Adapter Meaning
+
+Stage 29 establishes the bounded Android operating-system permission assessment
+boundary for registered capabilities.
+
+It does not create another constitutional Authorization Authority and it does
+not move Android permission into the constitutional authorization domain.
+
+The invariant is:
+
+Registered
+        !=
+Available
+        !=
+Healthy
+        !=
+Devil Authorized
+        !=
+Android Permission Granted
+        !=
+Executive Ready
+        !=
+Executed
+
+Android permission and Devil authorization answer different questions.
+
+Devil constitutional authorization determines whether supplied context may
+continue through the governed Devil authority chain.
+
+Android permission describes whether the Android operating system currently
+allows this application to use one explicitly required protected platform
+operation.
+
+Therefore:
+
+Android permission granted != Devil authorization granted.
+
+Android permission denied != constitutional authorization denied.
+
+Android permission state must never create Owner Mode, authenticate a subject,
+change SecurityStage, create a session, authorize a capability, establish
+Executive readiness, approve execution, claim execution occurred, or establish
+a verified outcome.
+
+Stage 29 introduces:
+
+- AndroidCapabilityPermissionRequirementSource,
+- DefaultAndroidCapabilityPermissionRequirementSource,
+- AndroidPermissionGrantChecker,
+- DefaultAndroidPermissionGrantChecker,
+- AndroidPermissionAuthorityAdapter,
+- DefaultAndroidPermissionAuthorityAdapter,
+- AndroidPermissionAssessment,
+- and AndroidPermissionAssessmentStatus.
+
+AndroidCapabilityPermissionRequirementSource owns only the bounded mapping from
+an already registered CapabilityContract to its explicitly approved Android
+runtime-permission requirements.
+
+A null requirement result means that no approved capability-to-permission
+mapping is available.
+
+An empty requirement list means approved policy explicitly establishes that no
+Android runtime permission is required.
+
+A non-empty requirement list contains only the Android runtime permissions that
+must be inspected.
+
+The default Stage 29 requirement source returns null.
+
+This is intentional.
+
+No production Android capability currently has an approved
+capability-to-runtime-permission mapping. Stage 29 therefore does not infer
+permissions from capability category, capability name, Android APIs, manifest
+entries, hardware features, services, planned functionality, or future stages.
+
+DefaultAndroidPermissionGrantChecker uses Android Context.checkSelfPermission
+only after an explicit permission requirement exists.
+
+It performs read-only operating-system state inspection.
+
+It does not call requestPermissions, mutate Android permission state, or create
+constitutional authority.
+
+DefaultAndroidPermissionAuthorityAdapter maps bounded evidence as follows:
+
+- unknown capability-to-permission mapping -> UNAVAILABLE;
+- approved empty permission requirement -> NOT_REQUIRED;
+- all explicit required permissions granted -> GRANTED;
+- one or more explicit required permissions denied -> DENIED.
+
+GRANTED means only that the Android operating system currently reports all
+explicitly required runtime permissions as granted.
+
+DENIED means only that at least one explicitly required Android runtime
+permission is not currently granted.
+
+NOT_REQUIRED means only that approved Android permission policy explicitly says
+the capability requires no Android runtime permission.
+
+UNAVAILABLE means no justified Android permission assessment can currently be
+made because an approved capability-to-permission mapping is unavailable.
+
+No Stage 29 component requests permissions from the user.
+
+No new Android manifest permission is introduced merely to make the Stage 29
+boundary appear functional.
+
+Later capability stages may declare and request Android permissions only when a
+real capability implementation, approved requirement mapping, proper user
+interaction, constitutional authorization path, and bounded execution adapter
+justify them.
+
+DevilApplication owns one process-scoped AndroidPermissionAuthorityAdapter
+alongside the existing process-scoped UnifiedDevilRuntime, Android Capability
+Registry, and capability state provider.
+
+The adapter is an Android platform boundary around the one governed Devil
+architecture. It is not a second authorization system.
+
+Stage 29 therefore establishes Android permission inspection while preserving
+the constitutional separation:
+
+Android permission != Devil authorization.
