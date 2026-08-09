@@ -9,6 +9,10 @@ import com.devil.core.runtime.constitution.ConstitutionValidationAuthority
 import com.devil.core.runtime.constitution.ConstitutionValidationStatus
 import com.devil.core.runtime.constitution.DefaultConstitutionValidationAuthority
 import com.devil.core.runtime.conversation.ConversationIntakeAuthority
+import com.devil.core.runtime.conversation.ConversationPersistenceAuthority
+import com.devil.core.runtime.conversation.ConversationRecordAuthority
+import com.devil.core.runtime.conversation.DefaultConversationPersistenceAuthority
+import com.devil.core.runtime.conversation.DefaultConversationRecordAuthority
 import com.devil.core.runtime.conversation.DefaultConversationIntakeAuthority
 import com.devil.core.runtime.decision.DecisionAuthority
 import com.devil.core.runtime.decision.DefaultDecisionAuthority
@@ -50,7 +54,7 @@ import com.devil.core.runtime.worldmodel.WorldModelUpdateAuthority
  * Default constitutional runtime coordinator.
  *
  * This implementation preserves one ordered runtime path from constitutional
- * validation through bounded logical-memory persistence evaluation. Conversation
+ * validation through bounded logical-memory persistence evaluation. Bounded conversation-record formation and conversation-persistence evaluation remain separate conversation-domain responsibilities. Conversation
  * intake is positioned after authorization and before understanding.
  *
  * The supplied ConversationInput owns the authoritative constitutional context.
@@ -78,6 +82,12 @@ class DefaultUnifiedDevilRuntime(
     private val conversationIntakeAuthority:
         ConversationIntakeAuthority =
         DefaultConversationIntakeAuthority(),
+    private val conversationRecordAuthority:
+        ConversationRecordAuthority =
+        DefaultConversationRecordAuthority(),
+    private val conversationPersistenceAuthority:
+        ConversationPersistenceAuthority =
+        DefaultConversationPersistenceAuthority(),
     private val understandingAuthority:
         UnderstandingAuthority =
         DefaultUnderstandingAuthority(),
@@ -175,6 +185,24 @@ class DefaultUnifiedDevilRuntime(
                 context.traceId,
         ) {
             "Context and conversation-intake result must use the same trace identity."
+        }
+
+        val conversationRecord =
+            conversationRecordAuthority.record(
+                conversationIntake = conversationIntake,
+            )
+
+        require(conversationRecord.traceId == context.traceId) {
+            "Context and conversation-record result must use the same trace identity."
+        }
+
+        val conversationPersistence =
+            conversationPersistenceAuthority.evaluatePersistence(
+                conversationRecord = conversationRecord,
+            )
+
+        require(conversationPersistence.traceId == context.traceId) {
+            "Context and conversation persistence result must use the same trace identity."
         }
 
         val understanding =

@@ -1520,3 +1520,136 @@ Observation
 No Stage 24 UI component may bypass that order, invent authority, create a
 second intelligence, or claim success without genuine runtime and verification
 evidence.
+
+## Stage 25 Conversation Persistence Foundation
+
+Stage 25 establishes bounded conversation continuity and conversation-persistence
+contracts around the single Unified Devil Runtime.
+
+It does not create another Brain, another runtime, another Memory Authority, or
+an Android-specific conversation intelligence.
+
+The bounded Stage 25 conversation-domain path is:
+
+ConversationInput
+        ↓
+Conversation Intake
+        ↓
+ConversationRecordRequest
+        ↓
+ConversationIdentityProvider
+        ↓
+ConversationRecord
+        ↓
+ConversationPersistenceRequest
+        ↓
+ConversationPersistenceEvaluator
+        ↓
+ConversationPersistenceResult
+
+ConversationId and TraceId remain constitutionally distinct.
+
+ConversationId identifies bounded conversation continuity.
+
+TraceId identifies one constitutional runtime flow.
+
+Neither identity may be substituted for the other.
+
+ConversationRecord preserves one existing ConversationIntakeResult under one
+genuine ConversationId.
+
+Producing a ConversationRecord does not mean conversation state was persisted,
+restored, durably stored, ordered across turns, converted into logical memory,
+executed, or verified.
+
+DefaultConversationIdentityProvider does not fabricate conversation identity.
+
+Until an approved production conversation-identity mechanism exists, the default
+provider returns UNAVAILABLE and DefaultConversationRecordAuthority therefore
+returns DEFERRED.
+
+ConversationPersistenceRequest preserves one existing ConversationRecord for
+later controlled persistence evaluation.
+
+The request itself performs no storage operation.
+
+DefaultConversationPersistenceEvaluator does not fabricate persistence
+eligibility.
+
+Until an approved production conversation-persistence policy, storage
+destination, encryption policy, retention policy, deletion policy, restoration
+mechanism, evidence source, and authorized durable store exist, the default
+evaluator returns UNAVAILABLE.
+
+ConversationPersistenceStatus.PERSISTABLE means only that genuine constitutional
+persistence eligibility was established.
+
+It does not mean persistence actually occurred.
+
+Conversation persistence is distinct from constitutional logical memory.
+
+The conversation-persistence authority:
+
+- is not the Memory Authority,
+- does not create logical memory,
+- does not commit logical memory,
+- does not bypass Memory Authority,
+- does not grant authorization,
+- does not execute capabilities,
+- and does not establish verified outcomes.
+
+Inside DefaultUnifiedDevilRuntime, bounded conversation-record formation and
+conversation-persistence evaluation occur after Conversation Intake.
+
+The constitutional processing path continues from the established Conversation
+Intake into Understanding.
+
+Conversation-persistence availability is therefore not used as permission to
+continue constitutional reasoning and is not used as proof of execution or
+success.
+
+The constitutional chain remains:
+
+Constitution
+        ↓
+Identity
+        ↓
+Trust
+        ↓
+Authorization
+        ↓
+Understanding
+        ↓
+Decision
+        ↓
+Task
+        ↓
+Plan
+        ↓
+Capability
+        ↓
+Execution
+        ↓
+Observation
+        ↓
+Verification
+        ↓
+Outcome
+        ↓
+World Model Update
+        ↓
+Learning
+        ↓
+Memory Proposal
+        ↓
+Memory Authority
+        ↓
+Memory Commitment
+        ↓
+Memory Persistence
+
+Stage 25 conversation persistence remains a bounded conversation-domain
+responsibility around that single constitutionally governed intelligence.
+
+No Stage 25 component may fabricate conversation identity, persistence
+eligibility, durable storage, logical memory, execution, or verified success.
