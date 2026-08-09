@@ -14,6 +14,8 @@ import com.devil.app.conversation.DefaultConversationEntryIdProvider
 import com.devil.app.conversation.DefaultConversationRuntimeInputMetadataProvider
 import com.devil.app.conversation.DefaultConversationRuntimeSubmissionCoordinator
 import com.devil.app.conversation.DefaultConversationSubmissionFlowCoordinator
+import com.devil.app.execution.AndroidExecutionAdapter
+import com.devil.app.execution.DefaultAndroidExecutionAdapter
 import com.devil.app.runtime.AndroidRuntimeInputCoordinator
 import com.devil.app.runtime.DefaultAndroidContextEnvelopeProvider
 import com.devil.app.runtime.DefaultAndroidRuntimeGateway
@@ -25,29 +27,37 @@ import com.devil.core.runtime.UnifiedDevilRuntime
  * Android process bootstrap for Devil.
  *
  * The Android application owns one process-scoped reference to the single
- * UnifiedDevilRuntime and one bounded AndroidRuntimeInputCoordinator that
- * delegates all constitutional processing into that same runtime instance.
+ * UnifiedDevilRuntime and bounded Android embodiment adapters around it.
  *
- * Stage 24 composes the Android conversation-submission presentation path
- * around that existing runtime boundary.
+ * Stage 24 composes the Android conversation-submission presentation path.
  *
  * Stage 27 adds one process-scoped Android Capability Registry boundary.
  *
  * Stage 28 adds one process-scoped Android capability availability-and-health
  * boundary around already registered CapabilityContract values.
  *
- * Registration, availability, health, authorization, Executive readiness,
- * Android permission, and execution remain constitutionally distinct.
+ * Stage 29 establishes the bounded Android runtime-permission assessment
+ * boundary.
+ *
+ * Stage 30 establishes one process-scoped first-safe-execution adapter boundary.
+ *
+ * Registration, availability, health, Devil authorization, Executive readiness,
+ * Android permission, execution approval, execution attempt, observation,
+ * verification, and outcome remain constitutionally distinct.
  *
  * CapabilityHealthState.READY is capability health only. It is not Executive
  * readiness and grants no execution authority.
  *
- * The default Android registration source contains no capabilities, and the
- * default Stage 28 availability and health sources remain UNAVAILABLE until
- * genuine production evidence exists.
+ * Android permission is operating-system state only. It is not Devil
+ * authorization.
  *
- * No capability is fabricated merely because Android exposes an API,
- * permission, application component, service, or hardware feature.
+ * The Stage 30 default execution performer deliberately performs no platform
+ * action until an explicitly registered and approved capability-to-platform
+ * implementation exists.
+ *
+ * No capability or execution attempt is fabricated merely because Android
+ * exposes an API, permission, application component, service, or hardware
+ * feature.
  *
  * Conversation composition does not itself create conversation input,
  * constitutional context, trace identity, timestamps, decisions, plans,
@@ -79,6 +89,12 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         DefaultAndroidCapabilityStateProvider()
+    }
+
+    val executionAdapter: AndroidExecutionAdapter by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidExecutionAdapter()
     }
 
     val runtimeInputCoordinator: AndroidRuntimeInputCoordinator by lazy(
