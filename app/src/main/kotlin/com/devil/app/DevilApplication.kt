@@ -2,7 +2,9 @@ package com.devil.app
 
 import android.app.Application
 import com.devil.app.capability.AndroidCapabilityRegistry
+import com.devil.app.capability.AndroidCapabilityStateProvider
 import com.devil.app.capability.DefaultAndroidCapabilityRegistry
+import com.devil.app.capability.DefaultAndroidCapabilityStateProvider
 import com.devil.app.conversation.ConversationEntryIdProvider
 import com.devil.app.conversation.ConversationInteractionCoordinator
 import com.devil.app.conversation.ConversationRuntimeInputMetadataProvider
@@ -26,19 +28,26 @@ import com.devil.core.runtime.UnifiedDevilRuntime
  * UnifiedDevilRuntime and one bounded AndroidRuntimeInputCoordinator that
  * delegates all constitutional processing into that same runtime instance.
  *
- * Stage 24 also composes the Android conversation-submission presentation path
+ * Stage 24 composes the Android conversation-submission presentation path
  * around that existing runtime boundary.
  *
  * Stage 27 adds one process-scoped Android Capability Registry boundary.
  *
- * The registry exposes only explicit CapabilityContract registrations. It does
- * not establish capability availability, health, readiness, Android permission,
- * Devil authorization, execution permission, execution success, observation,
- * verification, or outcome.
+ * Stage 28 adds one process-scoped Android capability availability-and-health
+ * boundary around already registered CapabilityContract values.
  *
- * The default Android registration source currently contains no capabilities.
- * No capability is fabricated merely because Android exposes an API, permission,
- * application component, service, or hardware feature.
+ * Registration, availability, health, authorization, Executive readiness,
+ * Android permission, and execution remain constitutionally distinct.
+ *
+ * CapabilityHealthState.READY is capability health only. It is not Executive
+ * readiness and grants no execution authority.
+ *
+ * The default Android registration source contains no capabilities, and the
+ * default Stage 28 availability and health sources remain UNAVAILABLE until
+ * genuine production evidence exists.
+ *
+ * No capability is fabricated merely because Android exposes an API,
+ * permission, application component, service, or hardware feature.
  *
  * Conversation composition does not itself create conversation input,
  * constitutional context, trace identity, timestamps, decisions, plans,
@@ -64,6 +73,12 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         DefaultAndroidCapabilityRegistry()
+    }
+
+    val capabilityStateProvider: AndroidCapabilityStateProvider by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidCapabilityStateProvider()
     }
 
     val runtimeInputCoordinator: AndroidRuntimeInputCoordinator by lazy(

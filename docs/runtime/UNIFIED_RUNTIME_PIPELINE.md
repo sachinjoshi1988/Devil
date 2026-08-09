@@ -1815,3 +1815,113 @@ Observed
 Completed / Failed
 
 No later lifecycle state may be inferred merely from registration.
+
+## Stage 28 Android Capability Availability and Health Meaning
+
+Stage 28 establishes the bounded Android Capability Availability and Health
+Foundation around the explicit capability registrations established by Stage 27.
+
+Stage 28 does not register capabilities.
+
+It does not select capabilities.
+
+It does not grant Devil authorization.
+
+It does not determine Android permission.
+
+It does not establish Executive readiness.
+
+It does not prepare, activate, execute, observe, verify, complete, or fail
+capability work.
+
+The architectural distinction remains:
+
+Registered
+        !=
+Available
+        !=
+Authorized
+        !=
+Ready
+        !=
+Executed
+
+CapabilityAvailabilityState provides the bounded availability vocabulary:
+
+- AVAILABLE
+- UNAVAILABLE
+
+AVAILABLE requires genuine capability-availability evidence.
+
+Registration alone is not availability.
+
+The presence of an Android API, hardware feature, application component,
+service, manifest declaration, or permission does not by itself prove
+availability.
+
+CapabilityHealthState provides the bounded health vocabulary:
+
+- INITIALIZING
+- READY
+- BUSY
+- PAUSED
+- DEGRADED
+- UNAVAILABLE
+- RECOVERING
+- RETIRED
+
+Capability health is constitutionally distinct from availability.
+
+CapabilityHealthState.READY means only that capability health is READY.
+
+It does not mean ExecutiveReadinessResult is READY.
+
+It does not grant authorization.
+
+It does not prove Android permission.
+
+It does not permit execution.
+
+AndroidCapabilityState preserves:
+
+- one existing registered CapabilityContract,
+- one CapabilityAvailabilityState,
+- one CapabilityHealthState.
+
+AndroidCapabilityState does not mutate or reinterpret capability identity or
+constitutional purpose.
+
+AndroidCapabilityAvailabilitySource owns only bounded Android availability
+evidence.
+
+AndroidCapabilityHealthSource owns only bounded Android health evidence.
+
+DefaultAndroidCapabilityAvailabilitySource currently returns UNAVAILABLE.
+
+DefaultAndroidCapabilityHealthSource currently returns UNAVAILABLE.
+
+This is intentional.
+
+No production Android capability implementation currently supplies approved
+availability or health evidence, so Stage 28 must not fabricate AVAILABLE or
+READY merely to advance the runtime.
+
+DefaultAndroidCapabilityStateProvider coordinates those two bounded sources for
+one already registered capability.
+
+The provider does not inspect operating-system permission and does not activate
+or execute the capability.
+
+DevilApplication owns one process-scoped AndroidCapabilityStateProvider in
+addition to the Stage 27 AndroidCapabilityRegistry.
+
+This composition does not create another Capability Authority or another
+runtime.
+
+Later stages may replace the default unavailable sources with genuine bounded
+Android capability evidence mechanisms when those implementations actually
+exist.
+
+Stage 28 therefore establishes capability availability and health semantics
+without collapsing registration, availability, authorization, readiness,
+permission, and execution into one state.
