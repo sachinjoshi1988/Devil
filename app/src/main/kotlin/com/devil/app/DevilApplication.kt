@@ -18,6 +18,8 @@ import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAdapter
 import com.devil.app.observation.AndroidObservationAdapter
 import com.devil.app.observation.DefaultAndroidObservationAdapter
+import com.devil.app.outcome.AndroidOutcomeAdapter
+import com.devil.app.outcome.DefaultAndroidOutcomeAdapter
 import com.devil.app.runtime.AndroidRuntimeInputCoordinator
 import com.devil.app.runtime.DefaultAndroidContextEnvelopeProvider
 import com.devil.app.runtime.DefaultAndroidRuntimeGateway
@@ -123,6 +125,12 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         DefaultAndroidVerificationAdapter()
+    }
+
+    val outcomeAdapter: AndroidOutcomeAdapter by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidOutcomeAdapter()
     }
 
     val runtimeInputCoordinator: AndroidRuntimeInputCoordinator by lazy(
