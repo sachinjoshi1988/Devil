@@ -1,6 +1,8 @@
 package com.devil.app
 
 import android.app.Application
+import com.devil.app.capability.AndroidCapabilityRegistry
+import com.devil.app.capability.DefaultAndroidCapabilityRegistry
 import com.devil.app.conversation.ConversationEntryIdProvider
 import com.devil.app.conversation.ConversationInteractionCoordinator
 import com.devil.app.conversation.ConversationRuntimeInputMetadataProvider
@@ -27,6 +29,17 @@ import com.devil.core.runtime.UnifiedDevilRuntime
  * Stage 24 also composes the Android conversation-submission presentation path
  * around that existing runtime boundary.
  *
+ * Stage 27 adds one process-scoped Android Capability Registry boundary.
+ *
+ * The registry exposes only explicit CapabilityContract registrations. It does
+ * not establish capability availability, health, readiness, Android permission,
+ * Devil authorization, execution permission, execution success, observation,
+ * verification, or outcome.
+ *
+ * The default Android registration source currently contains no capabilities.
+ * No capability is fabricated merely because Android exposes an API, permission,
+ * application component, service, or hardware feature.
+ *
  * Conversation composition does not itself create conversation input,
  * constitutional context, trace identity, timestamps, decisions, plans,
  * capabilities, execution requests, memory, or persistence.
@@ -47,6 +60,12 @@ class DevilApplication : Application() {
         DefaultUnifiedDevilRuntime()
     }
 
+    val capabilityRegistry: AndroidCapabilityRegistry by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidCapabilityRegistry()
+    }
+
     val runtimeInputCoordinator: AndroidRuntimeInputCoordinator by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
@@ -60,13 +79,15 @@ class DevilApplication : Application() {
         )
     }
 
-    val conversationInteractionCoordinator: ConversationInteractionCoordinator by lazy(
+    val conversationInteractionCoordinator:
+        ConversationInteractionCoordinator by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         ConversationInteractionCoordinator()
     }
 
-    private val conversationEntryIdProvider: ConversationEntryIdProvider by lazy(
+    private val conversationEntryIdProvider:
+        ConversationEntryIdProvider by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         DefaultConversationEntryIdProvider()

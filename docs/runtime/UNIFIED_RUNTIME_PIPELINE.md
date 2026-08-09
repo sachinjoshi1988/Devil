@@ -1727,3 +1727,91 @@ It does not create a second logical memory domain or second Memory Authority.
 This Stage 26 boundary gives a later approved Android persistence implementation
 one precise place to operate while preserving the constitutional rule that
 storage eligibility and verified durable persistence are different facts.
+
+## Stage 27 Android Capability Registry Meaning
+
+Stage 27 establishes the bounded Android Capability Registry foundation around
+the existing constitutional CapabilityContract and CapabilityRegistry
+contracts.
+
+It does not create a second Capability Authority and does not create an
+Android-specific intelligence.
+
+The Android capability-registration path is:
+
+Android embodiment
+        ↓
+AndroidCapabilityRegistrationSource
+        ↓
+AndroidCapabilityRegistry
+        ↓
+CapabilityRegistryResult
+        ↓
+existing constitutional capability-selection architecture
+
+AndroidCapabilityRegistrationSource may expose only explicit
+CapabilityContract values.
+
+A CapabilityContract declares:
+
+- CapabilityId,
+- CapabilityCategory,
+- capability name,
+- and bounded capability description.
+
+Registration has no availability, health, readiness, permission,
+authorization, execution, observation, verification, or outcome meaning.
+
+The invariant remains:
+
+Registered != Available != Authorized != Ready != Executed.
+
+DefaultAndroidCapabilityRegistrationSource currently returns no registrations.
+
+This is intentional.
+
+Stage 27 must not fabricate Android capabilities merely because Android exposes
+an API, framework service, hardware feature, permission, application component,
+or because a capability appears on the future roadmap.
+
+DefaultAndroidCapabilityRegistry therefore returns UNAVAILABLE when its
+registration source is empty.
+
+When a later approved stage supplies one or more genuine registrations, the
+registry may return AVAILABLE while preserving those CapabilityContract values
+without reinterpreting them.
+
+CapabilityRegistryResult continues to enforce unique CapabilityId values.
+
+Stage 27 does not determine whether a registered capability is currently usable.
+Capability availability and health belong to Stage 28.
+
+Stage 27 does not interpret Android runtime permissions as Devil authorization.
+The Android permission authority boundary belongs to Stage 29.
+
+Stage 27 performs no device action.
+The first safe Android execution adapter belongs to Stage 30.
+
+DevilApplication owns one process-scoped AndroidCapabilityRegistry reference.
+Owning that registry does not grant capability authority and does not execute
+runtime work.
+
+The constitutional capability lifecycle remains conceptually distinct:
+
+Registered
+        ↓
+Available
+        ↓
+Requested
+        ↓
+Authorized
+        ↓
+Prepared
+        ↓
+Active
+        ↓
+Observed
+        ↓
+Completed / Failed
+
+No later lifecycle state may be inferred merely from registration.
