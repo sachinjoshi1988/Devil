@@ -81,10 +81,10 @@ import com.devil.core.runtime.UnifiedDevilRuntime
  * constitutional context, trace identity, timestamps, decisions, plans,
  * capabilities, execution requests, memory, or persistence.
  *
- * This class chooses no schema version, provenance, trust classification, or
- * security classification. The default conversation metadata provider remains
- * truthfully unavailable until those values are established by their proper
- * production mechanisms.
+ * Stage 34 composes conservative typed-text runtime metadata: schema version 1,
+ * source TEXT, supplied-context trust UNVERIFIED, and supplied-context security
+ * classification RESTRICTED. These values describe the bounded typed-text input
+ * boundary only and grant no identity, subject trust, session, authorization, permission, or execution authority.
  *
  * No authority is granted and no runtime work is performed merely because the
  * Android process was created.

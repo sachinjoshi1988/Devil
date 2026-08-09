@@ -1448,15 +1448,20 @@ ConversationRuntimeInputMetadata does not authenticate a subject, prove
 ownership, establish subject trust, establish a security stage, create a
 session, enter Owner Mode, grant authorization, or permit execution.
 
-The default production
-DefaultConversationRuntimeInputMetadataProvider currently returns UNAVAILABLE.
+At Stage 24, the default production
+DefaultConversationRuntimeInputMetadataProvider returned UNAVAILABLE.
 
-This is intentional.
+That fail-closed behavior was intentional because Stage 24 had not yet
+established a justified production classification for typed Android text.
 
-Stage 24 contains no approved production mechanism that establishes all metadata
-required by AndroidRuntimeInputCoordinator. The UI therefore must not hard-code
-SchemaVersion, ContextSource, ContextTrustLevel, or ContextSecurityLevel merely
-to force runtime submission.
+Stage 34 now establishes the bounded metadata that is truthfully known at the
+typed-text entry boundary: SchemaVersion 1, ContextSource.TEXT,
+ContextTrustLevel.UNVERIFIED, and ContextSecurityLevel.RESTRICTED.
+
+This Stage 34 metadata classification does not authenticate a subject, establish
+subject trust, establish SecurityStage, create a session, grant authorization,
+grant Android permission, select a capability, permit execution, or establish
+an outcome.
 
 When metadata is unavailable:
 
@@ -2487,3 +2492,112 @@ Execution Approved
 != Completed.
 
 The next Android constitutional responsibility remains Text Conversation V1.
+
+## Stage 34 Text Conversation V1
+
+Stage 34 establishes the first bounded production typed-text conversation path
+through the existing Android conversation presentation architecture and the one
+Unified Devil Runtime.
+
+The production path is:
+
+typed Android text
+
+→ ConversationScreen
+
+→ ConversationSubmissionFlowCoordinator
+
+→ ConversationRuntimeSubmissionCoordinator
+
+→ ConversationRuntimeInputMetadataProvider
+
+→ AndroidRuntimeInputCoordinator
+
+→ AndroidContextEnvelopeProvider
+
+→ AndroidRuntimeGateway
+
+→ UnifiedDevilRuntime
+
+→ RuntimeResult
+
+→ ConversationRuntimePresentation
+
+→ conversation timeline.
+
+Stage 34 changes the default typed-text metadata provider from unavailable to a
+bounded conservative production classification that is truthfully known at the
+Android typed-text entry point:
+
+- SchemaVersion = 1;
+- ContextSource = TEXT;
+- ContextTrustLevel = UNVERIFIED;
+- ContextSecurityLevel = RESTRICTED.
+
+These classifications do not authenticate the user.
+
+ContextTrustLevel.UNVERIFIED is supplied-context trust only. It is not
+SubjectTrustLevel and does not mean that a person has been authenticated,
+distrusted, denied, or authorized.
+
+ContextSecurityLevel.RESTRICTED describes supplied-context sensitivity only.
+It is not SecurityStage and does not establish a session, Owner Mode, or
+High-Security Confirmation.
+
+The metadata-unavailable contract remains valid as a fail-closed boundary for
+other provider implementations or future conditions in which complete metadata
+cannot truthfully be supplied. Stage 34 does not remove or weaken that path.
+
+The default Stage 34 typed-text production path now genuinely enters the one
+UnifiedDevilRuntime.
+
+The current default UnifiedDevilRuntime truthfully returns RuntimeStatus.DEFERRED
+for this path because the later constitutional authorities do not yet possess
+the policies and evidence required to establish completion through the full
+runtime chain.
+
+The UI therefore presents:
+
+Deferred by the Devil runtime.
+
+That presentation is trace-backed runtime truth.
+
+It is not a fabricated Devil answer.
+
+It does not mean:
+
+- language understanding succeeded;
+- a final Brain decision was selected;
+- a task or plan was completed;
+- a capability was executed;
+- an Android effect was observed;
+- an outcome was verified;
+- a final Outcome was established;
+- world state changed;
+- learning occurred;
+- logical memory was committed or persisted;
+- or the user's requested work succeeded.
+
+Stage 34 deliberately does not modify
+DefaultUnderstandingEvaluationResolver merely to generate conversational text.
+That resolver continues to report UNSUPPORTED until a genuine approved
+language-understanding policy exists.
+
+Likewise Stage 34 does not bypass Identity, Trust, Authorization, Decision,
+Task, Plan, Capability, Execution, Observation, Verification, Outcome,
+World Model Update, Learning, Memory Proposal, Memory Authority,
+Memory Commitment, or Memory Persistence.
+
+The Stage 34 invariant is:
+
+Typed text entered
+!= Understood
+!= Decided
+!= Executed
+!= Observed
+!= Verified
+!= Completed.
+
+Stage 34 therefore establishes Text Conversation V1 runtime entry while
+preserving the constitutional rule that no success may be claimed without
+verified evidence.

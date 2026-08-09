@@ -48,16 +48,52 @@ class ConversationRuntimeInputMetadataProviderTest {
     }
 
     @Test
-    fun `default production provider truthfully remains unavailable`() {
+    fun `default production provider establishes conservative typed text metadata`() {
         val provider: ConversationRuntimeInputMetadataProvider =
             DefaultConversationRuntimeInputMetadataProvider()
 
         val result = provider.provide()
 
         assertEquals(
-            ConversationRuntimeInputMetadataStatus.UNAVAILABLE,
+            ConversationRuntimeInputMetadataStatus.AVAILABLE,
             result.status,
         )
-        assertNull(result.metadata)
+
+        val metadata = requireNotNull(result.metadata)
+
+        assertEquals(
+            SchemaVersion.from(1),
+            metadata.schemaVersion,
+        )
+        assertEquals(
+            ContextSource.TEXT,
+            metadata.source,
+        )
+        assertEquals(
+            ContextTrustLevel.UNVERIFIED,
+            metadata.trustLevel,
+        )
+        assertEquals(
+            ContextSecurityLevel.RESTRICTED,
+            metadata.securityLevel,
+        )
+    }
+
+    @Test
+    fun `default typed text metadata does not claim verified or trusted supplied context`() {
+        val result =
+            DefaultConversationRuntimeInputMetadataProvider()
+                .provide()
+
+        val metadata = requireNotNull(result.metadata)
+
+        assertEquals(
+            false,
+            metadata.trustLevel == ContextTrustLevel.VERIFIED,
+        )
+        assertEquals(
+            false,
+            metadata.trustLevel == ContextTrustLevel.TRUSTED,
+        )
     }
 }

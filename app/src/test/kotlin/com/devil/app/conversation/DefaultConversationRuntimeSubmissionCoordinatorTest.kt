@@ -19,6 +19,13 @@ class DefaultConversationRuntimeSubmissionCoordinatorTest {
     fun `unavailable metadata prevents runtime submission`() {
         var runtimeCalls = 0
 
+        val metadataProvider =
+            object : ConversationRuntimeInputMetadataProvider {
+                override fun provide(): ConversationRuntimeInputMetadataResult {
+                    return ConversationRuntimeInputMetadataResult.unavailable()
+                }
+            }
+
         val runtimeCoordinator =
             object : AndroidRuntimeInputCoordinator {
                 override fun submit(
@@ -36,8 +43,7 @@ class DefaultConversationRuntimeSubmissionCoordinatorTest {
 
         val coordinator =
             DefaultConversationRuntimeSubmissionCoordinator(
-                metadataProvider =
-                    DefaultConversationRuntimeInputMetadataProvider(),
+                metadataProvider = metadataProvider,
                 runtimeInputCoordinator = runtimeCoordinator,
             )
 
