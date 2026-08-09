@@ -16,6 +16,8 @@ import com.devil.app.conversation.DefaultConversationRuntimeSubmissionCoordinato
 import com.devil.app.conversation.DefaultConversationSubmissionFlowCoordinator
 import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAdapter
+import com.devil.app.observation.AndroidObservationAdapter
+import com.devil.app.observation.DefaultAndroidObservationAdapter
 import com.devil.app.runtime.AndroidRuntimeInputCoordinator
 import com.devil.app.runtime.DefaultAndroidContextEnvelopeProvider
 import com.devil.app.runtime.DefaultAndroidRuntimeGateway
@@ -40,6 +42,8 @@ import com.devil.core.runtime.UnifiedDevilRuntime
  * boundary.
  *
  * Stage 30 establishes one process-scoped first-safe-execution adapter boundary.
+ *
+ * Stage 31 establishes one process-scoped Android execution-observation boundary.
  *
  * Registration, availability, health, Devil authorization, Executive readiness,
  * Android permission, execution approval, execution attempt, observation,
@@ -95,6 +99,12 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         DefaultAndroidExecutionAdapter()
+    }
+
+    val observationAdapter: AndroidObservationAdapter by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidObservationAdapter()
     }
 
     val runtimeInputCoordinator: AndroidRuntimeInputCoordinator by lazy(

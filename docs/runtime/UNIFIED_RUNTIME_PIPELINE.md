@@ -2157,3 +2157,138 @@ The architectural invariant remains:
 
 Registered != Available != Authorized != Ready != Permission Granted !=
 Execution Approved != Attempted != Observed != Verified != Completed.
+
+## Stage 31 Android Observation Foundation Meaning
+
+Stage 31 establishes the bounded Android Observation foundation after the
+Stage 30 Android execution-attempt boundary.
+
+It does not replace or weaken the constitutional Observation Authority.
+
+It does not merge execution, observation, verification, or final outcome into
+one Android operation.
+
+The Android embodiment progression is:
+
+Constitutional Execution Approval
+        ↓
+Stage 30 Android execution gates
+        ↓
+AndroidExecutionAdapter
+        ↓
+AndroidExecutionPerformer
+        ↓
+AndroidExecutionAttemptResult
+        ↓
+Stage 31 AndroidObservationAdapter
+        ↓
+AndroidObservationSource
+        ↓
+AndroidObservationResult
+        ↓
+Future Android Verification
+
+The architectural invariant is:
+
+Execution APPROVED
+        !=
+Android action ATTEMPTED
+        !=
+effect OBSERVED
+        !=
+outcome VERIFIED
+        !=
+task COMPLETED.
+
+AndroidExecutionAttemptStatus.ATTEMPTED means only that an authorized bounded
+Stage 30 performer genuinely attempted the platform action.
+
+ATTEMPTED is not observation evidence.
+
+DefaultAndroidObservationAdapter therefore invokes an AndroidObservationSource
+only when the Stage 30 result is ATTEMPTED.
+
+A DEFERRED AndroidExecutionAttemptResult does not invoke the observation source.
+
+A FAILED AndroidExecutionAttemptResult preserves its matching operational error
+and does not invoke the observation source.
+
+AndroidObservationEvidence preserves:
+
+- the CapabilityId whose attempted Android effect was observed;
+- and a bounded description of what the approved observation mechanism
+  genuinely established.
+
+AndroidObservationEvidence does not prove:
+
+- that the intended outcome was achieved;
+- that constitutional Verification succeeded;
+- that the task completed;
+- that the plan completed;
+- that world state was updated correctly;
+- that logical memory should be created;
+- or that final success may be reported.
+
+AndroidObservationStatus has three bounded states:
+
+- OBSERVED;
+- DEFERRED;
+- FAILED.
+
+OBSERVED may be produced only when a genuine Android observation source returns
+actual bounded observation evidence.
+
+DEFERRED means no justified Android observation evidence was produced.
+
+FAILED means the bounded Android observation mechanism failed operationally
+with one matching error.
+
+DefaultAndroidObservationSource currently returns DEFERRED.
+
+This is intentional.
+
+No approved production capability-specific Android observation mechanism exists
+yet. Stage 31 therefore does not inspect arbitrary Android state, infer effects
+from API return values, infer success from execution attempts, fabricate device
+state, or create observation evidence merely to advance the pipeline.
+
+A later capability-specific Android observer may replace the default source
+only when its evidence mechanism is explicitly bounded and approved.
+
+The adapter enforces trace continuity between the Stage 30 execution attempt and
+the Stage 31 observation result.
+
+When observation evidence exists, it must also refer to the same CapabilityId
+as the Stage 30 attempted execution.
+
+The Android observation boundary does not:
+
+- grant Devil authorization;
+- grant Android permission;
+- establish capability availability;
+- establish capability health;
+- establish Executive readiness;
+- approve constitutional execution;
+- perform the Stage 30 platform action;
+- fabricate an execution attempt;
+- verify the observed effect;
+- establish a final Outcome;
+- mutate world state;
+- complete a task or plan;
+- create logical memory;
+- or report success.
+
+Stage 32 remains responsible for Android Verification.
+
+Therefore Stage 31 preserves the constitutional no-false-success rule:
+
+Registered
+!= Available
+!= Authorized
+!= Ready
+!= Permission Granted
+!= Execution Approved
+!= Attempted
+!= Observed
+!= Verified
+!= Completed.
