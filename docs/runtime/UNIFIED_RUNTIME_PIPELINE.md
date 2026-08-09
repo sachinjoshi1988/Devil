@@ -3383,3 +3383,337 @@ Stage 38 therefore adds a real bounded accessibility execution implementation
 without allowing AccessibilityService to become an alternate Brain, Planner,
 Authorization Authority, Execution Authority, Observation Authority, or
 Verification Authority.
+
+## Stage 39 Notification Intelligence
+
+### Stage 39 Part 1 — Android Notification Perception Foundation
+
+Stage 39 begins by establishing a bounded Android notification-perception
+boundary.
+
+The first production path is:
+
+Android NotificationManager
+→ `DevilNotificationListenerService`
+→ primitive Android notification extraction
+→ `AndroidNotificationRecordMapper`
+→ immutable `AndroidNotificationRecord`
+→ `AndroidNotificationPerceptionCoordinator`.
+
+This path is perception only.
+
+`DevilNotificationListenerService` is intentionally thin.
+
+It is not:
+
+- another Devil;
+- another Brain;
+- another Conversation Domain;
+- an authentication authority;
+- a Trust Authority;
+- an Authorization Authority;
+- a Planner;
+- an Execution Authority;
+- an Observation Authority;
+- a Verification Authority;
+- an Outcome Authority;
+- or a Memory Authority.
+
+The service currently preserves only bounded Android notification facts:
+
+- event type;
+- posting Android package name;
+- Android notification key;
+- Android-reported posting time;
+- optional title;
+- optional text;
+- optional sub-text.
+
+A notification package name identifies an Android package only.
+
+It does not authenticate a person, institution, account, or notification sender.
+
+Notification received
+!= authenticated sender.
+
+Notification received
+!= trusted content.
+
+Notification received
+!= important notification.
+
+Notification received
+!= conversational intent.
+
+Notification received
+!= Devil command.
+
+Notification received
+!= authorization.
+
+Notification received
+!= memory commitment.
+
+Notification received
+!= execution request.
+
+Notification received
+!= observed task effect.
+
+Notification received
+!= verified outcome.
+
+Stage 39 Part 1 deliberately does not map notification data into
+`ConversationInput`.
+
+The current `ContextSource` contract contains TEXT, VOICE, SYSTEM, and TEST.
+Stage 39 does not falsely reuse SYSTEM provenance for external notification
+content.
+
+A later bounded Stage 39 integration step must explicitly establish notification
+provenance before any notification-derived textual content may approach the
+existing unified conversation/runtime pipeline.
+
+The NotificationListenerService Android system binding is also separate from
+Devil constitutional authority.
+
+Notification-listener enabled
+!= Devil authorization.
+
+Notification-listener connected
+!= sender authentication.
+
+Notification-listener connected
+!= capability execution approval.
+
+Notification-listener connected
+!= permission to persist notification content.
+
+Stage 39 will build notification intelligence only around these bounded facts
+without creating a parallel intelligence or bypassing the constitutional
+runtime.
+
+### Stage 39 Part 2 — Notification Classification and Safety Policy
+
+Stage 39 Part 2 adds bounded notification classification and one conservative
+safety disposition.
+
+The Android notification record now preserves optional Android notification
+category metadata.
+
+Category metadata is supplied by the posting Android application and therefore
+remains untrusted descriptive metadata.
+
+Android notification category
+!= authenticated sender.
+
+Android notification category
+!= content truth.
+
+Android notification category
+!= importance.
+
+Android notification category
+!= authorization.
+
+Android notification category
+!= execution request.
+
+`AndroidNotificationClassificationPolicy` maps only explicit Android category
+metadata into bounded descriptive classifications.
+
+It does not parse notification prose to infer intent.
+
+It does not inspect package names to infer human or institutional identity.
+
+Unknown category metadata remains `OTHER`.
+
+Missing category metadata remains `UNKNOWN`.
+
+Stage 39 also introduces
+`AndroidNotificationSafetyDisposition`.
+
+Current dispositions are:
+
+- `PERCEPTION_ONLY`;
+- `ELIGIBLE_FOR_LATER_ANALYSIS`.
+
+`ELIGIBLE_FOR_LATER_ANALYSIS` means only that one POSTED notification contains
+some explicit Android presentation content.
+
+It does not mean that the notification is:
+
+- important;
+- trusted;
+- genuine;
+- urgent;
+- safe to speak;
+- safe to persist;
+- memory eligible;
+- a Devil command;
+- authorized;
+- or executable.
+
+REMOVED notifications remain perception-only.
+
+The current Stage 39 chain is therefore:
+
+Android notification callback
+→ AndroidNotificationRecord
+→ AndroidNotificationClassificationPolicy
+→ AndroidNotificationSafetyPolicy
+→ bounded classification and analysis eligibility.
+
+No Stage 39 Part 2 component invokes `UnifiedDevilRuntime`.
+
+No notification is yet converted into `ConversationInput`.
+
+No `ContextSource` value is yet assigned to notification-derived content.
+
+No notification is automatically spoken, persisted, remembered, replied to,
+dismissed, opened, or executed.
+
+Notification classification
+!= Notification Intelligence authority.
+
+Eligibility for later analysis
+!= authorization.
+
+Classification
+!= truth.
+
+Perception
+!= decision.
+
+Decision
+!= execution.
+
+Execution
+!= verified outcome.
+
+### Stage 39 Notification Analysis Boundary
+
+Stage 39 notification perception now approaches one bounded descriptive analysis
+boundary after explicit safety evaluation.
+
+The Android-side flow is:
+
+NotificationListenerService callback
+→ AndroidNotificationRecord
+→ AndroidNotificationPerceptionCoordinator
+→ AndroidNotificationSafetyPolicy
+→ AndroidNotificationAnalysisPolicy
+→ AndroidNotificationAnalysisResult.
+
+`AndroidNotificationAnalysisStatus.ANALYZED` means only that a POSTED
+notification containing explicit presentation content passed the Stage 39
+safety gate and received bounded descriptive analysis.
+
+ANALYZED does not mean:
+
+- sender authenticated;
+- content trusted;
+- notification important;
+- notification urgent;
+- conversational intent established;
+- ConversationInput created;
+- ContextSource assigned;
+- user interruption authorized;
+- speech authorized;
+- memory persistence authorized;
+- Devil authorization granted;
+- Execution APPROVED;
+- Android action attempted;
+- effect observed;
+- effect verified;
+- or task completion established.
+
+Notifications with
+`AndroidNotificationSafetyDisposition.PERCEPTION_ONLY`
+remain confined to perception-only status.
+
+The analysis policy does not parse notification prose to infer sender identity,
+truth, command semantics, importance, urgency, authorization, or action.
+
+Stage 39 notification analysis still does not invoke `UnifiedDevilRuntime` and
+does not create a parallel notification Brain or Conversation Domain.
+
+Notification perception
+!= notification analysis eligibility
+!= sender authentication
+!= trust
+!= conversation input
+!= authorization
+!= execution
+!= verified Outcome.
+
+### Stage 39 Production Notification Composition
+
+Stage 39 production notification perception is composed through the established
+Android process composition root.
+
+`DevilApplication` owns one process-scoped:
+
+- `AndroidNotificationAnalysisCoordinator`;
+- `AndroidNotificationPerceptionCoordinator`.
+
+`DevilNotificationListenerService` remains a thin Android platform adapter.
+
+The production path is:
+
+Android NotificationListenerService callback
+→ bounded Android field extraction
+→ AndroidNotificationRecordMapper
+→ AndroidNotificationRecord
+→ process-scoped AndroidNotificationPerceptionCoordinator
+→ AndroidNotificationSafetyPolicy
+→ AndroidNotificationAnalysisPolicy
+→ AndroidNotificationAnalysisResult.
+
+The notification listener service does not construct another runtime,
+Conversation Domain, Brain, Executive, Planner, Security Authority, Memory
+Authority, or notification-specific intelligence.
+
+Stage 39 therefore preserves the unified Devil identity rule:
+
+one Devil
+→ one Unified Devil Runtime
+→ bounded Android notification embodiment.
+
+The Stage 39 production path deliberately stops after bounded notification
+analysis.
+
+It does not automatically:
+
+- convert a notification to ConversationInput;
+- assign notification content as user intent;
+- authenticate the human sender;
+- establish subject trust;
+- grant Devil authorization;
+- interrupt the user;
+- speak notification content;
+- persist notification content;
+- create logical memory;
+- create a task;
+- select a capability;
+- approve execution;
+- perform a notification action;
+- dismiss a notification;
+- open a notification;
+- reply to a notification;
+- claim an observed effect;
+- claim verification;
+- or claim completion.
+
+NotificationListenerService connected
+!= sender authenticated
+!= trusted notification
+!= command
+!= conversation input
+!= authorization
+!= execution
+!= verified Outcome.
+
+Stage 39 Notification Intelligence is therefore a bounded perception,
+classification, safety, and descriptive-analysis foundation rather than an
+autonomous notification agent.

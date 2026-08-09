@@ -19,6 +19,8 @@ import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAdapter
 import com.devil.app.observation.AndroidObservationAdapter
 import com.devil.app.observation.DefaultAndroidObservationAdapter
+import com.devil.app.notification.AndroidNotificationAnalysisCoordinator
+import com.devil.app.notification.AndroidNotificationPerceptionCoordinator
 import com.devil.app.outcome.AndroidOutcomeAdapter
 import com.devil.app.outcome.DefaultAndroidOutcomeAdapter
 import com.devil.app.runtime.AndroidRuntimeInputCoordinator
@@ -252,6 +254,33 @@ class DevilApplication : Application() {
      * The default authentication handoff remains fail-closed. Therefore this
      * coordinator cannot produce ACTIVE_SESSION in current production.
      */
+    /**
+     * Stage 39 process-scoped Android notification perception and analysis path.
+     *
+     * Notification listener connectivity and notification content grant no
+     * constitutional authority.
+     *
+     * This coordinator does not create ConversationInput, invoke a separate
+     * runtime, speak notification content, persist notification content, or
+     * execute an action.
+     */
+    val notificationAnalysisCoordinator:
+        AndroidNotificationAnalysisCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        AndroidNotificationAnalysisCoordinator()
+    }
+
+    val notificationPerceptionCoordinator:
+        AndroidNotificationPerceptionCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        AndroidNotificationPerceptionCoordinator(
+            analysisCoordinator =
+                notificationAnalysisCoordinator,
+        )
+    }
+
     val handsFreeProductionCoordinator:
         HandsFreeProductionCoordinator by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
