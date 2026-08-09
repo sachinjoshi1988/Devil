@@ -1,23 +1,58 @@
 package com.devil.app.execution
 
+import com.devil.app.accessibility.AndroidAccessibilityActionSource
+import com.devil.app.accessibility.AndroidAccessibilityCapability
+import com.devil.app.accessibility.DefaultAndroidAccessibilityActionSource
 import com.devil.core.model.common.TraceId
 import com.devil.core.model.execution.ExecutionRequest
 
 /**
- * Default Stage 30 Android execution performer.
+ * Default Android execution performer.
  *
- * Stage 30 establishes the first safe Android execution-adapter boundary, but
- * no production capability-to-platform-action implementation has yet been
- * approved.
+ * Stage 30 established this as a fail-closed platform execution boundary.
  *
- * Therefore this performer truthfully returns DEFERRED rather than selecting
- * an Android API, launching an Intent, mutating device state, or fabricating an
- * execution attempt.
+ * Stage 38 adds the first explicitly registered Android action implementation:
  *
- * Later bounded execution adapters may replace this performer only for
- * explicitly registered and constitutionally governed capabilities.
+ * Android Accessibility Click Visible Text.
+ *
+ * The performer remains a router rather than an understanding, planning, or
+ * authorization component.
+ *
+ * A supported capability may reach its bounded performer only when an explicit
+ * typed Android execution directive already exists.
+ *
+ * No directive means DEFERRED.
+ *
+ * Unsupported capability means DEFERRED.
+ *
+ * The performer must never infer an action or target from:
+ *
+ * - conversation text;
+ * - Understanding summary;
+ * - Decision summary;
+ * - Task summary;
+ * - Plan summary;
+ * - capability name;
+ * - capability description;
+ * - or accessibility-tree contents.
+ *
+ * Execution APPROVED != platform action attempted.
+ * Attempted != Observed.
+ * Observed != Verified.
+ * Verified != Completed.
  */
-class DefaultAndroidExecutionPerformer : AndroidExecutionPerformer {
+class DefaultAndroidExecutionPerformer(
+    directiveProvider: AndroidExecutionDirectiveProvider =
+        DefaultAndroidExecutionDirectiveProvider(),
+    accessibilitySource: AndroidAccessibilityActionSource =
+        DefaultAndroidAccessibilityActionSource(),
+) : AndroidExecutionPerformer {
+
+    private val accessibilityPerformer =
+        AndroidAccessibilityExecutionPerformer(
+            directiveProvider = directiveProvider,
+            accessibilitySource = accessibilitySource,
+        )
 
     override fun perform(
         traceId: TraceId,
@@ -30,9 +65,21 @@ class DefaultAndroidExecutionPerformer : AndroidExecutionPerformer {
             "Android execution performer trace and request must use the same trace identity."
         }
 
-        return AndroidExecutionAttemptResult.create(
-            traceId = traceId,
-            status = AndroidExecutionAttemptStatus.DEFERRED,
-        )
+        return if (
+            AndroidAccessibilityCapability.matches(
+                request.capability,
+            )
+        ) {
+            accessibilityPerformer.perform(
+                traceId = traceId,
+                request = request,
+            )
+        } else {
+            AndroidExecutionAttemptResult.create(
+                traceId = traceId,
+                status =
+                    AndroidExecutionAttemptStatus.DEFERRED,
+            )
+        }
     }
 }

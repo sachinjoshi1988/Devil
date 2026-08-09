@@ -1,21 +1,26 @@
 package com.devil.app.capability
 
+import com.devil.app.accessibility.AndroidAccessibilityCapability
+import com.devil.app.accessibility.DevilAccessibilityServiceRegistry
 import com.devil.core.model.capability.CapabilityContract
 import com.devil.core.model.capability.CapabilityHealthState
 
 /**
- * Default Stage 28 Android capability-health source.
+ * Default Android capability-health source.
  *
- * No production Android capability implementation currently supplies genuine
- * capability-health evidence.
+ * Stage 38 reports READY for the registered Android accessibility capability only
+ * while DevilAccessibilityService is genuinely connected.
  *
- * Therefore this source returns UNAVAILABLE rather than fabricating READY,
- * DEGRADED, BUSY, or any other health state.
+ * READY describes capability health only.
  *
- * READY would describe capability health only and would still not establish
- * constitutional Executive readiness.
+ * READY != Executive readiness.
+ * READY != authentication.
+ * READY != Devil authorization.
+ * READY != Execution APPROVED.
+ * READY != action attempted.
+ * READY != verified success.
  *
- * This implementation invokes no Android platform API and performs no action.
+ * Capabilities without approved health evidence remain UNAVAILABLE.
  */
 class DefaultAndroidCapabilityHealthSource :
     AndroidCapabilityHealthSource {
@@ -23,6 +28,16 @@ class DefaultAndroidCapabilityHealthSource :
     override fun health(
         capability: CapabilityContract,
     ): CapabilityHealthState {
-        return CapabilityHealthState.UNAVAILABLE
+        if (!AndroidAccessibilityCapability.matches(capability)) {
+            return CapabilityHealthState.UNAVAILABLE
+        }
+
+        return if (
+            DevilAccessibilityServiceRegistry.current() != null
+        ) {
+            CapabilityHealthState.READY
+        } else {
+            CapabilityHealthState.UNAVAILABLE
+        }
     }
 }

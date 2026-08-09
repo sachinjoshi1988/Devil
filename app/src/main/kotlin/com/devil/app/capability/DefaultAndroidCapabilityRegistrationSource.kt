@@ -1,26 +1,34 @@
 package com.devil.app.capability
 
+import com.devil.app.accessibility.AndroidAccessibilityCapability
 import com.devil.core.model.capability.CapabilityContract
 
 /**
- * Default Stage 27 Android capability-registration source.
+ * Default Android capability-registration source.
  *
- * No production Android capability implementation has yet reached the point at
- * which its capability contract may be truthfully registered.
+ * Stage 38 registers the first genuine Android action capability whose bounded
+ * platform implementation now exists:
  *
- * Therefore the default source currently returns an empty collection rather than
- * fabricating registrations.
+ * Android Accessibility Click Visible Text.
  *
- * Later stages may supply genuine CapabilityContract values only when their
- * bounded capability implementations and constitutional boundaries exist.
+ * Registration declares capability identity and constitutional purpose only.
  *
- * An Android permission, framework API, hardware feature, application component,
- * or planned future capability is not by itself a capability registration.
+ * Registration != availability.
+ * Registration != health READY.
+ * Registration != authentication.
+ * Registration != Devil authorization.
+ * Registration != Android permission.
+ * Registration != Execution APPROVED.
+ * Registration != Android action attempted.
+ * Registration != observed effect.
+ * Registration != verified outcome.
  */
 class DefaultAndroidCapabilityRegistrationSource :
     AndroidCapabilityRegistrationSource {
 
     override fun registrations(): List<CapabilityContract> {
-        return emptyList()
+        return listOf(
+            AndroidAccessibilityCapability.contract,
+        )
     }
 }

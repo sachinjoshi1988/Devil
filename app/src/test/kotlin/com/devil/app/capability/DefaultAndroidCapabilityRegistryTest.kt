@@ -1,5 +1,6 @@
 package com.devil.app.capability
 
+import com.devil.app.accessibility.AndroidAccessibilityCapability
 import com.devil.core.model.capability.CapabilityCategory
 import com.devil.core.model.capability.CapabilityContract
 import com.devil.core.model.capability.CapabilityId
@@ -30,11 +31,12 @@ import kotlin.test.assertNull
 class DefaultAndroidCapabilityRegistryTest {
 
     @Test
-    fun `obtain returns unavailable when no Android capabilities are registered`() {
+    fun `default registry exposes Stage 38 registered accessibility capability`() {
         val traceId =
             TraceId.from(
                 "trace-android-capability-registry-001",
             )
+
         val registry: AndroidCapabilityRegistry =
             DefaultAndroidCapabilityRegistry()
 
@@ -44,17 +46,23 @@ class DefaultAndroidCapabilityRegistryTest {
                 request = createRequest(traceId),
             )
 
-        assertEquals(traceId, result.traceId)
         assertEquals(
-            CapabilityRegistryStatus.UNAVAILABLE,
+            traceId,
+            result.traceId,
+        )
+        assertEquals(
+            CapabilityRegistryStatus.AVAILABLE,
             result.status,
         )
         assertEquals(
-            emptyList(),
+            listOf(
+                AndroidAccessibilityCapability.contract,
+            ),
             result.capabilities,
         )
         assertNull(result.error)
     }
+
 
     @Test
     fun `obtain preserves explicitly registered Android capability contracts`() {

@@ -1,19 +1,24 @@
 package com.devil.app.capability
 
+import com.devil.app.accessibility.AndroidAccessibilityCapability
+import com.devil.app.accessibility.DevilAccessibilityServiceRegistry
 import com.devil.core.model.capability.CapabilityAvailabilityState
 import com.devil.core.model.capability.CapabilityContract
 
 /**
- * Default Stage 28 Android capability-availability source.
+ * Default Android capability-availability source.
  *
- * No production Android capability implementation currently supplies genuine
- * availability evidence.
+ * Stage 38 can truthfully establish availability for the registered Android
+ * accessibility capability only while DevilAccessibilityService is genuinely
+ * connected to the process.
  *
- * Therefore this source returns UNAVAILABLE rather than treating capability
- * registration, Android API presence, hardware presence, component presence, or
- * permission declaration as proof of availability.
+ * Every capability without such approved Android availability evidence remains
+ * UNAVAILABLE.
  *
- * This implementation invokes no Android platform API and performs no action.
+ * Service connected != authentication.
+ * Service connected != Devil authorization.
+ * Service connected != Execution APPROVED.
+ * Service connected != action attempted.
  */
 class DefaultAndroidCapabilityAvailabilitySource :
     AndroidCapabilityAvailabilitySource {
@@ -21,6 +26,16 @@ class DefaultAndroidCapabilityAvailabilitySource :
     override fun availability(
         capability: CapabilityContract,
     ): CapabilityAvailabilityState {
-        return CapabilityAvailabilityState.UNAVAILABLE
+        if (!AndroidAccessibilityCapability.matches(capability)) {
+            return CapabilityAvailabilityState.UNAVAILABLE
+        }
+
+        return if (
+            DevilAccessibilityServiceRegistry.current() != null
+        ) {
+            CapabilityAvailabilityState.AVAILABLE
+        } else {
+            CapabilityAvailabilityState.UNAVAILABLE
+        }
     }
 }

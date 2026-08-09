@@ -3031,3 +3031,355 @@ Verified
 
 Stage 37 therefore establishes bounded wake and hands-free orchestration without
 weakening the existing Devil constitutional security architecture.
+
+## Stage 38 Accessibility Action
+
+Stage 38 establishes the bounded Android accessibility-action embodiment.
+
+The Android accessibility service is an embodiment around the existing Devil
+architecture. It is not another intelligence.
+
+The Stage 38 platform foundation is:
+
+approved future constitutional execution
+→ AndroidAccessibilityActionRequest
+→ AndroidAccessibilityActionSource
+→ connected DevilAccessibilityService
+→ bounded AccessibilityNodeInfo resolution
+→ Android accessibility platform action
+→ AndroidAccessibilityActionResult.
+
+Stage 38 initially supports one deliberately narrow action:
+
+- CLICK_VISIBLE_TEXT.
+
+The target must already be explicit before reaching the accessibility platform
+boundary.
+
+The accessibility layer does not infer conversational intent.
+
+It does not decide that words such as "press", "open", "tap", or a visible name
+should become an action.
+
+Those responsibilities remain upstream in the constitutional chain.
+
+`DevilAccessibilityService` is intentionally thin.
+
+Android connecting or enabling the service means only that the operating system
+has connected the bounded accessibility embodiment.
+
+Accessibility enabled
+!= Devil authorization.
+
+Accessibility enabled
+!= capability availability.
+
+Accessibility enabled
+!= Executive readiness.
+
+Accessibility enabled
+!= execution approval.
+
+A resolved AccessibilityNodeInfo means only that one node matched the explicitly
+supplied target according to the bounded Stage 38 resolver.
+
+Node resolved
+!= action authorized.
+
+For CLICK_VISIBLE_TEXT, Stage 38 resolves exact normalized text or content
+description and then chooses the first enabled clickable node at that node or
+its ancestor chain.
+
+The Stage 38 result `ATTEMPTED` means only that Android
+`AccessibilityNodeInfo.performAction(ACTION_CLICK)` returned true.
+
+ATTEMPTED
+!= effect observed.
+
+ATTEMPTED
+!= effect verified.
+
+ATTEMPTED
+!= Outcome established.
+
+ATTEMPTED
+!= task completed.
+
+`TARGET_NOT_FOUND` truthfully reports that no eligible matching actionable node
+was resolved.
+
+`SERVICE_UNAVAILABLE` truthfully reports that no connected Devil accessibility
+service instance exists.
+
+`FAILED` represents bounded Android accessibility mechanism failure only.
+
+Stage 38 does not reinterpret AccessibilityEvent callbacks as constitutional
+Observation evidence.
+
+The service currently performs no autonomous work from accessibility events.
+
+Any future observation mechanism must pass through the existing Android
+Observation architecture established at Stage 31.
+
+Likewise accessibility action execution does not bypass Stage 32 Verification
+or Stage 33 Outcome.
+
+The constitutional ordering therefore remains:
+
+Constitution
+→ Identity
+→ Trust
+→ Authorization
+→ Understanding
+→ Decision
+→ Task
+→ Plan
+→ Capability
+→ Execution
+→ Android accessibility attempt
+→ Observation
+→ Verification
+→ Outcome.
+
+Stage 38 does not yet replace the default Stage 30 execution performer.
+
+The existing default performer remains fail-closed until an explicit registered
+CapabilityContract and approved capability-to-accessibility-action mapping can
+truthfully connect constitutional Execution approval to this Stage 38 platform
+boundary.
+
+This preserves the invariant:
+
+Accessibility API available
+!= Capability registered
+!= Capability available
+!= Capability healthy
+!= Authorized
+!= Execution approved
+!= Attempted
+!= Observed
+!= Verified
+!= Completed.
+
+One Devil.
+One constitutional execution chain.
+One bounded Android accessibility embodiment.
+
+### Stage 38 Accessibility Capability Governance
+
+Stage 38 now registers one genuine Android action capability:
+
+`android-accessibility-click-visible-text`
+
+The capability represents the bounded Android accessibility implementation for
+`CLICK_VISIBLE_TEXT`.
+
+Capability registration contains only stable capability identity and purpose.
+
+Dynamic target data such as:
+
+`Settings`
+
+or:
+
+`Send`
+
+is not encoded into `CapabilityId`, capability name, capability description,
+PlanRecord, or any other unrelated constitutional field merely to move data
+through the system.
+
+`AndroidAccessibilityActionRequest` remains the explicit bounded record for:
+
+- the accessibility action type;
+- and the accessibility target.
+
+This preserves the distinction:
+
+Capability identity
+!= per-action target.
+
+The Stage 38 registration chain is now:
+
+AndroidAccessibilityCapability
+→ DefaultAndroidCapabilityRegistrationSource
+→ AndroidCapabilityRegistry.
+
+Registration does not prove availability.
+
+For this capability, Android availability evidence is the existence of a
+genuinely connected `DevilAccessibilityService` in
+`DevilAccessibilityServiceRegistry`.
+
+Therefore:
+
+connected service
+→ capability AVAILABLE.
+
+No connected service
+→ capability UNAVAILABLE.
+
+This is Android embodiment availability only.
+
+Accessibility service connected
+!= owner authenticated.
+
+Accessibility service connected
+!= Devil authorization.
+
+Accessibility service connected
+!= Executive readiness.
+
+Accessibility service connected
+!= Execution APPROVED.
+
+For Stage 38 capability health, a genuinely connected service currently
+establishes bounded capability health `READY`.
+
+`READY` describes only the health of the Android capability embodiment.
+
+Capability health READY
+!= Executive readiness.
+
+Capability health READY
+!= authorization.
+
+Capability health READY
+!= execution approval.
+
+Android accessibility service enablement is not an Android Activity runtime
+permission.
+
+Therefore the Stage 38 accessibility capability has an explicitly known empty
+Android runtime-permission requirement.
+
+An empty runtime-permission requirement means only:
+
+Android runtime permission = NOT_REQUIRED.
+
+It does not mean:
+
+- the accessibility service is enabled;
+- the capability is available;
+- authentication succeeded;
+- Devil authorization exists;
+- constitutional execution is approved;
+- an Android action may be performed;
+- an action was attempted;
+- an effect was observed;
+- an outcome was verified.
+
+Unknown capability-to-permission mappings remain unavailable rather than being
+guessed.
+
+The Stage 38 governance invariant is:
+
+Registered
+!= Available
+!= Healthy
+!= Authorized
+!= Execution Approved
+!= Accessibility Action Requested
+!= Attempted
+!= Observed
+!= Verified
+!= Completed.
+
+Stage 38 still does not inject `AndroidAccessibilityActionRequest` into
+`ExecutionRequest`.
+
+A later Stage 38 integration step must establish an explicit bounded bridge
+between a constitutionally approved accessibility execution and its genuine
+dynamic accessibility request.
+
+Until that bridge exists, the platform accessibility source must not be invoked
+merely because the capability is registered, AVAILABLE, or READY.
+
+### Stage 38 Accessibility Execution Governance
+
+Stage 38 does not permit the Android accessibility layer to infer an action target
+from user speech, conversation text, Understanding summaries, Decision summaries,
+Task summaries, Plan summaries, capability names, or accessibility-tree contents.
+
+The existing constitutional `ExecutionRequest` currently preserves the selected
+`CapabilityContract`, but it does not contain dynamic Android accessibility
+action parameters.
+
+Stage 38 therefore establishes a separate typed Android embodiment boundary:
+
+ExecutionResult(APPROVED)
+→ Android capability AVAILABLE
+→ Android capability health READY
+→ Android permission NOT_REQUIRED or GRANTED
+→ DefaultAndroidExecutionAdapter
+→ DefaultAndroidExecutionPerformer
+→ AndroidExecutionDirectiveProvider
+→ matching AndroidExecutionDirective
+→ AndroidAccessibilityExecutionPerformer
+→ AndroidAccessibilityActionSource
+→ DevilAccessibilityService
+→ Android AccessibilityNodeInfo action attempt.
+
+`AndroidExecutionDirective` preserves:
+
+- TraceId;
+- CapabilityId;
+- one explicit AndroidAccessibilityActionRequest.
+
+The directive is not constitutional authorization.
+
+The directive is not capability selection.
+
+The directive is not planning.
+
+The directive is not execution approval.
+
+The directive is Android embodiment data that may be consumed only after the
+existing execution gates have already been satisfied.
+
+The default production `DefaultAndroidExecutionDirectiveProvider` returns no
+directive because the current constitutional runtime does not yet carry a
+structured accessibility target through Understanding, Decision, Task, Plan,
+Capability, and Execution.
+
+Therefore the default production execution path remains fail closed:
+
+No explicit directive
+→ no accessibility source invocation
+→ AndroidExecutionAttemptStatus.DEFERRED.
+
+Stage 38 explicitly forbids reconstructing an accessibility target from prose
+summaries merely to make execution possible.
+
+A test or future approved integration may supply an explicit typed directive.
+When such a directive exists, its TraceId and CapabilityId must exactly match the
+already-approved constitutional ExecutionRequest before the accessibility source
+may be approached.
+
+Accessibility source result mapping is:
+
+- ATTEMPTED → AndroidExecutionAttemptStatus.ATTEMPTED;
+- TARGET_NOT_FOUND → DEFERRED;
+- SERVICE_UNAVAILABLE → DEFERRED;
+- FAILED → FAILED with a matching bounded UniversalErrorRecord.
+
+`ATTEMPTED` remains intentionally weaker than success.
+
+Accessibility action accepted by Android
+!= observed Android effect.
+
+Observed effect
+!= verified intended effect.
+
+Verified intended effect
+!= final constitutional Outcome.
+
+Execution Approved
+!= Attempted
+!= Observed
+!= Verified
+!= Completed.
+
+Stage 38 therefore adds a real bounded accessibility execution implementation
+without allowing AccessibilityService to become an alternate Brain, Planner,
+Authorization Authority, Execution Authority, Observation Authority, or
+Verification Authority.
