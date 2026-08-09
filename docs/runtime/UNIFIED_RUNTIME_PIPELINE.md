@@ -2601,3 +2601,144 @@ Typed text entered
 Stage 34 therefore establishes Text Conversation V1 runtime entry while
 preserving the constitutional rule that no success may be claimed without
 verified evidence.
+
+## Stage 35 Voice Input
+
+Stage 35 establishes the first bounded Android voice-input path for Devil.
+
+Voice does not create another intelligence.
+
+The constitutional architecture remains one Devil, one Conversation Domain, and
+one Unified Devil Runtime.
+
+The production voice path is:
+
+Android microphone
+→ Android SpeechRecognizer
+→ AndroidVoiceInputSource
+→ AndroidVoiceInputResult
+→ VoiceConversationResultCoordinator
+→ existing ConversationSubmissionFlowCoordinator
+→ VoiceConversationRuntimeInputMetadataProvider
+→ AndroidRuntimeInputCoordinator
+→ AndroidContextEnvelopeProvider
+→ AndroidRuntimeGateway
+→ UnifiedDevilRuntime
+→ RuntimeResult
+→ existing conversation presentation.
+
+Stage 35 adds `ContextSource.VOICE` so textual content produced through the
+approved bounded Android voice-input mechanism preserves its actual provenance.
+
+`ContextSource.VOICE` does not establish:
+
+- speaker identity;
+- owner authentication;
+- subject trust;
+- Devil authorization;
+- SecurityStage;
+- Owner Mode;
+- High-Security Confirmation;
+- semantic correctness of speech recognition;
+- execution permission;
+- verification;
+- final Outcome;
+- or task completion.
+
+The Stage 35 production metadata for recognized voice input is:
+
+- SchemaVersion = 1;
+- ContextSource = VOICE;
+- ContextTrustLevel = UNVERIFIED;
+- ContextSecurityLevel = RESTRICTED.
+
+VOICE and TEXT therefore remain different input provenance values while both
+enter the same constitutional conversation and runtime architecture.
+
+Stage 35 declares Android `RECORD_AUDIO` permission because Android speech
+recognition requires microphone access.
+
+Android microphone permission remains Android operating-system permission only.
+
+Android permission != Devil authorization.
+
+`DevilActivity` owns the Android user-interaction boundary for requesting
+`RECORD_AUDIO` permission before a recognition attempt. Permission denial does
+not create conversation input and does not create a runtime result.
+
+`DefaultAndroidVoiceInputSource` owns one bounded Android `SpeechRecognizer`
+instance and one recognition attempt at a time.
+
+Its responsibilities are limited to:
+
+- starting Android speech recognition;
+- receiving Android recognition callbacks;
+- mapping genuine textual recognition candidates;
+- reporting no-match;
+- reporting cancellation;
+- reporting bounded operational failure;
+- and releasing Android recognizer resources.
+
+It does not:
+
+- authenticate or identify the speaker;
+- infer intent;
+- establish understanding;
+- select a decision;
+- create a task or plan;
+- select or execute a capability;
+- observe an Android effect;
+- verify an outcome;
+- establish final Outcome;
+- update world state;
+- learn;
+- create logical memory;
+- or persist memory.
+
+A successful Android speech-recognition callback becomes
+`AndroidVoiceInputStatus.RECOGNIZED` only when a non-blank textual transcript
+exists.
+
+Recognition means only that Android supplied a textual transcript.
+
+Recognition != Authentication
+!= Understanding
+!= Authorization
+!= Execution
+!= Verification
+!= Outcome Established
+!= Completed.
+
+`VoiceConversationResultCoordinator` is the bounded bridge from recognized
+speech to the existing conversation architecture.
+
+Only `RECOGNIZED` input may proceed into conversation submission.
+
+`NO_MATCH`, `CANCELLED`, and `FAILED` results do not invoke the conversation
+runtime submission path.
+
+A recognized transcript is normalized and submitted through the existing
+conversation architecture rather than through any voice-specific runtime.
+
+The current default Unified Devil Runtime continues to return
+`RuntimeStatus.DEFERRED` for ordinary voice-derived text because later
+constitutional policies and evidence required for completion are not yet
+available.
+
+The UI therefore truthfully presents the same trace-backed runtime result used
+for typed text:
+
+Deferred by the Devil runtime.
+
+That is not a fabricated conversational answer and is not a claim that the
+requested work succeeded.
+
+Stage 35 therefore establishes Voice Input while preserving the core identity
+rule:
+
+Many input embodiments.
+One Conversation Domain.
+One constitutional runtime.
+One Devil.
+
+The next planned Android responsibility remains Voice Output.

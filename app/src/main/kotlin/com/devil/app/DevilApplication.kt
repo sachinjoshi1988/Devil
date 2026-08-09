@@ -14,6 +14,7 @@ import com.devil.app.conversation.DefaultConversationEntryIdProvider
 import com.devil.app.conversation.DefaultConversationRuntimeInputMetadataProvider
 import com.devil.app.conversation.DefaultConversationRuntimeSubmissionCoordinator
 import com.devil.app.conversation.DefaultConversationSubmissionFlowCoordinator
+import com.devil.app.conversation.VoiceConversationRuntimeInputMetadataProvider
 import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAdapter
 import com.devil.app.observation.AndroidObservationAdapter
@@ -26,6 +27,7 @@ import com.devil.app.runtime.DefaultAndroidRuntimeGateway
 import com.devil.app.runtime.DefaultAndroidRuntimeInputCoordinator
 import com.devil.app.verification.AndroidVerificationAdapter
 import com.devil.app.verification.DefaultAndroidVerificationAdapter
+import com.devil.app.voice.VoiceConversationResultCoordinator
 import com.devil.core.runtime.DefaultUnifiedDevilRuntime
 import com.devil.core.runtime.UnifiedDevilRuntime
 
@@ -35,56 +37,18 @@ import com.devil.core.runtime.UnifiedDevilRuntime
  * The Android application owns one process-scoped reference to the single
  * UnifiedDevilRuntime and bounded Android embodiment adapters around it.
  *
- * Stage 24 composes the Android conversation-submission presentation path.
+ * Stage 34 establishes typed text entry into that runtime.
  *
- * Stage 27 adds one process-scoped Android Capability Registry boundary.
+ * Stage 35 adds voice-derived textual input while preserving the same
+ * conversation, context, runtime, security, decision, planning, execution,
+ * verification, outcome, learning, and memory architecture.
  *
- * Stage 28 adds one process-scoped Android capability availability-and-health
- * boundary around already registered CapabilityContract values.
+ * Voice is another bounded input provenance. It is not another Devil.
  *
- * Stage 29 establishes the bounded Android runtime-permission assessment
- * boundary.
+ * ContextSource.VOICE does not authenticate the speaker.
  *
- * Stage 30 establishes one process-scoped first-safe-execution adapter boundary.
- *
- * Stage 31 establishes one process-scoped Android execution-observation boundary.
- *
- * Stage 32 establishes one process-scoped Android verification boundary after
- * genuine Android observation evidence.
- *
- * Registration, availability, health, Devil authorization, Executive readiness,
- * Android permission, execution approval, execution attempt, observation,
- * verification, and outcome remain constitutionally distinct.
- *
- * CapabilityHealthState.READY is capability health only. It is not Executive
- * readiness and grants no execution authority.
- *
- * Android permission is operating-system state only. It is not Devil
- * authorization.
- *
- * The Stage 30 default execution performer deliberately performs no platform
- * action until an explicitly registered and approved capability-to-platform
- * implementation exists.
- *
- * The Stage 31 default observation source truthfully defers until a genuine
- * capability-specific Android observation mechanism exists.
- *
- * The Stage 32 default verification source likewise truthfully defers until an
- * approved capability-specific verification mechanism and genuine verification
- * evidence exist. Observation alone must never be interpreted as verification.
- *
- * No capability, execution attempt, observation, verification, or successful
- * outcome is fabricated merely because Android exposes an API, permission,
- * application component, service, or hardware feature.
- *
- * Conversation composition does not itself create conversation input,
- * constitutional context, trace identity, timestamps, decisions, plans,
- * capabilities, execution requests, memory, or persistence.
- *
- * Stage 34 composes conservative typed-text runtime metadata: schema version 1,
- * source TEXT, supplied-context trust UNVERIFIED, and supplied-context security
- * classification RESTRICTED. These values describe the bounded typed-text input
- * boundary only and grant no identity, subject trust, session, authorization, permission, or execution authority.
+ * Android RECORD_AUDIO permission is Android operating-system permission only.
+ * It is not Devil authorization.
  *
  * No authority is granted and no runtime work is performed merely because the
  * Android process was created.
@@ -190,6 +154,51 @@ class DevilApplication : Application() {
                 conversationEntryIdProvider,
             runtimeSubmissionCoordinator =
                 conversationRuntimeSubmissionCoordinator,
+        )
+    }
+
+    private val voiceConversationRuntimeInputMetadataProvider:
+        ConversationRuntimeInputMetadataProvider by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        VoiceConversationRuntimeInputMetadataProvider()
+    }
+
+    private val voiceConversationRuntimeSubmissionCoordinator:
+        ConversationRuntimeSubmissionCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultConversationRuntimeSubmissionCoordinator(
+            metadataProvider =
+                voiceConversationRuntimeInputMetadataProvider,
+            runtimeInputCoordinator =
+                runtimeInputCoordinator,
+        )
+    }
+
+    val voiceConversationSubmissionFlowCoordinator:
+        ConversationSubmissionFlowCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultConversationSubmissionFlowCoordinator(
+            interactionCoordinator =
+                conversationInteractionCoordinator,
+            entryIdProvider =
+                conversationEntryIdProvider,
+            runtimeSubmissionCoordinator =
+                voiceConversationRuntimeSubmissionCoordinator,
+        )
+    }
+
+    val voiceConversationResultCoordinator:
+        VoiceConversationResultCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        VoiceConversationResultCoordinator(
+            interactionCoordinator =
+                conversationInteractionCoordinator,
+            submissionFlowCoordinator =
+                voiceConversationSubmissionFlowCoordinator,
         )
     }
 }

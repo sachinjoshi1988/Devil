@@ -21,18 +21,15 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 
 /**
- * Stage 24 Compose conversation presentation surface.
+ * Compose conversation presentation surface for the unified Devil conversation
+ * pipeline.
  *
- * This screen renders only supplied ConversationUiState and reports draft edits
- * and submission intent to its caller.
+ * Stage 24 established typed conversation presentation.
  *
- * It does not invoke UnifiedDevilRuntime, create constitutional context, choose
- * runtime-input metadata, generate TraceId, execute capabilities, persist
- * conversation data, mutate logical memory, or fabricate Devil responses or
- * verified outcomes.
- *
- * Any submission notice rendered here is UI-local presentation truth and is not
- * represented as a runtime result.
+ * Stage 35 adds one bounded voice-input affordance. The screen itself still does
+ * not perform speech recognition, request Android permission, create
+ * constitutional context, invoke UnifiedDevilRuntime, authenticate a speaker,
+ * execute capabilities, or fabricate conversational success.
  */
 @Composable
 fun ConversationScreen(
@@ -40,6 +37,10 @@ fun ConversationScreen(
     onDraftChange: (String) -> Unit,
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
+    onVoiceInput: () -> Unit = {},
+    isVoiceListening: Boolean = false,
+    voiceInputEnabled: Boolean = true,
+    voiceInputMessage: String? = null,
 ) {
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -75,7 +76,7 @@ fun ConversationScreen(
                 value = state.draft,
                 onValueChange = onDraftChange,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !state.isSubmitting,
+                enabled = !state.isSubmitting && !isVoiceListening,
                 label = {
                     Text("Message")
                 },
@@ -91,6 +92,7 @@ fun ConversationScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled =
                     !state.isSubmitting &&
+                        !isVoiceListening &&
                         state.draft.isNotBlank(),
             ) {
                 Text(
@@ -100,6 +102,31 @@ fun ConversationScreen(
                         } else {
                             "Send"
                         },
+                )
+            }
+
+            Button(
+                onClick = onVoiceInput,
+                modifier = Modifier.fillMaxWidth(),
+                enabled =
+                    voiceInputEnabled &&
+                        !state.isSubmitting &&
+                        !isVoiceListening,
+            ) {
+                Text(
+                    text =
+                        if (isVoiceListening) {
+                            "Listening"
+                        } else {
+                            "Speak"
+                        },
+                )
+            }
+
+            voiceInputMessage?.let { message ->
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
 
