@@ -45,6 +45,8 @@ import com.devil.app.voice.HandsFreeProductionCoordinator
 import com.devil.app.voice.VoiceConversationOutputCoordinator
 import com.devil.app.voice.VoiceConversationResultCoordinator
 import com.devil.core.model.owner.OwnerProfileUpdateCoordinator
+import com.devil.core.model.child.ChildPolicyCoordinator
+import com.devil.core.model.child.ChildPolicySatisfactionCoordinator
 import com.devil.core.runtime.DefaultUnifiedDevilRuntime
 import com.devil.core.runtime.UnifiedDevilRuntime
 
@@ -414,6 +416,33 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         OwnerProfileUpdateCoordinator()
+    }
+
+    /**
+     * Stage 44 process-scoped bounded Child and Guardian Policy evaluation.
+     *
+     * These coordinators evaluate only explicitly supplied Stage 44 contracts.
+     *
+     * Production deliberately does not fabricate a ChildGuardianContextSource,
+     * GuardianApprovalSource, child classification, guardian identity, guardian
+     * authority, or guardian approval.
+     *
+     * Child policy allowed != Devil authorization.
+     * Guardian approval != Devil authorization.
+     * Child policy satisfied != Execution APPROVED.
+     */
+    val childPolicyCoordinator:
+        ChildPolicyCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        ChildPolicyCoordinator()
+    }
+
+    val childPolicySatisfactionCoordinator:
+        ChildPolicySatisfactionCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        ChildPolicySatisfactionCoordinator()
     }
 
     val notificationAnalysisCoordinator:

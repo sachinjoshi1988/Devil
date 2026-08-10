@@ -4364,3 +4364,233 @@ Owner descriptive state
 != authorization
 != memory commitment
 != execution.
+
+## Stage 44 Child and Guardian Policy
+
+Stage 44 establishes Devil's bounded Child and Guardian Policy architecture.
+
+The purpose of this stage is not to create a separate child assistant or a
+separate intelligence.
+
+The same Unified Devil Runtime remains constitutionally authoritative.
+
+Stage 44 supplies policy context around that same Devil intelligence for
+situations in which an approved upstream source has established that a subject
+must be handled under child policy.
+
+### Child Classification Boundary
+
+`ChildSubjectClassification` represents explicitly supplied child-policy
+classification only:
+
+- `CHILD`
+- `NOT_CHILD`
+- `UNKNOWN`
+
+Devil must not infer `CHILD` merely from:
+
+- physical appearance;
+- camera perception;
+- voice;
+- profile name;
+- relationship label;
+- device possession;
+- conversational style;
+- or behavioral assumptions.
+
+Child classification
+
+!= identity resolution
+
+!= age proof
+
+!= authentication
+
+!= guardian authority
+
+!= trust
+
+!= authorization
+
+!= execution approval.
+
+### Guardian Authority Boundary
+
+`GuardianAuthorityRecord` preserves explicit guardian-authority information
+supplied by an approved upstream source.
+
+A descriptive Stage 43 `FAMILY` relationship does not become guardian
+authority.
+
+Guardian authority
+
+!= family relationship
+
+!= guardian authentication
+
+!= guardian approval for a specific activity
+
+!= general Devil authorization
+
+!= Owner Mode
+
+!= Android permission
+
+!= Execution APPROVED.
+
+### Child Policy Evaluation
+
+Stage 44 introduces an explicit child-policy requirement:
+
+- `CHILD_ALLOWED`
+- `GUARDIAN_APPROVAL_REQUIRED`
+- `CHILD_BLOCKED`
+
+`ChildGuardianPolicy` evaluates only an already supplied
+`ChildGuardianContext` and an already supplied `ChildPolicyRequirement`.
+
+For a subject classified `CHILD`:
+
+`CHILD_ALLOWED`
+→ `ALLOWED_BY_CHILD_POLICY`
+
+`GUARDIAN_APPROVAL_REQUIRED`
+→ `GUARDIAN_APPROVAL_REQUIRED`
+
+`CHILD_BLOCKED`
+→ `BLOCKED_BY_CHILD_POLICY`
+
+For `NOT_CHILD`, the child-policy result is `NOT_APPLICABLE`.
+
+For `UNKNOWN`, Stage 44 fails closed with `UNAVAILABLE`.
+
+An `ALLOWED_BY_CHILD_POLICY` result does not grant constitutional
+authorization.
+
+### Explicit Guardian Approval
+
+When child policy requires guardian approval, Stage 44 may create one explicit
+`GuardianApprovalRequest`.
+
+The request requires:
+
+- a child-policy decision whose status is `GUARDIAN_APPROVAL_REQUIRED`;
+- explicit established guardian-authority context;
+- and the exact guardian identity represented by that authority context.
+
+A `GuardianApprovalSource` is a separate bounded source.
+
+Guardian authority is never automatically converted into guardian approval.
+
+Guardian approval is specific to the exact bounded request.
+
+Approval for one child-policy request must not become blanket permission for
+another request.
+
+Guardian approval
+
+!= Devil authorization
+
+!= Owner Mode
+
+!= Android permission
+
+!= Executive readiness
+
+!= Execution APPROVED.
+
+### Child / Guardian Policy Satisfaction
+
+`ChildPolicySatisfactionPolicy` determines only whether the Stage 44
+child-policy gate represented by the supplied request is satisfied.
+
+For a child-policy decision already allowed by child policy:
+
+`ALLOWED_BY_CHILD_POLICY`
+→ `SATISFIED`
+
+For an explicitly blocked child-policy decision:
+
+`BLOCKED_BY_CHILD_POLICY`
+→ `BLOCKED`
+
+For a guardian-gated decision with no guardian approval:
+
+`GUARDIAN_APPROVAL_REQUIRED`
+→ `UNSATISFIED`
+
+For a guardian-gated decision with an exact matching explicit approved
+guardian decision:
+
+`GUARDIAN_APPROVAL_REQUIRED`
++ matching `APPROVED`
+→ `SATISFIED`
+
+The matching requirement is deliberate.
+
+A guardian decision associated with another child-policy decision cannot
+satisfy the current request.
+
+Stage 44 satisfaction means only that the Stage 44 policy gate no longer
+blocks that bounded activity.
+
+SATISFIED
+
+!= identity
+
+!= authentication
+
+!= trust
+
+!= constitutional authorization
+
+!= Android permission
+
+!= Executive readiness
+
+!= Execution APPROVED
+
+!= action attempted
+
+!= verified Outcome.
+
+### Production Composition
+
+`DevilApplication` owns process-scoped instances of:
+
+- `ChildPolicyCoordinator`
+- `ChildPolicySatisfactionCoordinator`
+
+These are pure bounded policy coordinators.
+
+Stage 44 production deliberately does not fabricate:
+
+- child identities;
+- child classification;
+- guardian identities;
+- guardian authority;
+- guardian approval;
+- or a default child / guardian context.
+
+No default `ChildGuardianContextSource` is composed merely to make child policy
+appear operational.
+
+No default `GuardianApprovalSource` is composed merely to manufacture guardian
+consent.
+
+Those sources must eventually be backed by genuine approved mechanisms.
+
+Stage 44 introduces no second Brain, child Brain, guardian Brain, Planner,
+Executive, Security Authority, Authorization Authority, Memory Authority, or
+runtime.
+
+The constitutional invariant remains:
+
+Child policy
+→ may constrain later authorized activity
+
+but
+
+Child policy
+!= constitutional authorization
+!= execution authority.
