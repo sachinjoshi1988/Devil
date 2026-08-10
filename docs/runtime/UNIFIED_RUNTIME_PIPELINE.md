@@ -3717,3 +3717,209 @@ NotificationListenerService connected
 Stage 39 Notification Intelligence is therefore a bounded perception,
 classification, safety, and descriptive-analysis foundation rather than an
 autonomous notification agent.
+
+## Stage 40 Device Knowledge
+
+Stage 40 establishes the bounded Android Device Knowledge embodiment.
+
+The purpose of Device Knowledge is to let Devil possess truthful, directly
+observable facts about the Android platform on which the current embodiment is
+running without confusing knowledge with control.
+
+The initial Stage 40 source is deliberately narrow.
+
+`DefaultAndroidDeviceKnowledgeSource` reads only approved Android `Build`
+properties:
+
+- Android SDK level;
+- Android release;
+- manufacturer;
+- model;
+- device;
+- product.
+
+Stage 40 deliberately excludes persistent or sensitive identifiers such as:
+
+- IMEI;
+- hardware serial number;
+- Android ID;
+- telephone number;
+- account identifiers;
+- location;
+- MAC address;
+- or other network hardware identifiers.
+
+The initial bounded flow is:
+
+Android platform facts
+→ `AndroidDeviceKnowledgeSource`
+→ `AndroidDeviceKnowledgeSnapshot`
+→ `AndroidDeviceKnowledgeCoordinator`.
+
+The snapshot is descriptive knowledge only.
+
+Device Knowledge
+!= owner identity.
+
+Device Knowledge
+!= authentication evidence.
+
+Device Knowledge
+!= subject trust.
+
+Device Knowledge
+!= Devil authorization.
+
+Device Knowledge
+!= Android permission.
+
+Device Knowledge
+!= execution approval.
+
+Device Knowledge
+!= device control.
+
+Device Knowledge
+!= logical memory commitment.
+
+Device Knowledge
+!= verified Outcome.
+
+### Stage 40 Device Knowledge Capability Governance
+
+Stage 40 registers one genuine Android KNOWLEDGE capability:
+
+`android-device-knowledge`.
+
+Its canonical contract is owned by
+`AndroidDeviceKnowledgeCapability`.
+
+Registration means only that the Android embodiment contains the bounded
+Device Knowledge implementation.
+
+Registration does not mean knowledge was already collected, every possible
+device fact is available, or that any observed fact is permanently current.
+
+The Stage 40 Device Knowledge capability is AVAILABLE because its approved
+source can directly read the bounded non-sensitive Android `Build` facts without
+requiring an optional service connection.
+
+Its health is READY because the bounded source requires no separately connected
+Android component to provide those approved facts.
+
+AVAILABLE and READY remain capability-state evidence only.
+
+AVAILABLE
+!= Executive readiness.
+
+READY
+!= authentication.
+
+READY
+!= authorization.
+
+READY
+!= execution approval.
+
+The Stage 40 capability requires no Android runtime permission requested through
+the Activity runtime-permission APIs.
+
+An empty Android permission requirement therefore means only:
+
+Android runtime permission NOT_REQUIRED.
+
+It does not mean:
+
+- owner authenticated;
+- Devil authorization granted;
+- execution approved;
+- memory persistence authorized;
+- or device mutation permitted.
+
+Stage 40 preserves the capability invariant:
+
+Registered
+!= Available
+!= Authorized
+!= Ready
+!= Executed.
+
+### Stage 40 Device Knowledge Query Boundary
+
+Stage 40 also establishes an explicit typed Device Knowledge query boundary.
+
+The initial query vocabulary is intentionally small:
+
+- `DEVICE_SUMMARY`;
+- `ANDROID_VERSION`;
+- `DEVICE_MODEL`.
+
+The flow is:
+
+`AndroidDeviceKnowledgeQuery`
+→ `AndroidDeviceKnowledgeQueryCoordinator`
+→ `AndroidDeviceKnowledgeSource`
+→ `AndroidDeviceKnowledgeSnapshot`
+→ `AndroidDeviceKnowledgeQueryPolicy`
+→ `AndroidDeviceKnowledgeResult`.
+
+The policy derives presentation text only from the supplied approved snapshot
+fields.
+
+It never parses raw conversation text and never invents missing facts.
+
+Creating an `AndroidDeviceKnowledgeQuery` means only that one bounded query type
+has already been explicitly selected.
+
+It does not itself establish:
+
+- conversational understanding;
+- user intent;
+- identity;
+- authentication;
+- authorization;
+- memory eligibility;
+- execution approval;
+- observation;
+- verification;
+- or Outcome.
+
+Stage 40 therefore does not bypass the constitutional chain by turning arbitrary
+conversation prose directly into platform queries.
+
+### Stage 40 Production Composition
+
+The Android process composition root owns process-scoped Device Knowledge
+coordinators through `DevilApplication`.
+
+The production composition includes:
+
+- `AndroidDeviceKnowledgeCoordinator`;
+- `AndroidDeviceKnowledgeQueryCoordinator`.
+
+These are bounded Android embodiment components around the same Devil system.
+
+They are not:
+
+- another Brain;
+- another Executive;
+- another Planner;
+- another Conversation Domain;
+- another Security Authority;
+- another Memory Authority;
+- another runtime;
+- or an independent device intelligence.
+
+Stage 40 therefore preserves:
+
+one Devil
+→ one Unified Devil Runtime
+→ bounded Android Device Knowledge embodiment.
+
+Device Knowledge gives Devil factual awareness of its Android embodiment.
+
+It does not give Device Knowledge the authority to decide what should happen to
+the device or to change device state.
+
+Knowledge
+!= control.

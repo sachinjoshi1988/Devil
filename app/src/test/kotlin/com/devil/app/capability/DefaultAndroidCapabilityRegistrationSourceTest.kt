@@ -1,13 +1,14 @@
 package com.devil.app.capability
 
 import com.devil.app.accessibility.AndroidAccessibilityCapability
+import com.devil.app.device.AndroidDeviceKnowledgeCapability
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class DefaultAndroidCapabilityRegistrationSourceTest {
 
     @Test
-    fun `default source registers Stage 38 accessibility capability`() {
+    fun `default source registers genuine Android capabilities`() {
         val source: AndroidCapabilityRegistrationSource =
             DefaultAndroidCapabilityRegistrationSource()
 
@@ -15,17 +16,21 @@ class DefaultAndroidCapabilityRegistrationSourceTest {
             source.registrations()
 
         assertEquals(
-            1,
+            2,
             registrations.size,
         )
+
         assertEquals(
-            AndroidAccessibilityCapability.contract,
-            registrations.single(),
+            listOf(
+                AndroidAccessibilityCapability.contract,
+                AndroidDeviceKnowledgeCapability.contract,
+            ),
+            registrations,
         )
     }
 
     @Test
-    fun `default source preserves stable accessibility registration across repeated reads`() {
+    fun `default source preserves stable registrations across repeated reads`() {
         val source =
             DefaultAndroidCapabilityRegistrationSource()
 
@@ -38,9 +43,11 @@ class DefaultAndroidCapabilityRegistrationSourceTest {
         assertEquals(
             listOf(
                 AndroidAccessibilityCapability.contract,
+                AndroidDeviceKnowledgeCapability.contract,
             ),
             first,
         )
+
         assertEquals(
             first,
             second,

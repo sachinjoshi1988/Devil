@@ -1,16 +1,18 @@
 package com.devil.app.permission
 
 import com.devil.app.accessibility.AndroidAccessibilityCapability
+import com.devil.app.device.AndroidDeviceKnowledgeCapability
 import com.devil.core.model.capability.CapabilityContract
 
 /**
  * Default Android capability-permission requirement source.
  *
- * Stage 38 establishes that the bounded accessibility click capability does not
- * use an Android runtime permission requested through Activity permission APIs.
+ * Stage 38 accessibility click does not use an Android runtime permission
+ * requested through Activity permission APIs. Accessibility-service enablement
+ * remains a separate Android system setting and lifecycle boundary.
  *
- * Accessibility-service enablement is a separate Android system setting and
- * lifecycle boundary represented by DevilAccessibilityService connection state.
+ * Stage 40 Device Knowledge reads only the explicitly approved non-sensitive
+ * Android Build facts and requires no Android runtime permission.
  *
  * Therefore an empty permission list means:
  *
@@ -18,19 +20,19 @@ import com.devil.core.model.capability.CapabilityContract
  *
  * It does NOT mean:
  *
- * - accessibility service enabled;
  * - capability available;
  * - capability READY;
  * - owner authenticated;
  * - Devil authorization granted;
+ * - Executive readiness established;
  * - Execution APPROVED;
- * - accessibility action permitted;
- * - action attempted;
- * - effect observed;
- * - outcome verified.
+ * - action permitted;
+ * - memory persistence permitted;
+ * - observation established;
+ * - verification established;
+ * - or Outcome established.
  *
- * Unknown capability mappings remain null and therefore unavailable for a
- * justified Android permission assessment.
+ * Unknown capability mappings remain null.
  */
 class DefaultAndroidCapabilityPermissionRequirementSource :
     AndroidCapabilityPermissionRequirementSource {
@@ -38,12 +40,19 @@ class DefaultAndroidCapabilityPermissionRequirementSource :
     override fun requiredPermissions(
         capability: CapabilityContract,
     ): List<String>? {
-        return if (
-            AndroidAccessibilityCapability.matches(capability)
-        ) {
-            emptyList()
-        } else {
-            null
+        return when {
+            AndroidAccessibilityCapability.matches(
+                capability,
+            ) ->
+                emptyList()
+
+            AndroidDeviceKnowledgeCapability.matches(
+                capability,
+            ) ->
+                emptyList()
+
+            else ->
+                null
         }
     }
 }

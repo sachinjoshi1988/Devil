@@ -1,29 +1,28 @@
-package com.devil.app.accessibility
+package com.devil.app.device
 
 import com.devil.app.capability.DefaultAndroidCapabilityRegistrationSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class Stage38AccessibilityCapabilityRegistrationTest {
+class Stage40DeviceKnowledgeCapabilityRegistrationTest {
 
     @Test
-    fun `default Android registration source exposes accessibility action capability`() {
+    fun `default Android registration contains device knowledge capability`() {
         val registrations =
             DefaultAndroidCapabilityRegistrationSource()
                 .registrations()
 
         assertTrue(
             registrations.contains(
-                AndroidAccessibilityCapability.contract,
+                AndroidDeviceKnowledgeCapability.contract,
             ),
         )
 
         assertEquals(
             1,
             registrations.count {
-                it.capabilityId ==
-                    AndroidAccessibilityCapability.capabilityId
+                AndroidDeviceKnowledgeCapability.matches(it)
             },
         )
     }

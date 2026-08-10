@@ -1,6 +1,7 @@
 package com.devil.app.capability
 
 import com.devil.app.accessibility.AndroidAccessibilityCapability
+import com.devil.app.device.AndroidDeviceKnowledgeCapability
 import com.devil.core.model.capability.CapabilityCategory
 import com.devil.core.model.capability.CapabilityContract
 import com.devil.core.model.capability.CapabilityId
@@ -57,6 +58,7 @@ class DefaultAndroidCapabilityRegistryTest {
         assertEquals(
             listOf(
                 AndroidAccessibilityCapability.contract,
+                AndroidDeviceKnowledgeCapability.contract,
             ),
             result.capabilities,
         )

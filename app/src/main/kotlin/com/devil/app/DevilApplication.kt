@@ -17,6 +17,8 @@ import com.devil.app.conversation.DefaultConversationSubmissionFlowCoordinator
 import com.devil.app.conversation.VoiceConversationRuntimeInputMetadataProvider
 import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAdapter
+import com.devil.app.device.AndroidDeviceKnowledgeCoordinator
+import com.devil.app.device.AndroidDeviceKnowledgeQueryCoordinator
 import com.devil.app.observation.AndroidObservationAdapter
 import com.devil.app.observation.DefaultAndroidObservationAdapter
 import com.devil.app.notification.AndroidNotificationAnalysisCoordinator
@@ -264,6 +266,38 @@ class DevilApplication : Application() {
      * runtime, speak notification content, persist notification content, or
      * execute an action.
      */
+    /**
+     * Stage 40 process-scoped Android Device Knowledge embodiment.
+     *
+     * Device knowledge is bounded to directly observed, non-sensitive Android
+     * platform facts approved by Stage 40.
+     *
+     * Reading device knowledge does not authenticate a subject, grant authority,
+     * create logical memory, perform an Android action, or establish an Outcome.
+     *
+     * Device knowledge != device control.
+     */
+    val deviceKnowledgeCoordinator:
+        AndroidDeviceKnowledgeCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        AndroidDeviceKnowledgeCoordinator()
+    }
+
+    /**
+     * Stage 40 process-scoped bounded Device Knowledge query boundary.
+     *
+     * Queries are explicit typed requests only. This coordinator does not parse
+     * conversation text, infer intent, invoke a separate runtime, or execute an
+     * Android action.
+     */
+    val deviceKnowledgeQueryCoordinator:
+        AndroidDeviceKnowledgeQueryCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        AndroidDeviceKnowledgeQueryCoordinator()
+    }
+
     val notificationAnalysisCoordinator:
         AndroidNotificationAnalysisCoordinator by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
