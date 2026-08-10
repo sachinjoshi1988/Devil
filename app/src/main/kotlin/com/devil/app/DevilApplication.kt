@@ -51,6 +51,10 @@ import com.devil.core.model.reliability.ReliabilityCoordinator
 import com.devil.core.model.reliability.RecoveryRequestCoordinator
 import com.devil.core.model.reliability.RecoveryAttemptCoordinator
 import com.devil.core.model.reliability.RecoveryVerificationCoordinator
+import com.devil.core.model.privacy.PrivacyDisclosureCoordinator
+import com.devil.core.model.privacy.PrivacyExposureCoordinator
+import com.devil.core.model.privacy.PrivacyRepresentationReducer
+import com.devil.core.runtime.privacy.PrivacyProtectedContextResolver
 import com.devil.core.runtime.DefaultUnifiedDevilRuntime
 import com.devil.core.runtime.UnifiedDevilRuntime
 
@@ -492,6 +496,54 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         RecoveryVerificationCoordinator()
+    }
+
+    /**
+     * Stage 46 process-scoped bounded Privacy and Security Hardening governance.
+     *
+     * These components assess explicit privacy exposure requests, derive bounded
+     * disclosure treatment, reduce an explicitly supplied representation only
+     * after an AVAILABLE disclosure decision, and translate already-established
+     * constitutional security evidence into privacy protected-context evidence.
+     *
+     * Production deliberately does not fabricate protected owner context.
+     *
+     * A valid session does not prove owner identity.
+     * SecurityStage.OWNER_MODE does not independently prove owner identity.
+     * Privacy ALLOWED does not grant constitutional authorization.
+     * Privacy disclosure treatment does not perform disclosure.
+     * Representation reduction does not transmit or persist content.
+     *
+     * These components are intentionally not connected here to conversation,
+     * voice, notifications, Internet retrieval, Android execution, logical
+     * memory persistence, or UnifiedDevilRuntime entry.
+     */
+    val privacyExposureCoordinator:
+        PrivacyExposureCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        PrivacyExposureCoordinator()
+    }
+
+    val privacyDisclosureCoordinator:
+        PrivacyDisclosureCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        PrivacyDisclosureCoordinator()
+    }
+
+    val privacyRepresentationReducer:
+        PrivacyRepresentationReducer by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        PrivacyRepresentationReducer()
+    }
+
+    val privacyProtectedContextResolver:
+        PrivacyProtectedContextResolver by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        PrivacyProtectedContextResolver()
     }
 
     val notificationAnalysisCoordinator:

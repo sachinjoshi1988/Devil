@@ -4764,3 +4764,204 @@ Recovery governance
 != execution authority
 != constitutional Verification
 != Outcome success.
+
+## Stage 46 Privacy and Security Hardening
+
+Stage 46 establishes bounded privacy-governance contracts and a fail-closed
+security-backed protected-context boundary around the existing unified Devil
+architecture.
+
+Stage 46 does not create another Brain, Security Authority, Authorization
+Authority, Memory Authority, Executive, Planner, runtime, or execution path.
+
+Its purpose is to strengthen privacy handling while preserving the existing
+constitutional separation of identity, trust, authorization, security,
+execution, memory, and Android operating-system permission.
+
+### Privacy Data Classification
+
+Stage 46 defines explicit privacy classifications for information handled by
+the bounded privacy policy.
+
+Classification is descriptive privacy metadata only.
+
+Privacy classification:
+
+- does not authenticate a subject;
+- does not prove owner identity;
+- does not establish trust;
+- does not grant constitutional authorization;
+- does not grant Android permission;
+- does not permit execution;
+- and does not itself permit disclosure.
+
+### Privacy Exposure Boundary
+
+PrivacyExposureRequest describes:
+
+- one PrivacyDataClassification;
+- one PrivacyExposureTarget;
+- and whether explicit protected-context evidence was supplied.
+
+PrivacyExposurePolicy evaluates that request and produces one
+PrivacyExposureAssessment.
+
+Privacy ALLOWED means only that the bounded Stage 46 privacy policy does not
+block the supplied exposure.
+
+Privacy ALLOWED:
+
+- is not constitutional authorization;
+- is not Android permission;
+- is not execution approval;
+- is not authentication;
+- is not Owner Mode;
+- and does not mean disclosure occurred.
+
+Non-public owner presentation fails closed when protected context has not been
+established.
+
+The OWNER_PRESENTATION target is descriptive destination context only. Merely
+selecting that target does not establish authentication, owner identity, an
+active protected owner context, or permission to disclose information.
+
+### Privacy Disclosure Treatment Boundary
+
+PrivacyDisclosureRequest contains one existing PrivacyExposureAssessment and
+deliberately contains no protected representation value.
+
+PrivacyDisclosurePolicy derives only bounded treatment metadata.
+
+Supported treatments are:
+
+- FULL;
+- REDACTED;
+- METADATA_ONLY;
+- SUPPRESSED.
+
+A treatment is not authority and is not transmission permission.
+
+RESTRICTED exposure is reduced to bounded non-content handling rather than
+being silently upgraded into full disclosure.
+
+BLOCKED exposure does not produce a disclosure treatment.
+
+UNAVAILABLE exposure remains UNAVAILABLE and produces no treatment.
+
+Unknown privacy eligibility therefore fails closed.
+
+### Representation Reduction Boundary
+
+PrivacyRepresentationReducer is a deterministic in-memory reduction boundary.
+
+It may process a representation only after an AVAILABLE
+PrivacyDisclosureDecision exists.
+
+FULL preserves the normalized supplied representation only within the bounded
+result.
+
+REDACTED replaces the entire protected representation with the fixed marker:
+
+[REDACTED]
+
+Stage 46 deliberately performs whole-value replacement rather than partial or
+reversible masking.
+
+METADATA_ONLY and SUPPRESSED preserve no protected representation.
+
+Representation reduction:
+
+- performs no network I/O;
+- performs no Android action;
+- performs no logical-memory persistence;
+- performs no runtime entry;
+- performs no authentication;
+- grants no authorization;
+- and does not establish successful disclosure.
+
+### Protected Context Evidence Boundary
+
+Stage 46 introduces PrivacyProtectedContextEvidence as bounded privacy-policy
+evidence.
+
+The runtime PrivacyProtectedContextResolver consumes already-established
+constitutional security results.
+
+It is not a Security Authority.
+
+A VALID SessionValidityResult establishes session validity only.
+
+A SecurityStateRecord containing OWNER_MODE represents a recorded security
+position only.
+
+Neither fact independently proves owner identity.
+
+A valid session combined with an OWNER_MODE or
+HIGH_SECURITY_CONFIRMATION state record must not fabricate authenticated
+owner-protected privacy context.
+
+The current architecture exposes no independent operational Owner-Mode
+establishment result that Stage 46 can safely consume as proof of protected
+owner presentation.
+
+Therefore the Stage 46 protected-context resolver deliberately fails closed
+until genuine constitutional evidence exists.
+
+### Security Separation
+
+Stage 46 preserves the following boundaries:
+
+Android permission != Devil authorization.
+
+Wake != authentication.
+
+Code Red != authentication.
+
+Session validity != owner identity.
+
+SecurityStage.OWNER_MODE != owner identity proof.
+
+Privacy protected-context evidence != authentication evidence.
+
+Privacy protected-context evidence != Owner Mode entry.
+
+Privacy ALLOWED != constitutional authorization.
+
+Privacy disclosure treatment != permission to transmit.
+
+Privacy representation reduction != disclosure success.
+
+No Stage 46 component may bypass the constitutional chain.
+
+### Production Composition
+
+DevilApplication owns one process-scoped instance of each bounded Stage 46
+component:
+
+- PrivacyExposureCoordinator;
+- PrivacyDisclosureCoordinator;
+- PrivacyRepresentationReducer;
+- PrivacyProtectedContextResolver.
+
+Production composition does not connect these Stage 46 components directly to:
+
+- conversation presentation;
+- voice presentation;
+- notification content;
+- Internet retrieval;
+- Android execution;
+- logical-memory persistence;
+- or UnifiedDevilRuntime entry.
+
+Production deliberately does not fabricate protected owner context merely to
+make privacy exposure eligible.
+
+The core privacy model remains platform-independent.
+
+The protected-context resolver remains inside core runtime because it consumes
+existing constitutional security-runtime results while creating no security
+authority of its own.
+
+Stage 46 therefore hardens privacy handling without creating a second
+intelligence, weakening constitutional authority boundaries, or granting new
+execution power.
