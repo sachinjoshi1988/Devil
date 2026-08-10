@@ -47,6 +47,10 @@ import com.devil.app.voice.VoiceConversationResultCoordinator
 import com.devil.core.model.owner.OwnerProfileUpdateCoordinator
 import com.devil.core.model.child.ChildPolicyCoordinator
 import com.devil.core.model.child.ChildPolicySatisfactionCoordinator
+import com.devil.core.model.reliability.ReliabilityCoordinator
+import com.devil.core.model.reliability.RecoveryRequestCoordinator
+import com.devil.core.model.reliability.RecoveryAttemptCoordinator
+import com.devil.core.model.reliability.RecoveryVerificationCoordinator
 import com.devil.core.runtime.DefaultUnifiedDevilRuntime
 import com.devil.core.runtime.UnifiedDevilRuntime
 
@@ -443,6 +447,51 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         ChildPolicySatisfactionCoordinator()
+    }
+
+    /**
+     * Stage 45 process-scoped bounded Reliability and Recovery governance.
+     *
+     * These coordinators assess explicit reliability evidence, derive bounded
+     * recovery requests, account for finite recovery attempts, and evaluate
+     * explicit post-attempt recovery evidence.
+     *
+     * They do not automatically retry, restart, reconnect, schedule recovery,
+     * invoke UnifiedDevilRuntime, execute Android actions, mutate capability
+     * health, erase failure evidence, persist logical memory, or establish a
+     * constitutional Verification or Outcome.
+     *
+     * RECOVERY_ELIGIBLE != retry authorized.
+     * RecoveryRequest != execution request.
+     * RECORDED != recovery executed.
+     * VERIFIED_RECOVERED != constitutional Verification or Outcome success.
+     */
+    val reliabilityCoordinator:
+        ReliabilityCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        ReliabilityCoordinator()
+    }
+
+    val recoveryRequestCoordinator:
+        RecoveryRequestCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        RecoveryRequestCoordinator()
+    }
+
+    val recoveryAttemptCoordinator:
+        RecoveryAttemptCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        RecoveryAttemptCoordinator()
+    }
+
+    val recoveryVerificationCoordinator:
+        RecoveryVerificationCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        RecoveryVerificationCoordinator()
     }
 
     val notificationAnalysisCoordinator:

@@ -4594,3 +4594,173 @@ but
 Child policy
 != constitutional authorization
 != execution authority.
+
+## Stage 45 Reliability and Recovery
+
+Stage 45 establishes bounded reliability assessment and recovery governance without
+creating an autonomous recovery engine.
+
+The Stage 45 flow is:
+
+RecoveryEvidence
+→ ReliabilityPolicy
+→ ReliabilityAssessment
+→ RecoveryRequestPolicy
+→ RecoveryRequestResult
+→ RecoveryAttemptPolicy
+→ RecoveryAttemptResult
+→ explicit post-attempt RecoveryEvidence
+→ RecoveryVerificationPolicy
+→ RecoveryVerificationResult.
+
+### Reliability Evidence Boundary
+
+`RecoveryEvidence` preserves one explicit reliability condition together with
+optional constitutional error evidence, optional capability-health observation,
+whether a bounded recovery path is known, and whether manual intervention is
+required.
+
+Reliability evidence does not mutate capability health, erase errors, authorize
+execution, retry work, or establish a verified Outcome.
+
+The Stage 45 reliability conditions are:
+
+- `HEALTHY`;
+- `DEGRADED`;
+- `UNAVAILABLE`;
+- `FAILED`.
+
+A reliability condition is descriptive evidence only.
+
+Reliability condition
+!= capability state mutation
+!= authorization
+!= Executive readiness
+!= Android permission
+!= execution approval
+!= verified Outcome.
+
+### Recovery Eligibility Boundary
+
+`ReliabilityPolicy` may classify supplied evidence as recovery eligible.
+
+`RECOVERY_ELIGIBLE` means only that a later constitutionally authorized recovery
+mechanism may consider bounded recovery.
+
+It does not itself authorize or start recovery.
+
+RECOVERY_ELIGIBLE
+!= retry authorized
+!= execution approved
+!= recovered.
+
+### Finite Recovery Request Boundary
+
+A `RecoveryRequest` may exist only when the supplied reliability assessment is
+`RECOVERY_ELIGIBLE` and a finite recovery-attempt budget has at least one
+remaining attempt.
+
+The supported bounded strategy classes are:
+
+- `RETRY_SAME_OPERATION`;
+- `REINITIALIZE_COMPONENT`;
+- `RECONNECT_SOURCE`.
+
+A recovery strategy describes recovery intent only.
+
+RecoveryRequest
+!= constitutional authorization
+!= execution request
+!= retry started.
+
+`RecoveryAttemptBudget` is finite. Stage 45 contains no infinite recovery loop,
+scheduler, worker, service, or self-triggering retry mechanism.
+
+### Recovery Attempt Accounting Boundary
+
+`RecoveryAttemptCoordinator` performs accounting only.
+
+One `RECORDED` result means exactly one finite attempt-budget unit was consumed.
+
+The original recovery request and original budget remain immutable.
+
+RECORDED
+!= recovery executed
+!= recovery succeeded
+!= authorization
+!= execution approval.
+
+This separation prevents Devil from interpreting bookkeeping as evidence that an
+external or platform action actually occurred.
+
+### Post-Attempt Recovery Verification Boundary
+
+Recovery success is not inferred from creation of a request or accounting of an
+attempt.
+
+`RecoveryVerificationCoordinator` requires explicit post-attempt reliability
+evidence.
+
+Only explicit `HEALTHY` post-attempt reliability evidence may produce
+`VERIFIED_RECOVERED`.
+
+This is Stage 45 recovery verification only.
+
+VERIFIED_RECOVERED
+!= constitutional Verification success
+!= verified Outcome
+!= capability-health mutation
+!= execution approval.
+
+The constitutional Verification Authority and Outcome Authority remain separate
+and unchanged.
+
+### Production Composition
+
+`DevilApplication` owns one process-scoped instance of each bounded Stage 45
+coordinator:
+
+- `ReliabilityCoordinator`;
+- `RecoveryRequestCoordinator`;
+- `RecoveryAttemptCoordinator`;
+- `RecoveryVerificationCoordinator`.
+
+These coordinators contain policy and accounting boundaries only.
+
+Production does not compose:
+
+- a recovery worker;
+- a recovery service;
+- a recovery scheduler;
+- an automatic retry engine;
+- a recovery execution adapter;
+- another Unified Devil Runtime;
+- another Brain;
+- another Executive;
+- another Planner;
+- another Security Authority;
+- another Authorization Authority;
+- another Memory Authority.
+
+Stage 45 therefore cannot independently retry, restart, reconnect, execute,
+schedule work, mutate capability health, erase failure evidence, persist logical
+memory, or claim constitutional success.
+
+The governing invariant is:
+
+Evidence
+→ bounded reliability assessment
+→ bounded recovery eligibility
+→ finite request
+→ finite attempt accounting
+→ explicit post-attempt evidence
+→ bounded recovery verification
+
+but
+
+Recovery governance
+!= autonomous recovery
+!= constitutional authorization
+!= execution authority
+!= constitutional Verification
+!= Outcome success.
