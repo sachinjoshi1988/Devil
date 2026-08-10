@@ -2,6 +2,7 @@ package com.devil.app.capability
 
 import com.devil.app.accessibility.AndroidAccessibilityCapability
 import com.devil.app.device.AndroidDeviceKnowledgeCapability
+import com.devil.app.internet.AndroidInternetKnowledgeCapability
 import com.devil.app.vision.AndroidVisionCapability
 import com.devil.core.model.capability.CapabilityContract
 
@@ -19,6 +20,9 @@ import com.devil.core.model.capability.CapabilityContract
  * Stage 41:
  * Android Vision Camera Perception.
  *
+ * Stage 42:
+ * Android Internet Knowledge.
+ *
  * Registration declares capability identity and constitutional purpose only.
  *
  * Registration != availability.
@@ -26,12 +30,13 @@ import com.devil.core.model.capability.CapabilityContract
  * Registration != authentication.
  * Registration != Devil authorization.
  * Registration != Android permission.
- * Registration != camera opened.
- * Registration != image captured.
- * Registration != visual understanding.
+ * Registration != network connectivity.
+ * Registration != remote source reachability.
+ * Registration != retrieved content.
+ * Registration != trusted content.
  * Registration != Execution APPROVED.
  * Registration != observed effect.
- * Registration != verified outcome.
+ * Registration != verified Outcome.
  */
 class DefaultAndroidCapabilityRegistrationSource :
     AndroidCapabilityRegistrationSource {
@@ -41,6 +46,7 @@ class DefaultAndroidCapabilityRegistrationSource :
             AndroidAccessibilityCapability.contract,
             AndroidDeviceKnowledgeCapability.contract,
             AndroidVisionCapability.contract,
+            AndroidInternetKnowledgeCapability.contract,
         )
     }
 }

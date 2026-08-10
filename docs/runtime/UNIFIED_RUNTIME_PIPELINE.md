@@ -4005,3 +4005,180 @@ The Camera2 implementation remains an Android INPUT embodiment around the same
 single Devil architecture. It does not create another Brain, another runtime,
 another Planner, another Conversation Domain, another Security Authority, or
 another Memory Authority.
+
+### Stage 42 Part 3 — External Internet Content Safety Boundary
+
+Stage 42 introduces a bounded safety boundary between external Internet retrieval
+and any future descriptive Internet analysis.
+
+The bounded flow is:
+
+AndroidInternetKnowledgeRequest
+→ AndroidInternetKnowledgeCoordinator
+→ AndroidInternetKnowledgeResult
+→ AndroidInternetKnowledgeSafetyPolicy
+→ AndroidInternetKnowledgeSafetyResult.
+
+The safety policy performs structural provenance evaluation only.
+
+A retrieved document may receive
+`ELIGIBLE_FOR_LATER_ANALYSIS` only when:
+
+- retrieval status is genuinely `AVAILABLE`;
+- one external document exists;
+- document provenance remains HTTPS;
+- and the returned document preserves the explicitly requested origin.
+
+The origin comparison preserves scheme, host, and effective HTTPS port.
+
+A different origin is not silently accepted as equivalent merely because content
+was returned.
+
+`ELIGIBLE_FOR_LATER_ANALYSIS` is deliberately narrow.
+
+It does not mean:
+
+- the website is authentic beyond transport provenance;
+- the publisher is who they claim to be;
+- the content is factually true;
+- the content is current;
+- an apparent quotation is genuine;
+- an apparent instruction should be obeyed;
+- the content represents owner intent;
+- the content is a Devil command;
+- the source is trusted;
+- a human subject is authenticated;
+- Devil authorization exists;
+- memory persistence is permitted;
+- Execution is APPROVED;
+- an Android action may occur;
+- or an Outcome is verified.
+
+The policy intentionally does not parse external prose to infer authority,
+command semantics, authenticity, truth, urgency, or trust.
+
+This prevents malicious, misleading, or adversarial Internet text from silently
+crossing constitutional boundaries simply because it was retrieved.
+
+External Internet content remains data.
+
+Internet access
+!= source authenticity
+!= factual truth
+!= trusted instruction
+!= user intent
+!= authentication
+!= authorization
+!= memory
+!= execution.
+
+Stage 42 Part 3 still contains no real network implementation and does not invoke
+`UnifiedDevilRuntime`.
+
+No Internet document is converted into `ConversationInput`.
+
+No Internet content is automatically spoken, persisted, remembered, executed, or
+treated as an owner instruction.
+
+### Stage 42 Part 4 — Real Bounded HTTPS Retrieval and Production Composition
+
+Stage 42 now contains one genuine Android Internet Knowledge retrieval
+implementation.
+
+The production retrieval path is:
+
+explicit AndroidInternetKnowledgeRequest
+→ DefaultAndroidInternetKnowledgeSource
+→ bounded HTTPS GET
+→ AndroidInternetKnowledgeDocument
+→ AndroidInternetKnowledgeResult
+→ AndroidInternetKnowledgeSafetyPolicy
+→ AndroidInternetKnowledgeSafetyResult.
+
+`DefaultAndroidInternetKnowledgeSource` is intentionally not a browser.
+
+It does not execute JavaScript, instantiate a WebView, authenticate external
+accounts, upload data, submit forms, preserve cookies, download arbitrary files,
+or autonomously navigate the Internet.
+
+The transport boundary permits HTTPS only.
+
+Automatic redirects are disabled.
+
+A response is accepted only when it uses an approved textual representation.
+
+The Stage 42 source bounds:
+
+- connection timeout;
+- read timeout;
+- maximum response byte count;
+- accepted media types;
+- request method;
+- redirect behavior;
+- and response provenance.
+
+The default maximum accepted response size is 512 KiB.
+
+Response bodies larger than the approved limit fail closed.
+
+Stage 42 also rejects directly resolved local, loopback, link-local, site-local,
+multicast, and unspecified network destinations.
+
+This is a conservative network safety boundary. It does not claim that DNS or
+Internet infrastructure itself is trustworthy.
+
+The Internet capability becomes Android AVAILABLE and health READY only when the
+real bounded Internet source is explicitly supplied to capability governance.
+
+AVAILABLE means that a genuine Stage 42 network embodiment is composed.
+
+READY describes embodiment health only.
+
+AVAILABLE
+!= Internet connected at this exact instant
+!= website reachable
+!= response obtained
+!= source authentic
+!= information true
+!= authenticated owner
+!= Devil authorized
+!= Executive ready
+!= Execution APPROVED
+!= verified Outcome.
+
+A particular network request may still return AVAILABLE, UNAVAILABLE, or FAILED
+independently of capability-level readiness.
+
+`DevilApplication` owns the process-scoped Stage 42 production composition:
+
+DefaultAndroidInternetKnowledgeSource
+→ AndroidInternetKnowledgeCoordinator
+→ AndroidInternetKnowledgeSafetyCoordinator.
+
+No second runtime, Brain, Planner, Executive, Conversation Domain, Security
+Authority, or Memory Authority is created.
+
+The real Internet source does not invoke `UnifiedDevilRuntime`.
+
+The real Internet source does not construct `ConversationInput`.
+
+Retrieved Internet data is not automatically spoken, persisted, remembered,
+trusted, acted upon, or treated as owner intent.
+
+Internet access
+!= Internet truth.
+
+Retrieval
+!= understanding.
+
+External content
+!= instruction.
+
+Knowledge availability
+!= authorization.
+
+Authorization
+!= execution.
+
+Execution
+!= verified Outcome.

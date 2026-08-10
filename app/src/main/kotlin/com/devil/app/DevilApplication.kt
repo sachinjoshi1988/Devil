@@ -19,6 +19,9 @@ import com.devil.app.conversation.DefaultConversationSubmissionFlowCoordinator
 import com.devil.app.conversation.VoiceConversationRuntimeInputMetadataProvider
 import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAdapter
+import com.devil.app.internet.AndroidInternetKnowledgeCoordinator
+import com.devil.app.internet.AndroidInternetKnowledgeSafetyCoordinator
+import com.devil.app.internet.DefaultAndroidInternetKnowledgeSource
 import com.devil.app.device.AndroidDeviceKnowledgeCoordinator
 import com.devil.app.device.AndroidDeviceKnowledgeQueryCoordinator
 import com.devil.app.vision.DefaultAndroidCameraInventorySource
@@ -96,6 +99,18 @@ class DevilApplication : Application() {
         DefaultUnifiedDevilRuntime()
     }
 
+    /**
+     * Stage 42 process-scoped bounded HTTPS Internet Knowledge source.
+     *
+     * This source performs retrieval only. External content remains untrusted
+     * data and gains no constitutional authority from successful transport.
+     */
+    val internetKnowledgeSource: DefaultAndroidInternetKnowledgeSource by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidInternetKnowledgeSource()
+    }
+
     val capabilityRegistry: AndroidCapabilityRegistry by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
@@ -114,11 +129,15 @@ class DevilApplication : Application() {
                 DefaultAndroidCapabilityAvailabilitySource(
                     visionCameraInventorySource =
                         cameraInventorySource,
+                      internetKnowledgeSource =
+                          internetKnowledgeSource,
                 ),
             healthSource =
                 DefaultAndroidCapabilityHealthSource(
                     visionCameraInventorySource =
                         cameraInventorySource,
+                      internetKnowledgeSource =
+                          internetKnowledgeSource,
                 ),
         )
     }
@@ -340,6 +359,38 @@ class DevilApplication : Application() {
                 DefaultAndroidVisionFrameSource(
                     context = applicationContext,
                 ),
+        )
+    }
+
+    /**
+     * Stage 42 process-scoped bounded Internet Knowledge retrieval boundary.
+     *
+     * HTTPS retrieval remains external untrusted knowledge. Retrieval does not
+     * create ConversationInput, trust, authorization, memory, execution, or
+     * verified Outcome.
+     */
+    val internetKnowledgeCoordinator:
+        AndroidInternetKnowledgeCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        AndroidInternetKnowledgeCoordinator(
+            source = internetKnowledgeSource,
+        )
+    }
+
+    /**
+     * Stage 42 structural external-content safety boundary.
+     *
+     * This may establish only eligibility for later bounded analysis.
+     * Eligibility is not trust or authority.
+     */
+    val internetKnowledgeSafetyCoordinator:
+        AndroidInternetKnowledgeSafetyCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        AndroidInternetKnowledgeSafetyCoordinator(
+            knowledgeCoordinator =
+                internetKnowledgeCoordinator,
         )
     }
 
