@@ -2,6 +2,7 @@ package com.devil.app.capability
 
 import com.devil.app.accessibility.AndroidAccessibilityCapability
 import com.devil.app.device.AndroidDeviceKnowledgeCapability
+import com.devil.app.vision.AndroidVisionCapability
 import com.devil.core.model.capability.CapabilityCategory
 import com.devil.core.model.capability.CapabilityContract
 import com.devil.core.model.capability.CapabilityId
@@ -59,6 +60,7 @@ class DefaultAndroidCapabilityRegistryTest {
             listOf(
                 AndroidAccessibilityCapability.contract,
                 AndroidDeviceKnowledgeCapability.contract,
+                AndroidVisionCapability.contract,
             ),
             result.capabilities,
         )

@@ -4,6 +4,8 @@ import android.app.Application
 import com.devil.app.capability.AndroidCapabilityRegistry
 import com.devil.app.capability.AndroidCapabilityStateProvider
 import com.devil.app.capability.DefaultAndroidCapabilityRegistry
+import com.devil.app.capability.DefaultAndroidCapabilityAvailabilitySource
+import com.devil.app.capability.DefaultAndroidCapabilityHealthSource
 import com.devil.app.capability.DefaultAndroidCapabilityStateProvider
 import com.devil.app.conversation.ConversationEntryIdProvider
 import com.devil.app.conversation.ConversationInteractionCoordinator
@@ -19,6 +21,9 @@ import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAdapter
 import com.devil.app.device.AndroidDeviceKnowledgeCoordinator
 import com.devil.app.device.AndroidDeviceKnowledgeQueryCoordinator
+import com.devil.app.vision.DefaultAndroidCameraInventorySource
+import com.devil.app.vision.DefaultAndroidVisionFrameSource
+import com.devil.app.vision.AndroidVisionFramePerceptionCoordinator
 import com.devil.app.observation.AndroidObservationAdapter
 import com.devil.app.observation.DefaultAndroidObservationAdapter
 import com.devil.app.notification.AndroidNotificationAnalysisCoordinator
@@ -96,13 +101,27 @@ class DevilApplication : Application() {
     ) {
         DefaultAndroidCapabilityRegistry()
     }
-
     val capabilityStateProvider: AndroidCapabilityStateProvider by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
-        DefaultAndroidCapabilityStateProvider()
-    }
+        val cameraInventorySource =
+            DefaultAndroidCameraInventorySource(
+                context = applicationContext,
+            )
 
+        DefaultAndroidCapabilityStateProvider(
+            availabilitySource =
+                DefaultAndroidCapabilityAvailabilitySource(
+                    visionCameraInventorySource =
+                        cameraInventorySource,
+                ),
+            healthSource =
+                DefaultAndroidCapabilityHealthSource(
+                    visionCameraInventorySource =
+                        cameraInventorySource,
+                ),
+        )
+    }
     val executionAdapter: AndroidExecutionAdapter by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
@@ -296,6 +315,32 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         AndroidDeviceKnowledgeQueryCoordinator()
+    }
+
+    /**
+     * Stage 41 process-scoped bounded real Camera2 frame-perception boundary.
+     *
+     * Camera capture is an Android input embodiment only.
+     *
+     * Captured frame != semantic understanding.
+     * Captured frame != identity.
+     * Captured frame != authentication.
+     * Captured frame != authorization.
+     * Captured frame != memory.
+     * Captured frame != verified Outcome.
+     *
+     * The source must be invoked away from the Android main thread.
+     */
+    val visionFramePerceptionCoordinator:
+        AndroidVisionFramePerceptionCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        AndroidVisionFramePerceptionCoordinator(
+            frameSource =
+                DefaultAndroidVisionFrameSource(
+                    context = applicationContext,
+                ),
+        )
     }
 
     val notificationAnalysisCoordinator:

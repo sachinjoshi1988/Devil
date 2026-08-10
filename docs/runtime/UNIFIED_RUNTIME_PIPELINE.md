@@ -3923,3 +3923,85 @@ the device or to change device state.
 
 Knowledge
 != control.
+
+### Stage 41 Real Bounded Camera2 Frame Capture
+
+Stage 41 now contains one real Android Camera2 frame-capture embodiment.
+
+The bounded production path is:
+
+explicit `AndroidVisionFrameRequest`
+→ `DefaultAndroidVisionFrameSource`
+→ Android CAMERA permission inspection
+→ explicit camera-id validation
+→ bounded JPEG output selection
+→ Android `CameraManager.openCamera`
+→ one `CameraDevice`
+→ one still `CameraCaptureSession`
+→ one `ImageReader`
+→ one JPEG capture request
+→ transient encoded bytes
+→ `AndroidVisionFrame`
+→ `AndroidVisionFrameCaptureResult`
+→ `AndroidVisionFramePerceptionCoordinator`.
+
+Camera2 callback execution is isolated on a dedicated Android HandlerThread.
+
+The synchronous Stage 41 frame-source contract must not be invoked from the
+Android main thread. The default Camera2 source fails closed when called there
+rather than blocking UI execution.
+
+Camera capture is bounded by a finite timeout.
+
+Camera, session, ImageReader, Image, and callback-thread resources are closed
+after the attempt.
+
+Stage 41 deliberately bounds JPEG resolution rather than automatically choosing
+the largest sensor output. This limits transient visual-frame memory pressure.
+
+The captured byte array is defensively copied by `AndroidVisionFrame`.
+
+The frame remains transient Stage 41 perception data.
+
+It is not automatically persisted.
+
+It is not automatically submitted to `UnifiedDevilRuntime`.
+
+It is not automatically converted into `ConversationInput`.
+
+It is not automatically interpreted as an object, person, scene, command, or
+fact.
+
+It is not face recognition.
+
+It is not biometric authentication.
+
+It is not owner identification.
+
+It is not Devil authorization.
+
+It does not establish semantic visual understanding.
+
+It does not create logical memory.
+
+It does not perform an Android action.
+
+It does not establish constitutional Observation, Verification, or Outcome.
+
+The Stage 41 invariant remains:
+
+Camera hardware available
+!= CAMERA permission granted
+!= Camera opened
+!= Frame captured
+!= Visual understanding
+!= Identity established
+!= Authentication
+!= Authorization
+!= Execution
+!= Verified Outcome.
+
+The Camera2 implementation remains an Android INPUT embodiment around the same
+single Devil architecture. It does not create another Brain, another runtime,
+another Planner, another Conversation Domain, another Security Authority, or
+another Memory Authority.

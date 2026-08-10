@@ -2,6 +2,7 @@ package com.devil.app.capability
 
 import com.devil.app.accessibility.AndroidAccessibilityCapability
 import com.devil.app.device.AndroidDeviceKnowledgeCapability
+import com.devil.app.vision.AndroidVisionCapability
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -16,7 +17,7 @@ class DefaultAndroidCapabilityRegistrationSourceTest {
             source.registrations()
 
         assertEquals(
-            2,
+            3,
             registrations.size,
         )
 
@@ -24,6 +25,7 @@ class DefaultAndroidCapabilityRegistrationSourceTest {
             listOf(
                 AndroidAccessibilityCapability.contract,
                 AndroidDeviceKnowledgeCapability.contract,
+                AndroidVisionCapability.contract,
             ),
             registrations,
         )
@@ -44,6 +46,7 @@ class DefaultAndroidCapabilityRegistrationSourceTest {
             listOf(
                 AndroidAccessibilityCapability.contract,
                 AndroidDeviceKnowledgeCapability.contract,
+                AndroidVisionCapability.contract,
             ),
             first,
         )

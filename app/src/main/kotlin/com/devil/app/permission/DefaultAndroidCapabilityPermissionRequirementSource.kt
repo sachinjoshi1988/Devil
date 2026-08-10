@@ -1,7 +1,9 @@
 package com.devil.app.permission
 
+import android.Manifest
 import com.devil.app.accessibility.AndroidAccessibilityCapability
 import com.devil.app.device.AndroidDeviceKnowledgeCapability
+import com.devil.app.vision.AndroidVisionCapability
 import com.devil.core.model.capability.CapabilityContract
 
 /**
@@ -14,23 +16,19 @@ import com.devil.core.model.capability.CapabilityContract
  * Stage 40 Device Knowledge reads only the explicitly approved non-sensitive
  * Android Build facts and requires no Android runtime permission.
  *
- * Therefore an empty permission list means:
+ * Stage 41 Vision requires Android Manifest.permission.CAMERA before any future
+ * camera-open or image-capture mechanism may proceed.
  *
- * Android runtime permission NOT_REQUIRED.
+ * Permission requirement mapping itself does not inspect grant state.
  *
- * It does NOT mean:
- *
- * - capability available;
- * - capability READY;
- * - owner authenticated;
- * - Devil authorization granted;
- * - Executive readiness established;
- * - Execution APPROVED;
- * - action permitted;
- * - memory persistence permitted;
- * - observation established;
- * - verification established;
- * - or Outcome established.
+ * Android CAMERA permission granted
+ * != camera hardware available
+ * != camera opened
+ * != image captured
+ * != visual understanding
+ * != owner authentication
+ * != Devil authorization
+ * != Execution APPROVED.
  *
  * Unknown capability mappings remain null.
  */
@@ -50,6 +48,13 @@ class DefaultAndroidCapabilityPermissionRequirementSource :
                 capability,
             ) ->
                 emptyList()
+
+            AndroidVisionCapability.matches(
+                capability,
+            ) ->
+                listOf(
+                    Manifest.permission.CAMERA,
+                )
 
             else ->
                 null
