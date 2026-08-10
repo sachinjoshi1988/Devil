@@ -4182,3 +4182,185 @@ Authorization
 
 Execution
 != verified Outcome.
+
+## Stage 43 Owner Profile and Relationship
+
+Stage 43 establishes bounded descriptive owner-profile and relationship contracts
+without creating another identity system, security authority, relationship
+authority, memory system, or execution path.
+
+The Stage 43 owner-domain foundation is:
+
+`OwnerProfile`
+→ `OwnerRelationship`
+→ `OwnerProfileSnapshot`.
+
+`OwnerProfile` preserves only bounded descriptive information associated with one
+existing `IdentityId`, including an optional display name and preferred form of
+address.
+
+Profile information is not authentication evidence.
+
+A name, preferred form of address, or other matching profile field must never be
+used merely by itself to conclude that the current subject is the owner.
+
+The Stage 43 invariant is:
+
+Owner profile
+!= identity resolution
+!= owner authentication
+!= ownership proof
+!= subject trust
+!= authorization
+!= Owner Mode.
+
+### Stage 43 Relationship Boundary
+
+`OwnerRelationship` preserves bounded descriptive relationship context between
+one owner identity and one subject identity.
+
+Current descriptive relationship classifications are:
+
+- SELF;
+- FAMILY;
+- FRIEND;
+- PROFESSIONAL;
+- OTHER;
+- UNSPECIFIED.
+
+These classifications are descriptive only.
+
+In particular:
+
+FAMILY
+!= child classification
+!= guardian authority
+!= guardian policy
+!= authorization.
+
+Stage 44 remains responsible for future Child and Guardian Policy.
+
+A Stage 43 relationship record does not prove that a claimed relationship is
+authentic, current, reciprocal, trusted, security-relevant, or authorized.
+
+### Stage 43 Owner Profile Snapshot
+
+`OwnerProfileSnapshot` groups exactly one `OwnerProfile` with bounded
+relationships belonging to the same owner identity.
+
+The snapshot rejects duplicate subject relationships.
+
+The snapshot is transient descriptive owner-domain state.
+
+It does not authenticate the current subject, establish trust, enter Owner Mode,
+grant authorization, permit execution, or establish logical-memory commitment.
+
+### Stage 43 Governed Structural Update Boundary
+
+Stage 43 introduces:
+
+`OwnerProfileUpdateRequest`
+→ `OwnerProfileUpdatePolicy`
+→ `OwnerProfileUpdateResult`.
+
+The supported structural operations are:
+
+- REPLACE_PROFILE;
+- UPSERT_RELATIONSHIP;
+- REMOVE_RELATIONSHIP.
+
+An ACCEPTED update means only that a structurally valid new transient
+`OwnerProfileSnapshot` was derived from the supplied request.
+
+ACCEPTED
+!= factually true
+!= authenticated
+!= trusted
+!= authorized
+!= persisted
+!= committed logical memory.
+
+The update policy performs no I/O.
+
+The update coordinator does not modify an `OwnerProfileSource`.
+
+### Stage 43 Owner Profile Query Boundary
+
+Stage 43 introduces explicit bounded queries:
+
+- PROFILE;
+- PREFERRED_FORM_OF_ADDRESS;
+- RELATIONSHIP_FOR_SUBJECT.
+
+The flow is:
+
+`OwnerProfileQuery`
+→ `OwnerProfileSource`
+→ `OwnerProfileSnapshot`
+→ `OwnerProfileQueryPolicy`
+→ `OwnerProfileQueryResult`.
+
+The supplied subject identity in a relationship lookup is lookup identity only.
+
+A matching subject identity does not authenticate the subject.
+
+Query AVAILABLE means only that the requested descriptive information exists in
+the supplied snapshot.
+
+AVAILABLE
+!= authenticated
+!= trusted
+!= guardian approved
+!= authorized
+!= persisted
+!= verified Outcome.
+
+Unknown relationship information remains UNAVAILABLE rather than being invented.
+
+### Stage 43 Production Composition
+
+`DevilApplication` owns one process-scoped
+`OwnerProfileUpdateCoordinator`.
+
+This provides the bounded pure structural-update mechanism without creating
+another Brain, Identity Authority, Trust Authority, Security Authority,
+Authorization Authority, Memory Authority, or runtime.
+
+Stage 43 deliberately does not compose a fabricated default
+`OwnerProfileSource`.
+
+There is currently no constitutionally governed persistent production source of
+owner-profile or relationship data.
+
+Therefore production must not manufacture an owner name, relationship, or
+profile merely to make a source appear AVAILABLE.
+
+Any future genuine persistent owner-profile source must preserve the single
+logical Memory Domain and single Memory Authority.
+
+A future persistent source must not become:
+
+- a second memory system;
+- an authentication database;
+- a relationship authority;
+- a guardian authority;
+- an authorization authority;
+- or another intelligence.
+
+Stage 43 therefore ends with the following invariant:
+
+Owner descriptive state
+→ bounded profile / relationship structures
+→ bounded transient update
+→ bounded explicit query
+
+but:
+
+Owner descriptive state
+!= authentication
+!= trust
+!= security authority
+!= guardian authority
+!= authorization
+!= memory commitment
+!= execution.

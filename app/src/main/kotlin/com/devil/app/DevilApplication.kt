@@ -44,6 +44,7 @@ import com.devil.app.voice.DefaultAndroidVoiceOutputSource
 import com.devil.app.voice.HandsFreeProductionCoordinator
 import com.devil.app.voice.VoiceConversationOutputCoordinator
 import com.devil.app.voice.VoiceConversationResultCoordinator
+import com.devil.core.model.owner.OwnerProfileUpdateCoordinator
 import com.devil.core.runtime.DefaultUnifiedDevilRuntime
 import com.devil.core.runtime.UnifiedDevilRuntime
 
@@ -392,6 +393,27 @@ class DevilApplication : Application() {
             knowledgeCoordinator =
                 internetKnowledgeCoordinator,
         )
+    }
+
+    /**
+     * Stage 43 process-scoped bounded owner-profile structural update boundary.
+     *
+     * This coordinator may derive a new transient OwnerProfileSnapshot from
+     * explicitly supplied descriptive owner-domain data.
+     *
+     * It does not authenticate the owner, prove relationships, establish trust,
+     * grant guardian authority, enter Owner Mode, grant authorization, persist
+     * logical memory, or execute an action.
+     *
+     * No default OwnerProfileSource is composed in Stage 43 because Devil must
+     * not fabricate owner-profile information merely to satisfy production
+     * composition.
+     */
+    val ownerProfileUpdateCoordinator:
+        OwnerProfileUpdateCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        OwnerProfileUpdateCoordinator()
     }
 
     val notificationAnalysisCoordinator:
