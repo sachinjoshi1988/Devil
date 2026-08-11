@@ -16,7 +16,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 
@@ -31,11 +34,18 @@ import androidx.compose.ui.unit.dp
  *
  * Stage 37 adds an explicit hands-free presentation control.
  *
+ * Stage 48 adds bounded accessibility semantics for navigation and truthful
+ * presentation-state announcements.
+ *
  * The screen does not perform SpeechRecognizer work, TextToSpeech work,
  * authentication, session establishment, runtime submission, authorization,
  * capability execution, verification, or outcome establishment.
  *
  * Hands-free UI state is presentation/control state only.
+ *
+ * Accessibility semantics expose only information already present in the
+ * rendered UI. They do not create authority, runtime state, observation,
+ * verification, or Outcome.
  */
 @Composable
 fun ConversationScreen(
@@ -66,12 +76,20 @@ fun ConversationScreen(
         ) {
             Text(
                 text = "Devil",
+                modifier =
+                    Modifier.semantics {
+                        heading()
+                    },
                 style =
                     MaterialTheme.typography.headlineMedium,
             )
 
             Text(
                 text = "Conversation",
+                modifier =
+                    Modifier.semantics {
+                        heading()
+                    },
                 style =
                     MaterialTheme.typography.titleMedium,
             )
@@ -176,6 +194,8 @@ fun ConversationScreen(
             if (handsFreeEnabled) {
                 Text(
                     text = "Hands-Free active",
+                    modifier =
+                        Modifier.politeAccessibilityStatus(),
                     style =
                         MaterialTheme.typography.bodySmall,
                 )
@@ -184,6 +204,8 @@ fun ConversationScreen(
             handsFreeMessage?.let { message ->
                 Text(
                     text = message,
+                    modifier =
+                        Modifier.politeAccessibilityStatus(),
                     style =
                         MaterialTheme.typography.bodySmall,
                 )
@@ -192,6 +214,8 @@ fun ConversationScreen(
             if (isVoiceSpeaking) {
                 Text(
                     text = "Speaking",
+                    modifier =
+                        Modifier.politeAccessibilityStatus(),
                     style =
                         MaterialTheme.typography.bodySmall,
                 )
@@ -200,6 +224,8 @@ fun ConversationScreen(
             voiceOutputMessage?.let { message ->
                 Text(
                     text = message,
+                    modifier =
+                        Modifier.politeAccessibilityStatus(),
                     style =
                         MaterialTheme.typography.bodySmall,
                 )
@@ -208,6 +234,8 @@ fun ConversationScreen(
             voiceInputMessage?.let { message ->
                 Text(
                     text = message,
+                    modifier =
+                        Modifier.politeAccessibilityStatus(),
                     style =
                         MaterialTheme.typography.bodySmall,
                 )
@@ -216,11 +244,27 @@ fun ConversationScreen(
             state.submissionNotice?.let { notice ->
                 Text(
                     text = notice.message,
+                    modifier =
+                        Modifier.politeAccessibilityStatus(),
                     style =
                         MaterialTheme.typography.bodySmall,
                 )
             }
         }
+    }
+}
+
+/**
+ * Marks truthful changing presentation status as a polite accessibility live
+ * region.
+ *
+ * This affects only Android accessibility presentation. It does not alter the
+ * underlying Devil state or grant any authority.
+ */
+private fun Modifier.politeAccessibilityStatus(): Modifier {
+    return semantics {
+        liveRegion =
+            LiveRegionMode.Polite
     }
 }
 
