@@ -6,12 +6,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Stage 51 governance gate for the presentation-only Devil awakening sequence.
+ * Stage 51 governance gate for the approved Devil Inside awakening.
  *
- * Approved artwork remains Devil's identity source.
- *
- * Canvas drawing is permitted only for environmental launch presentation,
- * including code rain, circuit traces, bounded energy nodes, and glow.
+ * The approved Devil D remains the identity source.
+ * Canvas is limited to environmental code and restrained halo treatment.
  */
 class Stage51DevilAwakeningGovernanceTest {
 
@@ -39,25 +37,25 @@ class Stage51DevilAwakeningGovernanceTest {
     }
 
     @Test
-    fun `awakening uses approved Devil artwork`() {
+    fun `awakening uses approved Devil D and wordmark`() {
         val source =
             source()
 
         assertTrue(
             source.contains(
-                "R.drawable.devil_runtime_core",
+                "R.drawable.devil_launcher_foreground",
             ),
         )
 
         assertTrue(
             source.contains(
-                "R.drawable.devil_primary_logo",
+                "\"DEVIL INSIDE\"",
             ),
         )
     }
 
     @Test
-    fun `awakening contains full screen code and circuit environment`() {
+    fun `awakening uses continuous vertical code environment`() {
         val source =
             source()
 
@@ -69,55 +67,55 @@ class Stage51DevilAwakeningGovernanceTest {
 
         assertTrue(
             source.contains(
-                "DevilCircuitLayer(",
-            ),
-        )
-
-        assertTrue(
-            source.contains(
-                "DevilIdentityGlowLayer(",
-            ),
-        )
-
-        assertTrue(
-            source.contains(
                 "nativeCanvas",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "DevilLaunchTiming.TOTAL_DURATION_MILLIS -",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "travelDistance",
             ),
         )
     }
 
     @Test
-    fun `environmental canvas does not reconstruct Devil identity`() {
+    fun `obsolete Alpha 5 circuit and card presentation are removed`() {
         val source =
             source()
 
         assertTrue(
             !source.contains(
-                "drawPath(",
+                "DevilCircuitLayer(",
             ),
         )
 
         assertTrue(
             !source.contains(
-                "text = \"D\"",
+                "circuitProgress",
             ),
         )
 
         assertTrue(
             !source.contains(
-                "text = \"DEVIL\"",
+                "circuitCurrentProgress",
             ),
         )
 
         assertTrue(
             !source.contains(
-                "Custom horned-D identity",
+                "R.drawable.devil_runtime_core",
             ),
         )
 
         assertTrue(
             !source.contains(
-                "Lucifer horns",
+                "R.drawable.devil_primary_logo",
             ),
         )
     }
@@ -135,13 +133,7 @@ class Stage51DevilAwakeningGovernanceTest {
 
         assertTrue(
             source.contains(
-                "Runtime Core artwork != runtime readiness.",
-            ),
-        )
-
-        assertTrue(
-            source.contains(
-                "Primary Devil artwork != authentication.",
+                "Devil D artwork != authentication.",
             ),
         )
 
@@ -154,6 +146,12 @@ class Stage51DevilAwakeningGovernanceTest {
         assertTrue(
             source.contains(
                 "Awakening animation != execution.",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "Awakening completion != runtime readiness.",
             ),
         )
 
