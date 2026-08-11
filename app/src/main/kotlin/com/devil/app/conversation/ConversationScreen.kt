@@ -62,6 +62,7 @@ fun ConversationScreen(
     onHandsFreeToggle: () -> Unit = {},
     handsFreeEnabled: Boolean = false,
     handsFreeMessage: String? = null,
+    accessibilityDiagnosticMessage: String? = null,
 ) {
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -240,6 +241,16 @@ fun ConversationScreen(
                         MaterialTheme.typography.bodySmall,
                 )
             }
+
+              accessibilityDiagnosticMessage?.let { message ->
+                Text(
+                    text = message,
+                    modifier =
+                        Modifier.politeAccessibilityStatus(),
+                    style =
+                        MaterialTheme.typography.bodySmall,
+                )
+              }
 
             state.submissionNotice?.let { notice ->
                 Text(

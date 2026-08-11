@@ -10,6 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.devil.app.accessibility.AndroidAccessibilityServiceDiagnosticStatus
+import com.devil.app.accessibility.DefaultAndroidAccessibilityServiceDiagnosticSource
 import com.devil.app.conversation.ConversationEntryRole
 import com.devil.app.conversation.ConversationScreen
 import com.devil.app.conversation.ConversationTimelineEntry
@@ -81,6 +83,9 @@ class DevilActivity : ComponentActivity() {
     private var handsFreeMessage by
         mutableStateOf<String?>(null)
 
+    private var accessibilityDiagnosticMessage by
+        mutableStateOf<String?>(null)
+
     private var handsFreeState by
         mutableStateOf(
             HandsFreeConversationState.IDLE,
@@ -94,6 +99,9 @@ class DevilActivity : ComponentActivity() {
 
     private var resumeHandsFreeAfterVoiceOutput:
         Boolean = false
+
+    private lateinit var accessibilityDiagnosticSource:
+        DefaultAndroidAccessibilityServiceDiagnosticSource
 
     private lateinit var voiceInputSource:
         AndroidVoiceInputSource
@@ -203,6 +211,13 @@ class DevilActivity : ComponentActivity() {
                     applicationContext,
             )
 
+        accessibilityDiagnosticSource =
+            DefaultAndroidAccessibilityServiceDiagnosticSource(
+                context = applicationContext,
+            )
+
+        refreshAccessibilityDiagnostic()
+
         setContent {
             MaterialTheme {
                 ConversationScreen(
@@ -271,9 +286,34 @@ class DevilActivity : ComponentActivity() {
                         handsFreeEnabled,
                     handsFreeMessage =
                         handsFreeMessage,
+                      accessibilityDiagnosticMessage =
+                        accessibilityDiagnosticMessage,
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (::accessibilityDiagnosticSource.isInitialized) {
+            refreshAccessibilityDiagnostic()
+        }
+    }
+
+    private fun refreshAccessibilityDiagnostic() {
+        val diagnostic =
+            accessibilityDiagnosticSource.diagnose()
+
+        accessibilityDiagnosticMessage =
+            if (
+                diagnostic.status ==
+                AndroidAccessibilityServiceDiagnosticStatus.CONNECTED
+            ) {
+                null
+            } else {
+                diagnostic.message
+            }
     }
 
     override fun onDestroy() {
