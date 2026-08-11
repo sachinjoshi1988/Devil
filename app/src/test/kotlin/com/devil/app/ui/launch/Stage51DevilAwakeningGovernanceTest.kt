@@ -8,9 +8,10 @@ import kotlin.test.assertTrue
 /**
  * Stage 51 governance gate for the presentation-only Devil awakening sequence.
  *
- * This test protects the approved image-driven launch identity while preserving
- * the constitutional boundary that launch presentation is not authority,
- * runtime readiness, execution, verification, Outcome, or memory state.
+ * Approved artwork remains Devil's identity source.
+ *
+ * Canvas drawing is permitted only for environmental launch presentation,
+ * including code rain, circuit traces, bounded energy nodes, and glow.
  */
 class Stage51DevilAwakeningGovernanceTest {
 
@@ -38,65 +39,144 @@ class Stage51DevilAwakeningGovernanceTest {
     }
 
     @Test
-    fun `awakening uses approved artwork and preserves presentation only boundary`() {
+    fun `awakening uses approved Devil artwork`() {
         val source =
-            source(
+            source()
+
+        assertTrue(
+            source.contains(
+                "R.drawable.devil_runtime_core",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "R.drawable.devil_primary_logo",
+            ),
+        )
+    }
+
+    @Test
+    fun `awakening contains full screen code and circuit environment`() {
+        val source =
+            source()
+
+        assertTrue(
+            source.contains(
+                "DevilCodeRainLayer(",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "DevilCircuitLayer(",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "DevilIdentityGlowLayer(",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "nativeCanvas",
+            ),
+        )
+    }
+
+    @Test
+    fun `environmental canvas does not reconstruct Devil identity`() {
+        val source =
+            source()
+
+        assertTrue(
+            !source.contains(
+                "drawPath(",
+            ),
+        )
+
+        assertTrue(
+            !source.contains(
+                "text = \"D\"",
+            ),
+        )
+
+        assertTrue(
+            !source.contains(
+                "text = \"DEVIL\"",
+            ),
+        )
+
+        assertTrue(
+            !source.contains(
+                "Custom horned-D identity",
+            ),
+        )
+
+        assertTrue(
+            !source.contains(
+                "Lucifer horns",
+            ),
+        )
+    }
+
+    @Test
+    fun `awakening preserves presentation only boundary`() {
+        val source =
+            source()
+
+        assertTrue(
+            source.contains(
+                "Environmental animation != Devil identity.",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "Runtime Core artwork != runtime readiness.",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "Primary Devil artwork != authentication.",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "Awakening animation != authorization.",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "Awakening animation != execution.",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "Awakening completion != verified success.",
+            ),
+        )
+
+        assertTrue(
+            source.contains(
+                "Awakening completion != Outcome.",
+            ),
+        )
+    }
+
+    private fun source(): String {
+        val candidates =
+            listOf(
                 "app/src/main/kotlin/com/devil/app/ui/launch/DevilAwakeningScreen.kt",
                 "src/main/kotlin/com/devil/app/ui/launch/DevilAwakeningScreen.kt",
             )
 
-        assertTrue(
-            source.contains("R.drawable.devil_runtime_core"),
-        )
-
-        assertTrue(
-            source.contains("R.drawable.devil_primary_logo"),
-        )
-
-        assertTrue(
-            !source.contains("Canvas("),
-        )
-
-        assertTrue(
-            !source.contains("drawCircle"),
-        )
-
-        assertTrue(
-            !source.contains("drawLine"),
-        )
-
-        assertTrue(
-            !source.contains("drawPath"),
-        )
-
-        assertTrue(
-            source.contains("Runtime Core artwork != runtime readiness."),
-        )
-
-        assertTrue(
-            source.contains("Primary Devil artwork != authentication."),
-        )
-
-        assertTrue(
-            source.contains("Awakening animation != authorization."),
-        )
-
-        assertTrue(
-            source.contains("Awakening animation != execution."),
-        )
-
-        assertTrue(
-            source.contains("Awakening completion != verified success."),
-        )
-
-        assertTrue(
-            source.contains("Awakening completion != Outcome."),
-        )
-    }
-
-    private fun source(
-        vararg candidates: String,
-    ): String {
         val file =
             candidates
                 .map(::File)
