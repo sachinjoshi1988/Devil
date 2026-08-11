@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.devil.app.accessibility.AndroidAccessibilityServiceDiagnosticStatus
 import com.devil.app.accessibility.DefaultAndroidAccessibilityServiceDiagnosticSource
@@ -15,6 +16,7 @@ import com.devil.app.conversation.ConversationEntryRole
 import com.devil.app.conversation.ConversationScreen
 import com.devil.app.conversation.ConversationTimelineEntry
 import com.devil.app.conversation.ConversationUiState
+import com.devil.app.ui.launch.DevilAwakeningScreen
 import com.devil.app.ui.theme.DevilTheme
 import com.devil.app.voice.AndroidVoiceInputListener
 import com.devil.app.voice.AndroidVoiceInputResult
@@ -220,6 +222,17 @@ class DevilActivity : ComponentActivity() {
 
         setContent {
             DevilTheme {
+                var showAwakening by remember {
+                    mutableStateOf(true)
+                }
+
+                if (showAwakening) {
+                    DevilAwakeningScreen(
+                        onComplete = {
+                            showAwakening = false
+                        },
+                    )
+                } else {
                 ConversationScreen(
                     state =
                         conversationState,
@@ -289,6 +302,7 @@ class DevilActivity : ComponentActivity() {
                       accessibilityDiagnosticMessage =
                         accessibilityDiagnosticMessage,
                 )
+                }
             }
         }
     }
