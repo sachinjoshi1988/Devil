@@ -246,6 +246,20 @@ class DefaultAndroidVisionFrameSource(
                     val buffer =
                         planes[0].buffer
 
+                    if (
+                        !AndroidVisionFrameResourcePolicy
+                            .acceptsEncodedByteCount(
+                                buffer.remaining(),
+                            )
+                    ) {
+                        complete(
+                            AndroidVisionFrameCaptureResult
+                                .failed(),
+                        )
+
+                        return@setOnImageAvailableListener
+                    }
+
                     val bytes =
                         ByteArray(
                             buffer.remaining(),
@@ -595,22 +609,23 @@ class DefaultAndroidVisionFrameSource(
 
         val bounded =
             jpegSizes.filter { size ->
-                size.width.toLong() *
-                    size.height.toLong() <=
-                    MAX_FRAME_PIXEL_COUNT
+                AndroidVisionFrameResourcePolicy
+                    .acceptsDimensions(
+                        width = size.width,
+                        height = size.height,
+                    )
             }
 
-        return (
-            if (bounded.isNotEmpty()) {
-                bounded
-            } else {
-                jpegSizes.toList()
-            }
-        ).minByOrNull { size ->
+        if (bounded.isEmpty()) {
+            return null
+        }
+
+        return bounded.minByOrNull { size ->
             kotlin.math.abs(
                 size.width.toLong() *
                     size.height.toLong() -
-                    TARGET_FRAME_PIXEL_COUNT,
+                    AndroidVisionFrameResourcePolicy
+                        .TARGET_FRAME_PIXEL_COUNT,
             )
         }
     }
@@ -623,10 +638,5 @@ class DefaultAndroidVisionFrameSource(
         private const val THREAD_JOIN_TIMEOUT_MILLISECONDS =
             1_000L
 
-        private const val MAX_FRAME_PIXEL_COUNT =
-            2_500_000L
-
-        private const val TARGET_FRAME_PIXEL_COUNT =
-            2_000_000L
     }
 }
