@@ -5,7 +5,7 @@ import java.util.ArrayDeque
 import java.util.IdentityHashMap
 
 /**
- * Stage 38 bounded accessibility-node resolver.
+ * Bounded accessibility-node resolver.
  *
  * Resolution is based only on the explicitly supplied target.
  *
@@ -15,6 +15,10 @@ import java.util.IdentityHashMap
  *
  * A resolved node is not proof that clicking it will produce the intended
  * effect.
+ *
+ * Each resolution attempt inspects only a bounded number of unique
+ * accessibility nodes. Exhausting that traversal budget returns no resolved
+ * node and grants no additional authority.
  */
 class AndroidAccessibilityNodeResolver {
 
@@ -28,6 +32,9 @@ class AndroidAccessibilityNodeResolver {
         val visited =
             IdentityHashMap<AccessibilityNodeInfo, Boolean>()
 
+        val traversalBudget =
+            AndroidAccessibilityTraversalBudget()
+
         queue.add(root)
 
         while (queue.isNotEmpty()) {
@@ -40,6 +47,10 @@ class AndroidAccessibilityNodeResolver {
                 ) != null
             ) {
                 continue
+            }
+
+            if (!traversalBudget.tryAcquireNodeInspection()) {
+                return null
             }
 
             if (matches(node, target)) {
