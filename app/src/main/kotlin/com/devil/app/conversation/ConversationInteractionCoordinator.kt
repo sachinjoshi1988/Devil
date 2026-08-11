@@ -1,7 +1,7 @@
 package com.devil.app.conversation
 
 /**
- * Coordinates bounded Stage 24 conversation UI-state transitions.
+ * Coordinates bounded conversation UI-state transitions.
  *
  * This coordinator manages only presentation state:
  *
@@ -10,8 +10,17 @@ package com.devil.app.conversation
  * - duplicate-submission protection,
  * - attachment of a truthful runtime presentation after an external submission
  *   boundary has completed,
- * - and truthful completion of a submission attempt that never entered the
- *   runtime because required metadata was unavailable.
+ * - truthful completion of a submission attempt that never entered the runtime
+ *   because required metadata was unavailable,
+ * - and bounded retention of completed presentation timeline entries.
+ *
+ * The presentation timeline is resource-bounded only after a submission reaches
+ * a terminal UI state. An active submission is never trimmed after its USER
+ * entry is appended and before that submission completes.
+ *
+ * Timeline bounding affects only UI presentation history. It does not mutate
+ * logical Memory, persisted conversation data, runtime state, constitutional
+ * state, verified outcomes, or any other authority.
  *
  * It does not choose constitutional classifications, create ContextEnvelope,
  * generate TraceId, invoke AndroidRuntimeInputCoordinator, call the Unified
@@ -88,7 +97,10 @@ class ConversationInteractionCoordinator {
             )
 
         return state.copy(
-            entries = state.entries + runtimeEntry,
+            entries =
+                boundCompletedTimeline(
+                    entries = state.entries + runtimeEntry,
+                ),
             isSubmitting = false,
             submissionNotice = null,
         )
@@ -102,9 +114,30 @@ class ConversationInteractionCoordinator {
         }
 
         return state.copy(
+            entries =
+                boundCompletedTimeline(
+                    entries = state.entries,
+                ),
             isSubmitting = false,
             submissionNotice =
                 ConversationSubmissionNotice.metadataUnavailable(),
         )
+    }
+
+    private fun boundCompletedTimeline(
+        entries: List<ConversationTimelineEntry>,
+    ): List<ConversationTimelineEntry> {
+        if (entries.size <= MAX_PRESENTATION_TIMELINE_ENTRIES) {
+            return entries
+        }
+
+        return entries.takeLast(
+            MAX_PRESENTATION_TIMELINE_ENTRIES,
+        )
+    }
+
+    companion object {
+        internal const val MAX_PRESENTATION_TIMELINE_ENTRIES: Int =
+            100
     }
 }
