@@ -1,0 +1,82 @@
+name: Devil Internal Alpha APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Release Internal Alpha APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Devil
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Prepare Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Remove Termux-only AAPT2 override
+        run: |
+          sed -i \
+            '/^android\.aapt2FromMavenOverride=/d' \
+            gradle.properties
+
+      - name: Verify Gradle environment
+        run: ./gradlew --version
+
+      - name: Run core model tests
+        run: ./gradlew :core:model:test
+
+      - name: Run core runtime tests
+        run: ./gradlew :core:runtime:test
+
+      - name: Run complete app unit tests
+        run: ./gradlew :app:testDebugUnitTest
+
+      - name: Build Internal Alpha APK
+        run: ./gradlew :app:assembleDebug
+
+      - name: Prepare release files
+        run: |
+          mkdir -p release
+          cp \
+            app/build/outputs/apk/debug/app-debug.apk \
+            release/devil-internal-alpha.apk
+          (
+            cd release
+            sha256sum devil-internal-alpha.apk \
+              > devil-internal-alpha.apk.sha256
+          )
+
+      - name: Verify release files
+        run: |
+          ls -lh release
+          cat release/devil-internal-alpha.apk.sha256
+
+      - name: Create GitHub Internal Alpha Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: devil-internal-alpha-${{ github.run_number }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            release/devil-internal-alpha.apk \
+            release/devil-internal-alpha.apk.sha256 \
+            --target "$GITHUB_SHA" \
+            --title "Devil Internal Alpha ${{ github.run_number }}" \
+            --notes "Internal Alpha APK for controlled Devil V1 testing.
+
+          Source commit: $GITHUB_SHA
+
+          This is an internal debug-signed test build, not a production release.
+
+          Verify devil-internal-alpha.apk against the attached SHA-256 checksum before installation."
