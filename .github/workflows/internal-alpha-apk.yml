@@ -73,6 +73,7 @@ jobs:
             release/devil-internal-alpha.apk.sha256 \
             --target "$GITHUB_SHA" \
             --title "Devil Internal Alpha ${{ github.run_number }}" \
+            --prerelease \
             --notes "Internal Alpha APK for controlled Devil V1 testing.
 
           Source commit: $GITHUB_SHA
