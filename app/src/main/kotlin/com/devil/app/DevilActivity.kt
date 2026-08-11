@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -16,6 +15,7 @@ import com.devil.app.conversation.ConversationEntryRole
 import com.devil.app.conversation.ConversationScreen
 import com.devil.app.conversation.ConversationTimelineEntry
 import com.devil.app.conversation.ConversationUiState
+import com.devil.app.ui.theme.DevilTheme
 import com.devil.app.voice.AndroidVoiceInputListener
 import com.devil.app.voice.AndroidVoiceInputResult
 import com.devil.app.voice.AndroidVoiceInputSource
@@ -219,7 +219,7 @@ class DevilActivity : ComponentActivity() {
         refreshAccessibilityDiagnostic()
 
         setContent {
-            MaterialTheme {
+            DevilTheme {
                 ConversationScreen(
                     state =
                         conversationState,
