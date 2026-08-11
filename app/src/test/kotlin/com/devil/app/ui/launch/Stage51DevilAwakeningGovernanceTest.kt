@@ -7,6 +7,10 @@ import kotlin.test.assertTrue
 
 /**
  * Stage 51 governance gate for the presentation-only Devil awakening sequence.
+ *
+ * This test protects the approved image-driven launch identity while preserving
+ * the constitutional boundary that launch presentation is not authority,
+ * runtime readiness, execution, verification, Outcome, or memory state.
  */
 class Stage51DevilAwakeningGovernanceTest {
 
@@ -34,7 +38,7 @@ class Stage51DevilAwakeningGovernanceTest {
     }
 
     @Test
-    fun `awakening presentation does not claim runtime or authentication authority`() {
+    fun `awakening uses approved artwork and preserves presentation only boundary`() {
         val source =
             source(
                 "app/src/main/kotlin/com/devil/app/ui/launch/DevilAwakeningScreen.kt",
@@ -42,27 +46,51 @@ class Stage51DevilAwakeningGovernanceTest {
             )
 
         assertTrue(
-            source.contains(
-                "Core animation != runtime readiness.",
-            ),
+            source.contains("R.drawable.devil_runtime_core"),
         )
 
         assertTrue(
-            source.contains(
-                "Core animation != authentication.",
-            ),
+            source.contains("R.drawable.devil_primary_logo"),
         )
 
         assertTrue(
-            source.contains(
-                "Core animation != authorization.",
-            ),
+            !source.contains("Canvas("),
         )
 
         assertTrue(
-            source.contains(
-                "Core animation != verified success.",
-            ),
+            !source.contains("drawCircle"),
+        )
+
+        assertTrue(
+            !source.contains("drawLine"),
+        )
+
+        assertTrue(
+            !source.contains("drawPath"),
+        )
+
+        assertTrue(
+            source.contains("Runtime Core artwork != runtime readiness."),
+        )
+
+        assertTrue(
+            source.contains("Primary Devil artwork != authentication."),
+        )
+
+        assertTrue(
+            source.contains("Awakening animation != authorization."),
+        )
+
+        assertTrue(
+            source.contains("Awakening animation != execution."),
+        )
+
+        assertTrue(
+            source.contains("Awakening completion != verified success."),
+        )
+
+        assertTrue(
+            source.contains("Awakening completion != Outcome."),
         )
     }
 

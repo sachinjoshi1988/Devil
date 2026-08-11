@@ -2,11 +2,16 @@
 <resources>
 
     <!--
-        Stage 51 Android presentation theme.
+        Stage 51 Devil Android presentation theme.
 
-        Theme state is presentation only.
-        It grants no authentication, authorization, runtime readiness,
-        execution status, verification, Outcome, or logical-memory state.
+        Presentation state is not constitutional state.
+
+        Theme != authentication.
+        Theme != authorization.
+        Theme != runtime readiness.
+        Theme != execution.
+        Theme != verification.
+        Theme != Outcome.
     -->
     <style
         name="Theme.Devil"
@@ -22,10 +27,14 @@
     </style>
 
     <!--
-        Android's system-owned launch surface.
+        Android system-owned cold-launch presentation.
 
-        System splash presentation != Devil runtime readiness.
+        This intentionally uses a splash-specific Devil foreground rather
+        than the adaptive launcher foreground because those two Android
+        surfaces apply different geometry.
+
         Splash icon != authentication.
+        Splash completion != runtime readiness.
         Splash completion != verified Outcome.
     -->
     <style
@@ -33,7 +42,7 @@
         parent="Theme.SplashScreen">
 
         <item name="windowSplashScreenBackground">#050505</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/devil_launcher_foreground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/devil_splash_foreground</item>
         <item name="postSplashScreenTheme">@style/Theme.Devil</item>
 
     </style>

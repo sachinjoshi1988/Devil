@@ -2,29 +2,25 @@ package com.devil.app.ui.launch
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.devil.app.R
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -32,45 +28,32 @@ import kotlinx.coroutines.launch
 /**
  * Stage 51 presentation-only Devil awakening sequence.
  *
- * The Runtime Core visual and horned-D identity are branding and launch
- * presentation only.
+ * The visual identity shown here comes directly from the approved Devil
+ * artwork resources rather than a procedural reconstruction.
  *
- * Core animation != runtime readiness.
- * Core animation != authentication.
- * Core animation != authorization.
- * Core animation != execution.
- * Core animation != verified success.
- *
- * Horned-D identity != owner authentication.
- * Horned-D identity != Owner Mode.
+ * Runtime Core artwork != runtime readiness.
+ * Primary Devil artwork != authentication.
+ * Awakening animation != authorization.
+ * Awakening animation != execution.
+ * Awakening completion != verified success.
+ * Awakening completion != Outcome.
  */
 @Composable
 fun DevilAwakeningScreen(
     onComplete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val primaryColor =
-        MaterialTheme.colorScheme.primary
-
     val backgroundColor =
         MaterialTheme.colorScheme.background
-
-    val foregroundColor =
-        MaterialTheme.colorScheme.onBackground
-
-    val coreScale =
-        remember {
-            Animatable(0.08f)
-        }
 
     val coreAlpha =
         remember {
             Animatable(0f)
         }
 
-    val ringAlpha =
+    val coreScale =
         remember {
-            Animatable(0f)
+            Animatable(0.82f)
         }
 
     val identityAlpha =
@@ -78,16 +61,26 @@ fun DevilAwakeningScreen(
             Animatable(0f)
         }
 
-    val wordmarkAlpha =
+    val identityScale =
         remember {
-            Animatable(0f)
+            Animatable(0.94f)
         }
 
     LaunchedEffect(Unit) {
+        /*
+         * Phase 1 — Void.
+         *
+         * Pure presentation pause. It says nothing about runtime state.
+         */
         delay(
             DevilLaunchTiming.VOID_DURATION_MILLIS,
         )
 
+        /*
+         * Phase 2 — Runtime Core ignition.
+         *
+         * Fade the exact approved Runtime Core artwork into view.
+         */
         coreAlpha.animateTo(
             targetValue = 1f,
             animationSpec =
@@ -96,10 +89,16 @@ fun DevilAwakeningScreen(
                         DevilLaunchTiming
                             .CORE_IGNITION_DURATION_MILLIS
                             .toInt(),
-                    easing = LinearEasing,
+                    easing =
+                        FastOutSlowInEasing,
                 ),
         )
 
+        /*
+         * Phase 3 — Runtime Core pulse.
+         *
+         * Scale and fade are presentation effects only.
+         */
         coroutineScope {
             launch {
                 coreScale.animateTo(
@@ -117,8 +116,8 @@ fun DevilAwakeningScreen(
             }
 
             launch {
-                ringAlpha.animateTo(
-                    targetValue = 1f,
+                coreAlpha.animateTo(
+                    targetValue = 0.22f,
                     animationSpec =
                         tween(
                             durationMillis =
@@ -132,30 +131,65 @@ fun DevilAwakeningScreen(
             }
         }
 
-        identityAlpha.animateTo(
-            targetValue = 1f,
-            animationSpec =
-                tween(
-                    durationMillis =
-                        DevilLaunchTiming
-                            .IDENTITY_REVEAL_DURATION_MILLIS
-                            .toInt(),
-                    easing =
-                        FastOutSlowInEasing,
-                ),
-        )
+        /*
+         * Phase 4 — Primary Devil identity reveal.
+         *
+         * The approved Primary Logo artwork replaces the procedural
+         * horned-D reconstruction used by the earlier Owner Alpha.
+         */
+        coroutineScope {
+            launch {
+                identityAlpha.animateTo(
+                    targetValue = 1f,
+                    animationSpec =
+                        tween(
+                            durationMillis =
+                                DevilLaunchTiming
+                                    .IDENTITY_REVEAL_DURATION_MILLIS
+                                    .toInt(),
+                            easing =
+                                FastOutSlowInEasing,
+                        ),
+                )
+            }
 
-        wordmarkAlpha.animateTo(
-            targetValue = 1f,
-            animationSpec =
-                tween(
-                    durationMillis =
-                        DevilLaunchTiming
-                            .WORDMARK_DURATION_MILLIS
-                            .toInt(),
-                    easing =
-                        FastOutSlowInEasing,
-                ),
+            launch {
+                identityScale.animateTo(
+                    targetValue = 1f,
+                    animationSpec =
+                        tween(
+                            durationMillis =
+                                DevilLaunchTiming
+                                    .IDENTITY_REVEAL_DURATION_MILLIS
+                                    .toInt(),
+                            easing =
+                                FastOutSlowInEasing,
+                        ),
+                )
+            }
+
+            launch {
+                coreAlpha.animateTo(
+                    targetValue = 0f,
+                    animationSpec =
+                        tween(
+                            durationMillis =
+                                DevilLaunchTiming
+                                    .IDENTITY_REVEAL_DURATION_MILLIS
+                                    .toInt(),
+                        ),
+                )
+            }
+        }
+
+        /*
+         * Phase 5 — Identity hold.
+         *
+         * WORDMARK_DURATION_MILLIS is retained as the final visual hold
+         * so the total Stage 51 launch target remains five seconds.
+         */
+        delay(
+            DevilLaunchTiming.WORDMARK_DURATION_MILLIS,
         )
 
         onComplete()
@@ -171,368 +205,54 @@ fun DevilAwakeningScreen(
         contentAlignment =
             Alignment.Center,
     ) {
-        Canvas(
-            modifier =
-                Modifier.size(240.dp),
-        ) {
-            val center =
-                Offset(
-                    x = size.width / 2f,
-                    y = size.height / 2f,
-                )
-
-            val baseRadius =
-                size.minDimension * 0.17f
-
-            /*
-             * Infernal runtime-core presentation.
-             *
-             * This is visual identity only and does not represent real runtime
-             * state, readiness, authentication, authority, or success.
-             */
-            drawCircle(
-                color =
-                    primaryColor.copy(
-                        alpha =
-                            coreAlpha.value *
-                                0.88f,
-                    ),
-                radius =
-                    baseRadius *
-                        coreScale.value,
-                center =
-                    center,
-            )
-
-            drawCircle(
-                color =
-                    primaryColor.copy(
-                        alpha =
-                            ringAlpha.value *
-                                0.72f,
-                    ),
-                radius =
-                    size.minDimension *
-                        0.30f,
-                center =
-                    center,
-                style =
-                    Stroke(
-                        width =
-                            size.minDimension *
-                                0.016f,
-                    ),
-            )
-
-            drawCircle(
-                color =
-                    primaryColor.copy(
-                        alpha =
-                            ringAlpha.value *
-                                0.30f,
-                    ),
-                radius =
-                    size.minDimension *
-                        0.40f,
-                center =
-                    center,
-                style =
-                    Stroke(
-                        width =
-                            size.minDimension *
-                                0.008f,
-                    ),
-            )
-
-            val circuitAlpha =
-                ringAlpha.value *
-                    0.48f
-
-            val circuitStart =
-                size.minDimension *
-                    0.43f
-
-            val circuitEnd =
-                size.minDimension *
-                    0.58f
-
-            drawLine(
-                color =
-                    primaryColor.copy(
-                        alpha = circuitAlpha,
-                    ),
-                start =
-                    Offset(
-                        center.x,
-                        center.y - circuitStart,
-                    ),
-                end =
-                    Offset(
-                        center.x,
-                        center.y - circuitEnd,
-                    ),
-                strokeWidth =
-                    size.minDimension *
-                        0.010f,
-                cap =
-                    StrokeCap.Round,
-            )
-
-            drawLine(
-                color =
-                    primaryColor.copy(
-                        alpha = circuitAlpha,
-                    ),
-                start =
-                    Offset(
-                        center.x,
-                        center.y + circuitStart,
-                    ),
-                end =
-                    Offset(
-                        center.x,
-                        center.y + circuitEnd,
-                    ),
-                strokeWidth =
-                    size.minDimension *
-                        0.010f,
-                cap =
-                    StrokeCap.Round,
-            )
-
-            drawLine(
-                color =
-                    primaryColor.copy(
-                        alpha = circuitAlpha,
-                    ),
-                start =
-                    Offset(
-                        center.x - circuitStart,
-                        center.y,
-                    ),
-                end =
-                    Offset(
-                        center.x - circuitEnd,
-                        center.y,
-                    ),
-                strokeWidth =
-                    size.minDimension *
-                        0.010f,
-                cap =
-                    StrokeCap.Round,
-            )
-
-            drawLine(
-                color =
-                    primaryColor.copy(
-                        alpha = circuitAlpha,
-                    ),
-                start =
-                    Offset(
-                        center.x + circuitStart,
-                        center.y,
-                    ),
-                end =
-                    Offset(
-                        center.x + circuitEnd,
-                        center.y,
-                    ),
-                strokeWidth =
-                    size.minDimension *
-                        0.010f,
-                cap =
-                    StrokeCap.Round,
-            )
-
-            /*
-             * Custom horned-D identity.
-             *
-             * Deliberately drawn rather than represented as ordinary text so
-             * Devil owns a distinct visual mark independent of system fonts.
-             */
-            val identity =
-                identityAlpha.value
-
-            val left =
-                center.x -
-                    size.minDimension *
-                    0.115f
-
-            val top =
-                center.y -
-                    size.minDimension *
-                    0.205f
-
-            val bottom =
-                center.y +
-                    size.minDimension *
-                    0.205f
-
-            val right =
-                center.x +
-                    size.minDimension *
-                    0.145f
-
-            val dPath =
-                Path().apply {
-                    moveTo(
-                        left,
-                        top,
-                    )
-
-                    lineTo(
-                        left,
-                        bottom,
-                    )
-
-                    moveTo(
-                        left,
-                        top,
-                    )
-
-                    cubicTo(
-                        right,
-                        top,
-                        right,
-                        bottom,
-                        left,
-                        bottom,
-                    )
-                }
-
-            drawPath(
-                path =
-                    dPath,
-                color =
-                    foregroundColor.copy(
-                        alpha = identity,
-                    ),
-                style =
-                    Stroke(
-                        width =
-                            size.minDimension *
-                                0.043f,
-                        cap =
-                            StrokeCap.Round,
-                    ),
-            )
-
-            /*
-             * Lucifer horns.
-             *
-             * They are visual identity accents only.
-             */
-            val hornRise =
-                size.minDimension *
-                    0.105f
-
-            val hornSpread =
-                size.minDimension *
-                    0.095f
-
-            drawLine(
-                color =
-                    primaryColor.copy(
-                        alpha = identity,
-                    ),
-                start =
-                    Offset(
-                        left +
-                            size.minDimension *
-                                0.018f,
-                        top +
-                            size.minDimension *
-                                0.010f,
-                    ),
-                end =
-                    Offset(
-                        left - hornSpread,
-                        top - hornRise,
-                    ),
-                strokeWidth =
-                    size.minDimension *
-                        0.034f,
-                cap =
-                    StrokeCap.Round,
-            )
-
-            drawLine(
-                color =
-                    primaryColor.copy(
-                        alpha = identity,
-                    ),
-                start =
-                    Offset(
-                        center.x +
-                            size.minDimension *
-                                0.055f,
-                        top +
-                            size.minDimension *
-                                0.025f,
-                    ),
-                end =
-                    Offset(
-                        center.x +
-                            size.minDimension *
-                                0.145f,
-                        top - hornRise,
-                    ),
-                strokeWidth =
-                    size.minDimension *
-                        0.034f,
-                cap =
-                    StrokeCap.Round,
-            )
-
-            /*
-             * Small infernal eye/core point gives the identity a controlled
-             * asymmetric signature without implying sentience or awareness.
-             */
-            drawCircle(
-                color =
-                    primaryColor.copy(
-                        alpha = identity,
-                    ),
-                radius =
-                    size.minDimension *
-                        0.018f,
-                center =
-                    Offset(
-                        center.x +
-                            size.minDimension *
-                                0.046f,
-                        center.y -
-                            size.minDimension *
-                                0.012f,
-                    ),
-            )
-        }
-
-        Text(
-            text = "DEVIL",
+        Image(
+            painter =
+                painterResource(
+                    id =
+                        R.drawable.devil_runtime_core,
+                ),
+            contentDescription =
+                null,
             modifier =
                 Modifier
-                    .align(
-                        Alignment.Center,
+                    .fillMaxWidth(0.72f)
+                    .sizeIn(
+                        maxWidth = 420.dp,
+                        maxHeight = 420.dp,
                     )
-                    .offset(
-                        y = 158.dp,
+                    .scale(
+                        coreScale.value,
                     )
                     .alpha(
-                        wordmarkAlpha.value,
+                        coreAlpha.value,
                     ),
-            color =
-                foregroundColor,
-            style =
-                MaterialTheme
-                    .typography
-                    .titleMedium
-                    .copy(
-                        fontWeight =
-                            FontWeight.Bold,
-                        letterSpacing =
-                            6.sp,
+            contentScale =
+                ContentScale.Fit,
+        )
+
+        Image(
+            painter =
+                painterResource(
+                    id =
+                        R.drawable.devil_primary_logo,
+                ),
+            contentDescription =
+                "Devil",
+            modifier =
+                Modifier
+                    .fillMaxWidth(0.82f)
+                    .sizeIn(
+                        maxWidth = 460.dp,
+                        maxHeight = 460.dp,
+                    )
+                    .scale(
+                        identityScale.value,
+                    )
+                    .alpha(
+                        identityAlpha.value,
                     ),
+            contentScale =
+                ContentScale.Fit,
         )
     }
 }
