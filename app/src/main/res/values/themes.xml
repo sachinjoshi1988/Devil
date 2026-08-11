@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+        Stage 51 Android presentation theme.
+
+        Theme state is presentation only.
+        It grants no authentication, authorization, runtime readiness,
+        execution status, verification, Outcome, or logical-memory state.
+    -->
+    <style
+        name="Theme.Devil"
+        parent="android:style/Theme.Material.NoActionBar">
+
+        <item name="android:windowBackground">#050505</item>
+        <item name="android:colorAccent">#E10600</item>
+        <item name="android:navigationBarColor">#050505</item>
+        <item name="android:statusBarColor">#050505</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
+    </style>
+
+    <!--
+        Android's system-owned launch surface.
+
+        System splash presentation != Devil runtime readiness.
+        Splash icon != authentication.
+        Splash completion != verified Outcome.
+    -->
+    <style
+        name="Theme.Devil.Starting"
+        parent="Theme.SplashScreen">
+
+        <item name="windowSplashScreenBackground">#050505</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/devil_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Devil</item>
+
+    </style>
+
+</resources>

@@ -8,11 +8,14 @@
     <application
         android:name=".DevilApplication"
         android:allowBackup="false"
+        android:icon="@mipmap/ic_devil_launcher"
+        android:roundIcon="@mipmap/ic_devil_launcher"
         android:label="Devil"
         android:supportsRtl="true">
 
         <activity
             android:name=".DevilActivity"
+            android:theme="@style/Theme.Devil.Starting"
             android:exported="true">
 
             <intent-filter>
