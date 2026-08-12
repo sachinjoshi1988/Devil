@@ -49,7 +49,7 @@ import kotlin.test.assertNull
 class DefaultExecutionAuthorityTest {
 
     @Test
-    fun `evaluate defers when execution policy is unavailable`() {
+    fun `evaluate approves bounded execution using default execution policy`() {
         val context = createContext(
             "trace-execution-authority-001",
         )
@@ -60,8 +60,11 @@ class DefaultExecutionAuthorityTest {
         )
 
         assertEquals(context.traceId, result.traceId)
-        assertEquals(ExecutionStatus.DEFERRED, result.status)
-        assertNull(result.request)
+        assertEquals(ExecutionStatus.APPROVED, result.status)
+        assertEquals(
+            "capability-camera",
+            result.request?.capability?.capabilityId?.value,
+        )
         assertNull(result.error)
     }
 

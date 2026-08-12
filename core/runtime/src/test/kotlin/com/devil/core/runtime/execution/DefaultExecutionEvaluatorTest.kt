@@ -29,29 +29,30 @@ import kotlin.test.assertNull
 class DefaultExecutionEvaluatorTest {
 
     @Test
-    fun `evaluate returns unavailable without inventing execution policy`() {
+    fun `evaluate approves bounded execution request without performing execution`() {
         val traceId = TraceId.from(
             "trace-default-execution-evaluator-001",
         )
         val evaluator: ExecutionEvaluator =
             DefaultExecutionEvaluator()
+        val request = createRequest(traceId)
 
         val result = evaluator.evaluate(
             traceId = traceId,
-            request = createRequest(traceId),
+            request = request,
         )
 
         assertEquals(traceId, result.traceId)
         assertEquals(
-            ExecutionEvaluationStatus.UNAVAILABLE,
+            ExecutionEvaluationStatus.APPROVED,
             result.status,
         )
-        assertNull(result.request)
+        assertEquals(request, result.request)
         assertNull(result.error)
     }
 
     @Test
-    fun `evaluate does not treat readiness as proof of execution permission`() {
+    fun `evaluate preserves approved request without claiming platform execution`() {
         val traceId = TraceId.from(
             "trace-default-execution-evaluator-002",
         )
@@ -67,10 +68,10 @@ class DefaultExecutionEvaluatorTest {
             request.capability.capabilityId.value,
         )
         assertEquals(
-            ExecutionEvaluationStatus.UNAVAILABLE,
+            ExecutionEvaluationStatus.APPROVED,
             result.status,
         )
-        assertNull(result.request)
+        assertEquals(request, result.request)
     }
 
     @Test

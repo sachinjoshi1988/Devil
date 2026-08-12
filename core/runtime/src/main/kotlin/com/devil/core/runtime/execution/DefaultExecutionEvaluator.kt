@@ -4,16 +4,33 @@ import com.devil.core.model.common.TraceId
 import com.devil.core.model.execution.ExecutionRequest
 
 /**
- * Default Stage 12 constitutional execution evaluator.
+ * Default bounded constitutional execution evaluator.
  *
- * No constitutional execution policy or platform execution implementation is
- * available yet. This evaluator therefore preserves trace continuity and
- * returns UNAVAILABLE rather than treating Executive readiness as permission to
- * perform an action or fabricating an execution attempt.
+ * Stage 62 establishes a deliberately narrow execution-approval policy over one
+ * structured ExecutionRequest that can exist only after:
  *
- * It does not establish capability health, check operating-system permission,
- * activate capabilities, execute actions, observe execution, verify outcomes,
- * or report final success.
+ * - a bounded PlanRecord was created;
+ * - one registered capability was selected; and
+ * - Executive readiness was affirmatively established.
+ *
+ * APPROVED means only that constitutional execution evaluation permits the
+ * bounded request to approach a separate execution implementation.
+ *
+ * APPROVED does not:
+ * - establish capability availability;
+ * - establish capability health;
+ * - establish operating-system permission;
+ * - activate a capability;
+ * - invoke Android or another platform API;
+ * - attempt an action;
+ * - claim an action completed;
+ * - observe execution;
+ * - verify an effect;
+ * - establish an Outcome.
+ *
+ * Platform execution remains outside the core runtime evaluator. Genuine
+ * execution evidence must still be established downstream before Observation,
+ * Verification, or Outcome can make stronger claims.
  */
 class DefaultExecutionEvaluator : ExecutionEvaluator {
 
@@ -30,7 +47,8 @@ class DefaultExecutionEvaluator : ExecutionEvaluator {
 
         return ExecutionEvaluationResult.create(
             traceId = traceId,
-            status = ExecutionEvaluationStatus.UNAVAILABLE,
+            status = ExecutionEvaluationStatus.APPROVED,
+            request = request,
         )
     }
 }
