@@ -6,3 +6,12 @@ local.properties
 *.iml
 .DS_Store
 *.log
+
+# Devil release-signing secrets and private key material.
+*.jks
+*.keystore
+*.p12
+*.pfx
+keystore.properties
+signing.properties
+release-signing.properties

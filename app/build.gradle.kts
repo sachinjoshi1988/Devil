@@ -4,6 +4,35 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+val devilReleaseKeystorePath =
+    System.getenv("DEVIL_RELEASE_KEYSTORE_PATH")
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+
+val devilReleaseKeystorePassword =
+    System.getenv("DEVIL_RELEASE_KEYSTORE_PASSWORD")
+        ?.takeIf { it.isNotEmpty() }
+
+val devilReleaseKeyAlias =
+    System.getenv("DEVIL_RELEASE_KEY_ALIAS")
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+
+val devilReleaseKeyPassword =
+    System.getenv("DEVIL_RELEASE_KEY_PASSWORD")
+        ?.takeIf { it.isNotEmpty() }
+
+val devilReleaseSigningValues =
+    listOf(
+        devilReleaseKeystorePath,
+        devilReleaseKeystorePassword,
+        devilReleaseKeyAlias,
+        devilReleaseKeyPassword,
+    )
+
+val devilReleaseSigningConfigured =
+    devilReleaseSigningValues.all { it != null }
+
 android {
     namespace = "com.devil.app"
     compileSdk = 35
@@ -16,6 +45,40 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        if (devilReleaseSigningConfigured) {
+            create("release") {
+                storeFile =
+                    file(
+                        requireNotNull(
+                            devilReleaseKeystorePath,
+                        ),
+                    )
+                storePassword =
+                    requireNotNull(
+                        devilReleaseKeystorePassword,
+                    )
+                keyAlias =
+                    requireNotNull(
+                        devilReleaseKeyAlias,
+                    )
+                keyPassword =
+                    requireNotNull(
+                        devilReleaseKeyPassword,
+                    )
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            if (devilReleaseSigningConfigured) {
+                signingConfig =
+                    signingConfigs.getByName("release")
+            }
+        }
+    }
+
     buildFeatures {
         compose = true
     }
@@ -23,6 +86,54 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+gradle.taskGraph.whenReady {
+    val releaseBuildRequested =
+        allTasks.any { task ->
+            task.project == project &&
+                (
+                    task.name.equals(
+                        "assembleRelease",
+                        ignoreCase = true,
+                    ) ||
+                        task.name.equals(
+                            "bundleRelease",
+                            ignoreCase = true,
+                        ) ||
+                        task.name.startsWith(
+                            "packageRelease",
+                            ignoreCase = true,
+                        )
+                )
+        }
+
+    if (releaseBuildRequested) {
+        check(devilReleaseSigningConfigured) {
+            """
+            Devil release signing credentials are unavailable.
+
+            Release builds fail closed.
+
+            Required environment variables:
+            DEVIL_RELEASE_KEYSTORE_PATH
+            DEVIL_RELEASE_KEYSTORE_PASSWORD
+            DEVIL_RELEASE_KEY_ALIAS
+            DEVIL_RELEASE_KEY_PASSWORD
+            """.trimIndent()
+        }
+
+        val keystoreFile =
+            file(
+                requireNotNull(
+                    devilReleaseKeystorePath,
+                ),
+            )
+
+        check(keystoreFile.isFile) {
+            "Devil release keystore does not exist at the configured path."
+        }
     }
 }
 
