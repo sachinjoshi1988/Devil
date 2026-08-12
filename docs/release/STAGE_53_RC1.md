@@ -11,8 +11,8 @@ Current status:
 - Stage 53 release-signing governance has been established.
 - The permanent Devil V1 release signing identity has been created outside Git.
 - GitHub Actions release-signing secrets have been provisioned.
-- RC1 release infrastructure is being established.
-- No RC1 artifact is considered validated merely because this document or workflow exists.
+- RC1 release infrastructure is established and the signed RC1 artifact has completed its recorded validation path.
+- RC1 validation evidence is recorded below; Stage 53 remains pending final repository closure and the official completion tag.
 
 Stage 53 must not be considered officially complete until the RC1 closure gate passes and the official Stage 53 completion tag is created deliberately.
 
@@ -179,6 +179,255 @@ Required physical-device evidence includes:
 - no observed blocker that invalidates RC1.
 
 A truthful `DEFERRED`, `UNAVAILABLE`, `DEGRADED`, `DENIED`, `FAILED`, or partial result must not be rewritten as success.
+
+## RC1 Validation Evidence
+
+### Workflow History and Source
+
+The first Stage 53 RC1 workflow attempt was:
+
+- workflow:
+  `Devil V1 RC1 APK`
+- run:
+  `31557758907`
+- source commit:
+  `2d48d8e9b318423853414fa3b73d0c42d24c09c7`
+- result:
+  `failure`
+
+That run successfully reached the signed RC1 release APK and then failed closed at the APK signer-verification gate.
+
+The failure was caused by a version-specific parser expecting:
+
+`Signer #1 certificate SHA-256 digest:`
+
+while the GitHub runner's `apksigner` reported the signer using the form:
+
+`V2 Signer: certificate SHA-256 digest:`
+
+The failed run did not proceed to checksum publication or GitHub RC1 Release creation.
+
+The signer parser was corrected without weakening signer verification.
+
+The correction was committed as:
+
+`039e8a29db4912110fe406b462878e51ee7ca7a9`
+
+with subject:
+
+`Stage 53: Fix RC1 signer verification parser`
+
+The authoritative successful RC1 workflow run was:
+
+- workflow:
+  `Devil V1 RC1 APK`
+- run:
+  `31558219895`
+- result:
+  `success`
+- workflow source commit:
+  `039e8a29db4912110fe406b462878e51ee7ca7a9`
+
+The workflow source commit matched the corrected Stage 53 RC1 repository HEAD exactly.
+
+The successful workflow completed all required RC1 gates, including:
+
+- repository checkout;
+- JDK setup;
+- Gradle preparation;
+- release-signing secret presence verification;
+- temporary release-keystore reconstruction;
+- core model tests;
+- core runtime tests;
+- complete app debug unit tests;
+- signed release APK assembly;
+- RC1 APK signer verification;
+- expected signing-certificate fingerprint verification;
+- SHA-256 generation;
+- SHA-256 verification;
+- signer-report generation;
+- GitHub RC1 prerelease creation.
+
+### RC1 Release Identity and Provenance
+
+The validated GitHub Release is:
+
+- release tag:
+  `devil-v1.0.0-rc1`
+- release name:
+  `Devil V1.0.0 RC1`
+- classification:
+  prerelease
+- release target:
+  `039e8a29db4912110fe406b462878e51ee7ca7a9`
+
+The actual Git tag was fetched independently and resolved to:
+
+`039e8a29db4912110fe406b462878e51ee7ca7a9`
+
+Therefore the validated RC1 provenance chain is:
+
+workflow source commit
+=
+GitHub Release target
+=
+actual Git tag target.
+
+### Published RC1 Artifacts
+
+The RC1 GitHub Release published:
+
+- `devil-v1-rc1.apk`
+- `devil-v1-rc1.apk.sha256`
+- `devil-v1-rc1.signer.txt`
+
+Published and independently verified APK SHA-256:
+
+`54a9917245dc00425f220a74a4115674fbb6d5dfe6fa87a25e5169f9774afd3d`
+
+The published checksum verified successfully with:
+
+`devil-v1-rc1.apk: OK`
+
+The exact release assets were downloaded through `gh` into an isolated verification directory.
+
+The independently calculated downloaded APK SHA-256 was also:
+
+`54a9917245dc00425f220a74a4115674fbb6d5dfe6fa87a25e5169f9774afd3d`
+
+A clearly identified shared-storage physical-device install copy was then created:
+
+`~/storage/downloads/Devil-V1.0.0-RC1-VERIFIED.apk`
+
+Its independently calculated SHA-256 was also:
+
+`54a9917245dc00425f220a74a4115674fbb6d5dfe6fa87a25e5169f9774afd3d`
+
+Therefore the prepared RC1 install copy remained byte-exact with the published RC1 APK.
+
+### RC1 Signing Identity
+
+Independent `apksigner` verification of the downloaded RC1 APK reported:
+
+- certificate DN:
+  `CN=Devil V1 Release, OU=Release, O=Devil, C=IN`
+- certificate SHA-256:
+  `96a20adba24a79d102a9c7722a761d290f217270a7e415051849f6a60f73177e`
+- key algorithm:
+  RSA
+- key size:
+  4096 bits
+- signer count:
+  `1`
+- APK Signature Scheme v2:
+  verified
+
+The independently observed signing-certificate SHA-256 exactly matched the expected permanent Devil V1 release certificate.
+
+The published signer report also recorded the same Devil V1 release-signing identity.
+
+Release signing proves artifact identity and signing continuity.
+
+It does not prove Devil authorization, runtime readiness, execution success, verified task completion, or Outcome.
+
+### Packaged Application Identity
+
+Independent `apkanalyzer` inspection of the downloaded RC1 APK reported:
+
+- application release version code:
+  `2`
+- application release version name:
+  `1.0.0-rc1`
+
+These values matched the Stage 53 RC1 contract exactly.
+
+The Android package identity remains:
+
+`com.devil.app`
+
+### Debug-to-Release Installation Transition
+
+The Stage 52 Closed Beta lineage was debug-signed.
+
+Stage 53 RC1 begins the permanent Devil V1 release-signing lineage.
+
+The RC1 physical-device test therefore used the controlled clean-install path rather than treating the debug-signed Closed Beta as directly upgrade-compatible with RC1.
+
+The verified install artifact used for this path was:
+
+`~/storage/downloads/Devil-V1.0.0-RC1-VERIFIED.apk`
+
+with SHA-256:
+
+`54a9917245dc00425f220a74a4115674fbb6d5dfe6fa87a25e5169f9774afd3d`
+
+The supplied screen recording demonstrates the observed post-install RC1 behavior.
+
+The recording itself is not treated as independent visual proof of every uninstall or installation action that occurred before recording began.
+
+### Physical-Device RC1 Validation
+
+Primary validation device:
+
+- Redmi Note 12
+- Android 14 / HyperOS
+
+The supplied physical-device screen recording showed:
+
+- Devil launching successfully;
+- the accepted Stage 51 awakening presentation remaining intact;
+- the dark full-screen presentation;
+- red environmental code animation;
+- the central Devil D identity;
+- the `DEVIL INSIDE` wordmark;
+- successful awakening-to-conversation transition;
+- conversation UI availability;
+- typed input of `Hello Devil`;
+- the user conversation entry appearing once;
+- runtime-result presentation:
+  `Deferred by the Devil runtime.`;
+- the `DEFERRED` result remaining truthfully non-successful rather than being rewritten as completed execution;
+- voice-output presentation being exercised through the visible speaking state;
+- accessibility diagnostic presentation truthfully reporting that Devil accessibility was not enabled;
+- no observed application crash during the recorded path;
+- no observed UI freeze during the recorded path;
+- no observed broken awakening-to-conversation transition;
+- no observed duplicate submitted conversation entry;
+- no obvious blocker in the recorded smoke-test path that invalidated RC1.
+
+The physical-device evidence does not claim that every Devil capability is available or operational.
+
+The visible `DEFERRED` runtime result is not treated as execution success, verified task success, or Outcome.
+
+The recording demonstrates observed presentation and interaction behavior only; it does not independently prove every internal constitutional transition.
+
+### RC1 Validation Conclusion
+
+Devil V1 RC1 passed the bounded Stage 53 evidence available for:
+
+- release-variant packaging;
+- permanent release signing;
+- signing-certificate identity;
+- CI testing;
+- source provenance;
+- Git tag provenance;
+- release provenance;
+- artifact integrity;
+- packaged version identity;
+- controlled physical-device RC1 smoke testing;
+- truthful non-success runtime-result presentation.
+
+This validation does not make RC1:
+
+- RC2;
+- the final Devil V1 production APK;
+- production-ready merely because RC1 passed;
+- evidence that every Devil capability works;
+- evidence that every Android or HyperOS behavior is solved;
+- evidence of verified task completion where the runtime returned `DEFERRED`.
+
+Stage 53 remains open until this validation record is reviewed, committed and pushed, final repository closure evidence is verified, and the official `devil-stage-53-complete` tag is created deliberately.
+
 
 ## Constitutional Boundaries
 
