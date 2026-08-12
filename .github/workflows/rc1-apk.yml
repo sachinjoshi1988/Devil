@@ -1,0 +1,179 @@
+name: Devil V1 RC1 APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Release Devil V1 RC1
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Devil
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Prepare Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Remove Termux-only AAPT2 override
+        run: |
+          sed -i \
+            '/^android\.aapt2FromMavenOverride=/d' \
+            gradle.properties
+
+      - name: Verify Gradle environment
+        run: ./gradlew --version
+
+      - name: Verify release signing secrets
+        env:
+          DEVIL_RELEASE_KEYSTORE_BASE64: ${{ secrets.DEVIL_RELEASE_KEYSTORE_BASE64 }}
+          DEVIL_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.DEVIL_RELEASE_KEYSTORE_PASSWORD }}
+          DEVIL_RELEASE_KEY_ALIAS: ${{ secrets.DEVIL_RELEASE_KEY_ALIAS }}
+          DEVIL_RELEASE_KEY_PASSWORD: ${{ secrets.DEVIL_RELEASE_KEY_PASSWORD }}
+          DEVIL_RELEASE_CERT_SHA256: ${{ secrets.DEVIL_RELEASE_CERT_SHA256 }}
+        run: |
+          test -n "$DEVIL_RELEASE_KEYSTORE_BASE64"
+          test -n "$DEVIL_RELEASE_KEYSTORE_PASSWORD"
+          test -n "$DEVIL_RELEASE_KEY_ALIAS"
+          test -n "$DEVIL_RELEASE_KEY_PASSWORD"
+          test -n "$DEVIL_RELEASE_CERT_SHA256"
+
+      - name: Reconstruct temporary release keystore
+        env:
+          DEVIL_RELEASE_KEYSTORE_BASE64: ${{ secrets.DEVIL_RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          KEYSTORE_PATH="$RUNNER_TEMP/devil-v1-release.p12"
+
+          printf '%s' "$DEVIL_RELEASE_KEYSTORE_BASE64" \
+            | base64 --decode \
+            > "$KEYSTORE_PATH"
+
+          chmod 600 "$KEYSTORE_PATH"
+
+          test -s "$KEYSTORE_PATH"
+
+          echo "DEVIL_RELEASE_KEYSTORE_PATH=$KEYSTORE_PATH" \
+            >> "$GITHUB_ENV"
+
+      - name: Run core model tests
+        run: ./gradlew :core:model:test
+
+      - name: Run core runtime tests
+        run: ./gradlew :core:runtime:test
+
+      - name: Run complete app unit tests
+        run: ./gradlew :app:testDebugUnitTest
+
+      - name: Build signed RC1 release APK
+        env:
+          DEVIL_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.DEVIL_RELEASE_KEYSTORE_PASSWORD }}
+          DEVIL_RELEASE_KEY_ALIAS: ${{ secrets.DEVIL_RELEASE_KEY_ALIAS }}
+          DEVIL_RELEASE_KEY_PASSWORD: ${{ secrets.DEVIL_RELEASE_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon :app:assembleRelease
+
+      - name: Prepare RC1 verification directory
+        run: |
+          mkdir -p release
+
+          cp \
+            app/build/outputs/apk/release/app-release.apk \
+            release/devil-v1-rc1.apk
+
+      - name: Verify RC1 APK signer
+        env:
+          DEVIL_RELEASE_CERT_SHA256: ${{ secrets.DEVIL_RELEASE_CERT_SHA256 }}
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+
+          test -n "$SDK_ROOT"
+
+          APKSIGNER="$(
+            find "$SDK_ROOT/build-tools" \
+              -maxdepth 2 \
+              -type f \
+              -name apksigner \
+              | sort -V \
+              | tail -n 1
+          )"
+
+          test -n "$APKSIGNER"
+          test -x "$APKSIGNER"
+
+          "$APKSIGNER" verify \
+            --verbose \
+            --print-certs \
+            release/devil-v1-rc1.apk \
+            | tee release/devil-v1-rc1.signer.txt
+
+          ACTUAL_CERT_SHA256="$(
+            grep \
+              'Signer #1 certificate SHA-256 digest:' \
+              release/devil-v1-rc1.signer.txt \
+              | head -n 1 \
+              | sed 's/.*digest:[[:space:]]*//' \
+              | tr 'A-F' 'a-f' \
+              | tr -d ':'
+          )"
+
+          EXPECTED_CERT_SHA256="$(
+            printf '%s' "$DEVIL_RELEASE_CERT_SHA256" \
+              | tr 'A-F' 'a-f' \
+              | tr -d ':'
+          )"
+
+          echo "Expected signer SHA-256: $EXPECTED_CERT_SHA256"
+          echo "Actual signer SHA-256:   $ACTUAL_CERT_SHA256"
+
+          test "$ACTUAL_CERT_SHA256" = "$EXPECTED_CERT_SHA256"
+
+      - name: Generate and verify RC1 checksum
+        run: |
+          (
+            cd release
+
+            sha256sum devil-v1-rc1.apk \
+              > devil-v1-rc1.apk.sha256
+
+            sha256sum --check devil-v1-rc1.apk.sha256
+          )
+
+      - name: Verify RC1 release files
+        run: |
+          ls -lh release
+          cat release/devil-v1-rc1.apk.sha256
+          cat release/devil-v1-rc1.signer.txt
+
+      - name: Create GitHub RC1 Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: devil-v1.0.0-rc1
+        run: |
+          gh release create "$RELEASE_TAG" \
+            release/devil-v1-rc1.apk \
+            release/devil-v1-rc1.apk.sha256 \
+            release/devil-v1-rc1.signer.txt \
+            --target "$GITHUB_SHA" \
+            --title "Devil V1.0.0 RC1" \
+            --prerelease \
+            --notes "Devil V1.0.0 Release Candidate 1.
+
+          Source commit: $GITHUB_SHA
+
+          Version name: 1.0.0-rc1
+          Version code: 2
+
+          This is a signed release-variant candidate using the Devil V1 release signing identity.
+
+          RC1 is pre-production. It is not the final Devil V1 production release.
+
+          Verify the APK against the attached SHA-256 checksum and signer report before installation."
