@@ -10,6 +10,7 @@ import com.devil.core.model.context.ContextTrustLevel
 import com.devil.core.model.decision.DecisionRecord
 import com.devil.core.model.decision.DecisionState
 import com.devil.core.model.plan.PlanCreationRequest
+import com.devil.core.model.plan.PlanId
 import com.devil.core.model.task.TaskId
 import com.devil.core.model.task.TaskRecord
 import com.devil.core.model.task.TaskState
@@ -23,43 +24,63 @@ import kotlin.test.assertNull
 class DefaultPlanIdentityProviderTest {
 
     @Test
-    fun `provide returns unavailable without fabricating plan identity`() {
+    fun `provide returns deterministic task-derived plan identity`() {
         val traceId = TraceId.from(
             "trace-default-plan-identity-provider-001",
         )
-        val provider: PlanIdentityProvider =
-            DefaultPlanIdentityProvider()
-
-        val result = provider.provide(
+        val request = createRequest(
             traceId = traceId,
-            request = createRequest(traceId),
-        )
-
-        assertEquals(traceId, result.traceId)
-        assertEquals(
-            PlanIdentityProvisionStatus.UNAVAILABLE,
-            result.status,
-        )
-        assertNull(result.planId)
-        assertNull(result.error)
-    }
-
-    @Test
-    fun `provide remains independent from planning strategy availability`() {
-        val traceId = TraceId.from(
-            "trace-default-plan-identity-provider-002",
+            taskId = TaskId.from(
+                "task:trace-default-plan-identity-provider-001",
+            ),
         )
 
         val result = DefaultPlanIdentityProvider().provide(
             traceId = traceId,
-            request = createRequest(traceId),
+            request = request,
         )
 
+        assertEquals(traceId, result.traceId)
         assertEquals(
-            PlanIdentityProvisionStatus.UNAVAILABLE,
+            PlanIdentityProvisionStatus.AVAILABLE,
             result.status,
         )
-        assertNull(result.planId)
+        assertEquals(
+            PlanId.from(
+                "plan:task:trace-default-plan-identity-provider-001",
+            ),
+            result.planId,
+        )
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `provide is deterministic for the same task identity`() {
+        val traceId = TraceId.from(
+            "trace-default-plan-identity-provider-002",
+        )
+        val request = createRequest(
+            traceId = traceId,
+            taskId = TaskId.from(
+                "task:trace-default-plan-identity-provider-002",
+            ),
+        )
+        val provider = DefaultPlanIdentityProvider()
+
+        val first = provider.provide(
+            traceId = traceId,
+            request = request,
+        )
+        val second = provider.provide(
+            traceId = traceId,
+            request = request,
+        )
+
+        assertEquals(first.planId, second.planId)
+        assertEquals(
+            PlanIdentityProvisionStatus.AVAILABLE,
+            first.status,
+        )
     }
 
     @Test
@@ -70,8 +91,11 @@ class DefaultPlanIdentityProviderTest {
                     "trace-default-plan-identity-provider-003",
                 ),
                 request = createRequest(
-                    TraceId.from(
+                    traceId = TraceId.from(
                         "trace-default-plan-identity-request-other",
+                    ),
+                    taskId = TaskId.from(
+                        "task:trace-default-plan-identity-request-other",
                     ),
                 ),
             )
@@ -80,12 +104,11 @@ class DefaultPlanIdentityProviderTest {
 
     private fun createRequest(
         traceId: TraceId,
+        taskId: TaskId,
     ): PlanCreationRequest {
         return PlanCreationRequest.create(
             task = TaskRecord.create(
-                taskId = TaskId.from(
-                    "task-default-plan-identity-001",
-                ),
+                taskId = taskId,
                 decision = DecisionRecord.create(
                     understanding = UnderstandingRecord.create(
                         context = ContextEnvelope.create(
@@ -103,13 +126,15 @@ class DefaultPlanIdentityProviderTest {
                         ),
                         state = UnderstandingState.COMPLETE,
                         summary =
-                            "Open the camera application.",
+                            "Bounded understanding was produced.",
                     ),
                     state = DecisionState.SELECTED,
-                    summary = "Open the camera application.",
+                    summary =
+                        "Bounded constitutional decision was selected.",
                 ),
                 state = TaskState.CREATED,
-                summary = "Open the camera application.",
+                summary =
+                    "Bounded constitutional task was created.",
             ),
         )
     }

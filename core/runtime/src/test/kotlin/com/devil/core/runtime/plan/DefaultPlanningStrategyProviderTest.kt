@@ -13,7 +13,10 @@ import com.devil.core.model.plan.PlanCreationRequest
 import com.devil.core.model.task.TaskId
 import com.devil.core.model.task.TaskRecord
 import com.devil.core.model.task.TaskState
+import com.devil.core.model.understanding.UnderstandingActionability
+import com.devil.core.model.understanding.UnderstandingIntent
 import com.devil.core.model.understanding.UnderstandingRecord
+import com.devil.core.model.understanding.UnderstandingSemantics
 import com.devil.core.model.understanding.UnderstandingState
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,19 +26,62 @@ import kotlin.test.assertNull
 class DefaultPlanningStrategyProviderTest {
 
     @Test
-    fun `provide returns unavailable without fabricating strategy`() {
+    fun `provide creates bounded open-target planning strategy`() {
         val traceId = TraceId.from(
             "trace-default-planning-strategy-provider-001",
         )
-        val provider: PlanningStrategyProvider =
-            DefaultPlanningStrategyProvider()
 
-        val result = provider.provide(
+        val result = DefaultPlanningStrategyProvider().provide(
             traceId = traceId,
-            request = createRequest(traceId),
+            request = createOpenTargetRequest(
+                traceId = traceId,
+                target = "camera",
+            ),
         )
 
         assertEquals(traceId, result.traceId)
+        assertEquals(
+            PlanningStrategyProvisionStatus.AVAILABLE,
+            result.status,
+        )
+        assertEquals(
+            "Prepare the bounded plan for opening target: camera.",
+            result.strategy,
+        )
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `provide preserves understood target without executing it`() {
+        val traceId = TraceId.from(
+            "trace-default-planning-strategy-provider-002",
+        )
+
+        val result = DefaultPlanningStrategyProvider().provide(
+            traceId = traceId,
+            request = createOpenTargetRequest(
+                traceId = traceId,
+                target = "the camera",
+            ),
+        )
+
+        assertEquals(
+            "Prepare the bounded plan for opening target: the camera.",
+            result.strategy,
+        )
+    }
+
+    @Test
+    fun `provide returns unavailable when complete understanding lacks semantics`() {
+        val traceId = TraceId.from(
+            "trace-default-planning-strategy-provider-003",
+        )
+
+        val result = DefaultPlanningStrategyProvider().provide(
+            traceId = traceId,
+            request = createRequestWithoutSemantics(traceId),
+        )
+
         assertEquals(
             PlanningStrategyProvisionStatus.UNAVAILABLE,
             result.status,
@@ -45,51 +91,55 @@ class DefaultPlanningStrategyProviderTest {
     }
 
     @Test
-    fun `provide does not copy task summary as strategy`() {
-        val traceId = TraceId.from(
-            "trace-default-planning-strategy-provider-002",
-        )
-        val request = createRequest(traceId)
-
-        val result = DefaultPlanningStrategyProvider().provide(
-            traceId = traceId,
-            request = request,
-        )
-
-        assertEquals(
-            "Open the camera application.",
-            request.task.summary,
-        )
-        assertEquals(
-            PlanningStrategyProvisionStatus.UNAVAILABLE,
-            result.status,
-        )
-        assertNull(result.strategy)
-    }
-
-    @Test
     fun `provide rejects request from a different trace`() {
         assertFailsWith<IllegalArgumentException> {
             DefaultPlanningStrategyProvider().provide(
                 traceId = TraceId.from(
-                    "trace-default-planning-strategy-provider-003",
+                    "trace-default-planning-strategy-provider-004",
                 ),
-                request = createRequest(
-                    TraceId.from(
+                request = createOpenTargetRequest(
+                    traceId = TraceId.from(
                         "trace-default-planning-strategy-request-other",
                     ),
+                    target = "camera",
                 ),
             )
         }
     }
 
+    private fun createOpenTargetRequest(
+        traceId: TraceId,
+        target: String,
+    ): PlanCreationRequest {
+        return createRequest(
+            traceId = traceId,
+            semantics = UnderstandingSemantics.create(
+                intent = UnderstandingIntent.OPEN_TARGET,
+                actionability =
+                    UnderstandingActionability.ACTIONABLE,
+                meaning = "open target",
+                target = target,
+            ),
+        )
+    }
+
+    private fun createRequestWithoutSemantics(
+        traceId: TraceId,
+    ): PlanCreationRequest {
+        return createRequest(
+            traceId = traceId,
+            semantics = null,
+        )
+    }
+
     private fun createRequest(
         traceId: TraceId,
+        semantics: UnderstandingSemantics?,
     ): PlanCreationRequest {
         return PlanCreationRequest.create(
             task = TaskRecord.create(
                 taskId = TaskId.from(
-                    "task-default-planning-strategy-001",
+                    "task:${traceId.value}",
                 ),
                 decision = DecisionRecord.create(
                     understanding = UnderstandingRecord.create(
@@ -108,13 +158,16 @@ class DefaultPlanningStrategyProviderTest {
                         ),
                         state = UnderstandingState.COMPLETE,
                         summary =
-                            "Open the camera application.",
+                            "Bounded semantic understanding was produced.",
+                        semantics = semantics,
                     ),
                     state = DecisionState.SELECTED,
-                    summary = "Open the camera application.",
+                    summary =
+                        "Bounded constitutional decision was selected.",
                 ),
                 state = TaskState.CREATED,
-                summary = "Open the camera application.",
+                summary =
+                    "Bounded constitutional task was created.",
             ),
         )
     }

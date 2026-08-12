@@ -19,6 +19,9 @@ import com.devil.core.model.task.TaskId
 import com.devil.core.model.task.TaskRecord
 import com.devil.core.model.task.TaskState
 import com.devil.core.model.understanding.UnderstandingRecord
+import com.devil.core.model.understanding.UnderstandingActionability
+import com.devil.core.model.understanding.UnderstandingIntent
+import com.devil.core.model.understanding.UnderstandingSemantics
 import com.devil.core.model.understanding.UnderstandingState
 import com.devil.core.runtime.authorization.AuthorizationResult
 import com.devil.core.runtime.authorization.AuthorizationStatus
@@ -43,15 +46,22 @@ class DefaultPlanAuthorityTest {
     fun `createPlan defers when planning strategy is unavailable`() {
         val context = createContext("trace-plan-default-001")
 
-        val result = DefaultPlanAuthority().createPlan(
-            context = context,
-            identity = createIdentity(context.traceId),
-            trust = createTrust(context.traceId),
-            authorization = createAuthorization(context.traceId),
-            understanding = createUnderstanding(context),
-            decision = createDecision(context),
-            task = createTask(context),
+        val authority = DefaultPlanAuthority(
+            strategyProvider = object : PlanningStrategyProvider {
+                override fun provide(
+                    traceId: TraceId,
+                    request: PlanCreationRequest,
+                ): PlanningStrategyProvisionResult {
+                    return PlanningStrategyProvisionResult.create(
+                        traceId = traceId,
+                        status =
+                            PlanningStrategyProvisionStatus.UNAVAILABLE,
+                    )
+                }
+            },
         )
+
+        val result = createPlan(authority, context)
 
         assertEquals(context.traceId, result.traceId)
         assertEquals(PlanAuthorityStatus.DEFERRED, result.status)
@@ -172,11 +182,24 @@ class DefaultPlanAuthorityTest {
     @Test
     fun `createPlan defers when plan identity is unavailable`() {
         val context = createContext("trace-plan-default-006")
+
         val authority = DefaultPlanAuthority(
             strategyProvider =
                 availableStrategyProvider(
                     "Use the approved capability path.",
                 ),
+            planIdentityProvider = object : PlanIdentityProvider {
+                override fun provide(
+                    traceId: TraceId,
+                    request: PlanCreationRequest,
+                ): PlanIdentityProvisionResult {
+                    return PlanIdentityProvisionResult.create(
+                        traceId = traceId,
+                        status =
+                            PlanIdentityProvisionStatus.UNAVAILABLE,
+                    )
+                }
+            },
         )
 
         val result = createPlan(authority, context)
@@ -535,6 +558,12 @@ class DefaultPlanAuthorityTest {
             understanding = UnderstandingRecord.create(
                 context = context,
                 state = UnderstandingState.COMPLETE,
+                semantics = UnderstandingSemantics.create(
+                    intent = UnderstandingIntent.OPEN_TARGET,
+                    actionability = UnderstandingActionability.ACTIONABLE,
+                    meaning = "open target",
+                    target = "camera",
+                ),
                 summary = "Bounded understanding was produced.",
             ),
         )
@@ -550,6 +579,12 @@ class DefaultPlanAuthorityTest {
                 understanding = UnderstandingRecord.create(
                     context = context,
                     state = UnderstandingState.COMPLETE,
+                semantics = UnderstandingSemantics.create(
+                    intent = UnderstandingIntent.OPEN_TARGET,
+                    actionability = UnderstandingActionability.ACTIONABLE,
+                    meaning = "open target",
+                    target = "camera",
+                ),
                     summary = "Bounded understanding was produced.",
                 ),
                 state = DecisionState.SELECTED,

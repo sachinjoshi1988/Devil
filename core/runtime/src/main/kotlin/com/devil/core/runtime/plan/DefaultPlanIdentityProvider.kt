@@ -2,15 +2,20 @@ package com.devil.core.runtime.plan
 
 import com.devil.core.model.common.TraceId
 import com.devil.core.model.plan.PlanCreationRequest
+import com.devil.core.model.plan.PlanId
 
 /**
- * Default Stage 9 plan identity provider.
+ * Default bounded constitutional Plan identity provider.
  *
- * No constitutional plan identity policy exists yet. Therefore this provider
- * preserves trace continuity and reports that no plan identity is available
- * rather than fabricating one.
+ * Stage 59 establishes one deterministic Plan identity from the already-created
+ * Task identity:
  *
- * This implementation does not create planning strategy, create plans, bind or
+ * plan:<task-id>
+ *
+ * PlanId therefore remains distinct from TaskId while preserving direct
+ * constitutional traceability to the originating task.
+ *
+ * Providing a PlanId does not create planning strategy, create a plan, bind or
  * authorize capabilities, execute actions, observe results, verify outcomes,
  * or report final outcomes.
  */
@@ -28,7 +33,10 @@ class DefaultPlanIdentityProvider : PlanIdentityProvider {
 
         return PlanIdentityProvisionResult.create(
             traceId = traceId,
-            status = PlanIdentityProvisionStatus.UNAVAILABLE,
+            status = PlanIdentityProvisionStatus.AVAILABLE,
+            planId = PlanId.from(
+                "plan:${request.task.taskId.value}",
+            ),
         )
     }
 }

@@ -2,17 +2,23 @@ package com.devil.core.runtime.plan
 
 import com.devil.core.model.common.TraceId
 import com.devil.core.model.plan.PlanCreationRequest
+import com.devil.core.model.understanding.UnderstandingActionability
+import com.devil.core.model.understanding.UnderstandingIntent
+import com.devil.core.model.understanding.UnderstandingState
 
 /**
- * Default Stage 9 planning strategy provider.
+ * Default bounded constitutional planning-strategy provider.
  *
- * No constitutional planning policy exists yet. Therefore this provider
- * preserves trace continuity and reports that no planning strategy is
- * available rather than copying upstream summaries or fabricating strategy.
+ * Stage 59 derives one deliberately small planning strategy only from
+ * structured semantic meaning already established by Understanding and carried
+ * through the selected Decision and created Task.
  *
- * This implementation does not generate plan identity, create plans, bind or
- * authorize capabilities, execute actions, observe results, verify outcomes,
- * or report final outcomes.
+ * Planner may formulate how to pursue the established goal, but it must not
+ * reinterpret or change that goal.
+ *
+ * Providing a strategy does not generate plan identity, create a plan,
+ * select or authorize a capability, execute an action, observe execution,
+ * verify an effect, or establish an Outcome.
  */
 class DefaultPlanningStrategyProvider : PlanningStrategyProvider {
 
@@ -26,9 +32,73 @@ class DefaultPlanningStrategyProvider : PlanningStrategyProvider {
             "Planning strategy trace and plan-creation request must use the same trace identity."
         }
 
-        return PlanningStrategyProvisionResult.create(
-            traceId = traceId,
-            status = PlanningStrategyProvisionStatus.UNAVAILABLE,
-        )
+        val understanding =
+            request.task.decision.understanding
+
+        if (understanding.state != UnderstandingState.COMPLETE) {
+            return PlanningStrategyProvisionResult.create(
+                traceId = traceId,
+                status = PlanningStrategyProvisionStatus.UNAVAILABLE,
+            )
+        }
+
+        val semantics =
+            understanding.semantics
+                ?: return PlanningStrategyProvisionResult.create(
+                    traceId = traceId,
+                    status = PlanningStrategyProvisionStatus.UNAVAILABLE,
+                )
+
+        val strategy =
+            when (semantics.intent) {
+                UnderstandingIntent.GREETING -> {
+                    if (
+                        semantics.actionability ==
+                        UnderstandingActionability.NON_ACTIONABLE
+                    ) {
+                        "Prepare a bounded conversational acknowledgement of the greeting."
+                    } else {
+                        null
+                    }
+                }
+
+                UnderstandingIntent.OPEN_TARGET -> {
+                    val target = semantics.target
+
+                    if (
+                        semantics.actionability ==
+                        UnderstandingActionability.ACTIONABLE &&
+                        target != null
+                    ) {
+                        "Prepare the bounded plan for opening target: $target."
+                    } else {
+                        null
+                    }
+                }
+
+                UnderstandingIntent.INFORMATIONAL -> {
+                    if (
+                        semantics.actionability ==
+                        UnderstandingActionability.NON_ACTIONABLE
+                    ) {
+                        "Prepare bounded conversational handling of the supplied informational statement."
+                    } else {
+                        null
+                    }
+                }
+            }
+
+        return if (strategy != null) {
+            PlanningStrategyProvisionResult.create(
+                traceId = traceId,
+                status = PlanningStrategyProvisionStatus.AVAILABLE,
+                strategy = strategy,
+            )
+        } else {
+            PlanningStrategyProvisionResult.create(
+                traceId = traceId,
+                status = PlanningStrategyProvisionStatus.UNAVAILABLE,
+            )
+        }
     }
 }
