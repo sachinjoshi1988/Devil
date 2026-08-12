@@ -12,6 +12,9 @@ import com.devil.core.model.decision.DecisionState
 import com.devil.core.model.error.ErrorCode
 import com.devil.core.model.error.UniversalErrorRecord
 import com.devil.core.model.understanding.UnderstandingRecord
+import com.devil.core.model.understanding.UnderstandingActionability
+import com.devil.core.model.understanding.UnderstandingIntent
+import com.devil.core.model.understanding.UnderstandingSemantics
 import com.devil.core.model.understanding.UnderstandingState
 import com.devil.core.runtime.authorization.AuthorizationResult
 import com.devil.core.runtime.authorization.AuthorizationStatus
@@ -49,17 +52,19 @@ class DefaultDecisionAuthorityTest {
             DecisionAuthorityStatus.PRODUCED,
             result.status,
         )
+
+        val decision = requireNotNull(result.decision)
+
         assertEquals(
-            DecisionState.DEFERRED,
-            requireNotNull(result.decision).state,
+            DecisionState.SELECTED,
+            decision.state,
         )
         assertEquals(
-            "No constitutional decision policy is available.",
-            result.decision.summary,
+            "Proceed with the understood request to open target: camera.",
+            decision.summary,
         )
         assertNull(result.error)
     }
-
     @Test
     fun `decide defers when evaluation request is unavailable`() {
         val context = createContext(
@@ -330,12 +335,20 @@ class DefaultDecisionAuthorityTest {
             status = UnderstandingAuthorityStatus.PRODUCED,
             understanding = UnderstandingRecord.create(
                 context = context,
-                state = UnderstandingState.UNSUPPORTED,
+                state = UnderstandingState.COMPLETE,
                 summary =
-                    "No structured language-understanding policy is available.",
+                    "User requested opening the target: camera.",
+                semantics = UnderstandingSemantics.create(
+                    intent = UnderstandingIntent.OPEN_TARGET,
+                    actionability =
+                        UnderstandingActionability.ACTIONABLE,
+                    meaning = "open target",
+                    target = "camera",
+                ),
             ),
         )
     }
+
 
     private fun createIdentity(
         traceId: TraceId,
