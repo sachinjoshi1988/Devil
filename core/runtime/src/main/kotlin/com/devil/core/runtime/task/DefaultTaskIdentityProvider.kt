@@ -2,17 +2,30 @@ package com.devil.core.runtime.task
 
 import com.devil.core.model.common.TraceId
 import com.devil.core.model.task.TaskCreationRequest
+import com.devil.core.model.task.TaskId
 
 /**
- * Default Stage 8 task identity provider.
+ * Default bounded constitutional Task identity provider.
  *
- * No constitutional task identity policy exists yet. Therefore this provider
- * preserves trace continuity and reports that no task identity is available
- * rather than fabricating one.
+ * Stage 58 establishes one deterministic Task identity for the bounded
+ * task-creation flow represented by the authoritative trace.
  *
- * This implementation does not generate task identities, create tasks, change
- * task lifecycle state, create plans, authorize capabilities, execute actions,
- * observe results, or verify outcomes.
+ * The Task identity is derived as:
+ *
+ * task:<trace-id>
+ *
+ * This policy preserves traceability while keeping TaskId distinct from
+ * TraceId as a separate constitutional identity type.
+ *
+ * Providing a TaskId does not:
+ * - create a task;
+ * - create a plan;
+ * - authorize a capability;
+ * - establish Android permission;
+ * - execute an action;
+ * - observe execution;
+ * - verify an effect;
+ * - establish an Outcome.
  */
 class DefaultTaskIdentityProvider : TaskIdentityProvider {
 
@@ -29,7 +42,10 @@ class DefaultTaskIdentityProvider : TaskIdentityProvider {
 
         return TaskIdentityProvisionResult.create(
             traceId = traceId,
-            status = TaskIdentityProvisionStatus.UNAVAILABLE,
+            status = TaskIdentityProvisionStatus.AVAILABLE,
+            taskId = TaskId.from(
+                "task:${traceId.value}",
+            ),
         )
     }
 }

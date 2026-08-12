@@ -35,7 +35,7 @@ import kotlin.test.assertNull
 class DefaultTaskAuthorityTest {
 
     @Test
-    fun `createTask defers when task identity is unavailable`() {
+    fun `createTask creates bounded task using default trace-derived identity`() {
         val context = createContext(
             "trace-task-default-001",
         )
@@ -53,10 +53,21 @@ class DefaultTaskAuthorityTest {
 
         assertEquals(context.traceId, result.traceId)
         assertEquals(
-            TaskAuthorityStatus.DEFERRED,
+            TaskAuthorityStatus.CREATED,
             result.status,
         )
-        assertNull(result.task)
+        assertEquals(
+            TaskId.from("task:trace-task-default-001"),
+            result.task?.taskId,
+        )
+        assertEquals(
+            TaskState.CREATED,
+            result.task?.state,
+        )
+        assertEquals(
+            DecisionState.SELECTED,
+            result.task?.decision?.state,
+        )
         assertNull(result.error)
     }
 

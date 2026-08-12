@@ -10,6 +10,7 @@ import com.devil.core.model.context.ContextTrustLevel
 import com.devil.core.model.decision.DecisionRecord
 import com.devil.core.model.decision.DecisionState
 import com.devil.core.model.task.TaskCreationRequest
+import com.devil.core.model.task.TaskId
 import com.devil.core.model.understanding.UnderstandingRecord
 import com.devil.core.model.understanding.UnderstandingState
 import kotlin.test.Test
@@ -20,7 +21,7 @@ import kotlin.test.assertNull
 class DefaultTaskIdentityProviderTest {
 
     @Test
-    fun `provide returns unavailable without fabricating task identity`() {
+    fun `provide returns trace-derived task identity`() {
         val traceId = TraceId.from(
             "trace-default-task-identity-provider-001",
         )
@@ -34,33 +35,84 @@ class DefaultTaskIdentityProviderTest {
 
         assertEquals(traceId, result.traceId)
         assertEquals(
-            TaskIdentityProvisionStatus.UNAVAILABLE,
+            TaskIdentityProvisionStatus.AVAILABLE,
             result.status,
         )
-        assertNull(result.taskId)
+        assertEquals(
+            TaskId.from(
+                "task:trace-default-task-identity-provider-001",
+            ),
+            result.taskId,
+        )
         assertNull(result.error)
     }
 
     @Test
-    fun `provide consistently returns unavailable for selected decision`() {
+    fun `provide is deterministic for the same bounded trace`() {
         val traceId = TraceId.from(
             "trace-default-task-identity-provider-002",
         )
+        val provider = DefaultTaskIdentityProvider()
+        val request = createRequest(traceId)
 
-        val result = DefaultTaskIdentityProvider().provide(
+        val first = provider.provide(
             traceId = traceId,
-            request = createRequest(traceId),
+            request = request,
+        )
+        val second = provider.provide(
+            traceId = traceId,
+            request = request,
         )
 
         assertEquals(
             DecisionState.SELECTED,
-            createRequest(traceId).decision.state,
+            request.decision.state,
         )
         assertEquals(
-            TaskIdentityProvisionStatus.UNAVAILABLE,
-            result.status,
+            TaskIdentityProvisionStatus.AVAILABLE,
+            first.status,
         )
-        assertNull(result.taskId)
+        assertEquals(first.taskId, second.taskId)
+        assertEquals(
+            TaskId.from(
+                "task:trace-default-task-identity-provider-002",
+            ),
+            first.taskId,
+        )
+    }
+
+    @Test
+    fun `provide produces distinct task identities for distinct traces`() {
+        val firstTrace = TraceId.from(
+            "trace-default-task-identity-provider-a",
+        )
+        val secondTrace = TraceId.from(
+            "trace-default-task-identity-provider-b",
+        )
+
+        val provider = DefaultTaskIdentityProvider()
+
+        val first = provider.provide(
+            traceId = firstTrace,
+            request = createRequest(firstTrace),
+        )
+        val second = provider.provide(
+            traceId = secondTrace,
+            request = createRequest(secondTrace),
+        )
+
+        assertEquals(
+            TaskId.from(
+                "task:trace-default-task-identity-provider-a",
+            ),
+            first.taskId,
+        )
+        assertEquals(
+            TaskId.from(
+                "task:trace-default-task-identity-provider-b",
+            ),
+            second.taskId,
+        )
     }
 
     @Test
