@@ -29,46 +29,51 @@ import kotlin.test.assertNull
 class DefaultExecutiveReadinessEvaluatorTest {
 
     @Test
-    fun `evaluate returns unavailable without inventing readiness policy`() {
+    fun `evaluate returns ready for bounded readiness request`() {
         val traceId = TraceId.from(
             "trace-default-executive-evaluator-001",
         )
-        val evaluator: ExecutiveReadinessEvaluator =
-            DefaultExecutiveReadinessEvaluator()
+        val request = createRequest(traceId)
 
-        val result = evaluator.evaluate(
-            traceId = traceId,
-            request = createRequest(traceId),
-        )
+        val result =
+            DefaultExecutiveReadinessEvaluator().evaluate(
+                traceId = traceId,
+                request = request,
+            )
 
         assertEquals(traceId, result.traceId)
         assertEquals(
-            ExecutiveReadinessEvaluationStatus.UNAVAILABLE,
+            ExecutiveReadinessEvaluationStatus.READY,
             result.status,
         )
-        assertNull(result.request)
+        assertEquals(request, result.request)
         assertNull(result.error)
     }
 
     @Test
-    fun `evaluate does not treat selected capability as execution readiness`() {
+    fun `evaluate preserves selected capability without claiming execution`() {
         val traceId = TraceId.from(
             "trace-default-executive-evaluator-002",
         )
         val request = createRequest(traceId)
 
-        val result = DefaultExecutiveReadinessEvaluator().evaluate(
-            traceId = traceId,
-            request = request,
-        )
+        val result =
+            DefaultExecutiveReadinessEvaluator().evaluate(
+                traceId = traceId,
+                request = request,
+            )
 
         assertEquals(
             "capability-camera",
             request.capability.capabilityId.value,
         )
         assertEquals(
-            ExecutiveReadinessEvaluationStatus.UNAVAILABLE,
+            ExecutiveReadinessEvaluationStatus.READY,
             result.status,
+        )
+        assertEquals(
+            "capability-camera",
+            result.request?.capability?.capabilityId?.value,
         )
     }
 
@@ -101,25 +106,30 @@ class DefaultExecutiveReadinessEvaluatorTest {
                         "task-default-executive-evaluator",
                     ),
                     decision = DecisionRecord.create(
-                        understanding = UnderstandingRecord.create(
-                            context = ContextEnvelope.create(
-                                traceId = traceId,
-                                schemaVersion = SchemaVersion.from(1),
-                                source = ContextSource.TEXT,
-                                trustLevel =
-                                    ContextTrustLevel.VERIFIED,
-                                securityLevel =
-                                    ContextSecurityLevel.RESTRICTED,
-                                observedAt =
-                                    DevilTimestamp
-                                        .fromEpochMilliseconds(
-                                            1_754_000_098_000L,
-                                        ),
+                        understanding =
+                            UnderstandingRecord.create(
+                                context =
+                                    ContextEnvelope.create(
+                                        traceId = traceId,
+                                        schemaVersion =
+                                            SchemaVersion.from(1),
+                                        source =
+                                            ContextSource.TEXT,
+                                        trustLevel =
+                                            ContextTrustLevel.VERIFIED,
+                                        securityLevel =
+                                            ContextSecurityLevel.RESTRICTED,
+                                        observedAt =
+                                            DevilTimestamp
+                                                .fromEpochMilliseconds(
+                                                    1_754_000_098_000L,
+                                                ),
+                                    ),
+                                state =
+                                    UnderstandingState.COMPLETE,
+                                summary =
+                                    "Bounded understanding was produced.",
                             ),
-                            state = UnderstandingState.COMPLETE,
-                            summary =
-                                "Bounded understanding was produced.",
-                        ),
                         state = DecisionState.SELECTED,
                         summary =
                             "A constitutional decision was selected.",

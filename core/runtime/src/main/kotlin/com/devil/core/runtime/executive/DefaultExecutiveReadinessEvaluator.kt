@@ -4,15 +4,28 @@ import com.devil.core.model.common.TraceId
 import com.devil.core.model.executive.ExecutiveReadinessRequest
 
 /**
- * Default Stage 11 constitutional Executive readiness evaluator.
+ * Default bounded constitutional Executive readiness evaluator.
  *
- * No constitutional Executive-readiness policy exists yet. This evaluator
- * therefore preserves trace continuity and returns UNAVAILABLE rather than
- * claiming that a selected capability is ready to approach execution.
+ * Stage 61 establishes a deliberately narrow readiness policy over one
+ * structured ExecutiveReadinessRequest produced only after a PlanRecord exists
+ * and one registered capability has been selected.
  *
- * It does not authorize execution, evaluate operating-system permission,
- * establish capability availability or health, execute actions, observe
- * results, verify outcomes, or report final outcomes.
+ * READY means only that the bounded constitutional pipeline is ready to
+ * approach the separate Execution Authority.
+ *
+ * READY does not:
+ * - establish capability availability;
+ * - establish capability health;
+ * - establish operating-system permission;
+ * - authorize execution;
+ * - activate a capability;
+ * - execute an action;
+ * - observe execution;
+ * - verify an effect;
+ * - establish an Outcome.
+ *
+ * The downstream Execution Authority remains independently responsible for its
+ * own constitutional evaluation.
  */
 class DefaultExecutiveReadinessEvaluator :
     ExecutiveReadinessEvaluator {
@@ -30,7 +43,8 @@ class DefaultExecutiveReadinessEvaluator :
 
         return ExecutiveReadinessEvaluationResult.create(
             traceId = traceId,
-            status = ExecutiveReadinessEvaluationStatus.UNAVAILABLE,
+            status = ExecutiveReadinessEvaluationStatus.READY,
+            request = request,
         )
     }
 }

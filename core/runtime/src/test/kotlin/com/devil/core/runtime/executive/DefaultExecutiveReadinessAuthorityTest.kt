@@ -47,7 +47,7 @@ import kotlin.test.assertNull
 class DefaultExecutiveReadinessAuthorityTest {
 
     @Test
-    fun `evaluate defers when readiness policy is unavailable`() {
+    fun `evaluate returns ready using default bounded readiness policy`() {
         val context = createContext(
             "trace-executive-authority-001",
         )
@@ -59,7 +59,7 @@ class DefaultExecutiveReadinessAuthorityTest {
 
         assertEquals(context.traceId, result.traceId)
         assertEquals(
-            ExecutiveReadinessStatus.DEFERRED,
+            ExecutiveReadinessStatus.READY,
             result.status,
         )
         assertNull(result.error)
