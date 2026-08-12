@@ -117,7 +117,7 @@ jobs:
 
           ACTUAL_CERT_SHA256="$(
             grep \
-              'Signer #1 certificate SHA-256 digest:' \
+              'certificate SHA-256 digest:' \
               release/devil-v1-rc1.signer.txt \
               | head -n 1 \
               | sed 's/.*digest:[[:space:]]*//' \
