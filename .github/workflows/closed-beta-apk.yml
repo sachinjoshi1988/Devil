@@ -1,0 +1,86 @@
+name: Devil Closed Beta APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Release Closed Beta APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Devil
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Prepare Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Remove Termux-only AAPT2 override
+        run: |
+          sed -i \
+            '/^android\.aapt2FromMavenOverride=/d' \
+            gradle.properties
+
+      - name: Verify Gradle environment
+        run: ./gradlew --version
+
+      - name: Run core model tests
+        run: ./gradlew :core:model:test
+
+      - name: Run core runtime tests
+        run: ./gradlew :core:runtime:test
+
+      - name: Run complete app unit tests
+        run: ./gradlew :app:testDebugUnitTest
+
+      - name: Build Closed Beta APK
+        run: ./gradlew :app:assembleDebug
+
+      - name: Prepare Closed Beta release files
+        run: |
+          mkdir -p release
+          cp \
+            app/build/outputs/apk/debug/app-debug.apk \
+            release/devil-closed-beta.apk
+          (
+            cd release
+            sha256sum devil-closed-beta.apk \
+              > devil-closed-beta.apk.sha256
+          )
+
+      - name: Verify Closed Beta release files
+        run: |
+          ls -lh release
+          (
+            cd release
+            sha256sum --check devil-closed-beta.apk.sha256
+          )
+
+      - name: Create GitHub Closed Beta Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: devil-closed-beta-${{ github.run_number }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            release/devil-closed-beta.apk \
+            release/devil-closed-beta.apk.sha256 \
+            --target "$GITHUB_SHA" \
+            --title "Devil Closed Beta ${{ github.run_number }}" \
+            --prerelease \
+            --notes "Closed Beta APK for controlled Devil V1 testing.
+
+          Source commit: $GITHUB_SHA
+
+          This is a controlled debug-signed Closed Beta build. It is not an RC or production release.
+
+          Verify devil-closed-beta.apk against the attached SHA-256 checksum before installation."
