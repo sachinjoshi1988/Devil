@@ -1,18 +1,25 @@
 package com.devil.core.runtime.capability
 
+import com.devil.core.model.capability.CapabilityCategory
+import com.devil.core.model.capability.CapabilityContract
+import com.devil.core.model.capability.CapabilityId
 import com.devil.core.model.capability.CapabilitySelectionRequest
 import com.devil.core.model.common.TraceId
 
 /**
- * Default Stage 10 capability registry.
+ * Default bounded constitutional capability registry.
  *
- * No constitutional capability registration source exists yet. Therefore this
- * registry preserves trace continuity and reports that no registered
- * capabilities are available rather than fabricating registrations.
+ * Stage 60 establishes the first deliberately small set of registered Devil
+ * capability contracts.
  *
- * This implementation does not select capabilities, establish availability or
- * health, grant authorization, check operating-system permission, execute
- * actions, observe results, verify outcomes, or report final outcomes.
+ * Registration means only that a capability contract is known to Devil.
+ *
+ * Registered does not mean available, healthy, authorized, ready, permitted by
+ * the operating system, executed, observed, verified, or successful.
+ *
+ * This registry does not select capabilities, establish availability or health,
+ * grant authorization, check operating-system permission, execute actions,
+ * observe results, verify outcomes, or report final outcomes.
  */
 class DefaultCapabilityRegistry : CapabilityRegistry {
 
@@ -29,7 +36,25 @@ class DefaultCapabilityRegistry : CapabilityRegistry {
 
         return CapabilityRegistryResult.create(
             traceId = traceId,
-            status = CapabilityRegistryStatus.UNAVAILABLE,
+            status = CapabilityRegistryStatus.AVAILABLE,
+            capabilities = REGISTERED_CAPABILITIES,
         )
+    }
+
+    private companion object {
+
+        val REGISTERED_CAPABILITIES =
+            listOf(
+                CapabilityContract.create(
+                    capabilityId =
+                        CapabilityId.from(
+                            "capability-camera",
+                        ),
+                    category = CapabilityCategory.ACTION,
+                    name = "Camera",
+                    description =
+                        "Represents the bounded registered capability for opening or addressing the camera target.",
+                ),
+            )
     }
 }

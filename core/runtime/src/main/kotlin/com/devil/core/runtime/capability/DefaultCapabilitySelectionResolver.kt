@@ -1,21 +1,35 @@
 package com.devil.core.runtime.capability
 
+import com.devil.core.model.capability.CapabilityContract
 import com.devil.core.model.capability.CapabilitySelectionRequest
 import com.devil.core.model.common.TraceId
+import com.devil.core.model.understanding.UnderstandingActionability
+import com.devil.core.model.understanding.UnderstandingIntent
 
 /**
- * Default Stage 10 constitutional capability-selection resolver.
+ * Default bounded constitutional capability-selection resolver.
  *
- * No constitutional capability-selection policy exists yet. Therefore this
- * resolver preserves trace continuity and returns UNAVAILABLE rather than
- * choosing a registered capability without justified policy evidence.
+ * Stage 60 introduces a deliberately small deterministic selection policy over
+ * registered capability contracts.
  *
- * Registry unavailability remains unavailable. Registry failure propagates its
- * matching error.
+ * Selection is based only on structured semantic meaning already established by
+ * Understanding and preserved through Decision, Task, and Plan.
  *
- * This implementation does not establish capability availability, health,
- * authorization, operating-system permission, readiness, execution,
- * observation, verification, or final outcome.
+ * A resolved capability remains only a selected registered contract.
+ *
+ * Selection does not establish:
+ * - capability availability;
+ * - capability health;
+ * - constitutional authorization;
+ * - operating-system permission;
+ * - Executive readiness;
+ * - execution;
+ * - observation;
+ * - verification;
+ * - Outcome.
+ *
+ * Unsupported intents, targets, missing semantics, or missing registrations
+ * remain unavailable rather than being guessed or fabricated.
  */
 class DefaultCapabilitySelectionResolver :
     CapabilitySelectionResolver {
@@ -38,25 +52,84 @@ class DefaultCapabilitySelectionResolver :
 
         return when (registry.status) {
             CapabilityRegistryStatus.AVAILABLE ->
-                CapabilitySelectionResolutionResult.create(
+                resolveAvailableRegistry(
                     traceId = traceId,
-                    status =
-                        CapabilitySelectionResolutionStatus.UNAVAILABLE,
+                    request = request,
+                    capabilities = registry.capabilities,
                 )
 
             CapabilityRegistryStatus.UNAVAILABLE ->
-                CapabilitySelectionResolutionResult.create(
-                    traceId = traceId,
-                    status =
-                        CapabilitySelectionResolutionStatus.UNAVAILABLE,
-                )
+                unavailable(traceId)
 
             CapabilityRegistryStatus.FAILED ->
                 CapabilitySelectionResolutionResult.create(
                     traceId = traceId,
-                    status = CapabilitySelectionResolutionStatus.FAILED,
+                    status =
+                        CapabilitySelectionResolutionStatus.FAILED,
                     error = requireNotNull(registry.error),
                 )
         }
+    }
+
+    private fun resolveAvailableRegistry(
+        traceId: TraceId,
+        request: CapabilitySelectionRequest,
+        capabilities: List<CapabilityContract>,
+    ): CapabilitySelectionResolutionResult {
+        val semantics =
+            request.plan
+                .task
+                .decision
+                .understanding
+                .semantics
+                ?: return unavailable(traceId)
+
+        if (
+            semantics.intent != UnderstandingIntent.OPEN_TARGET ||
+            semantics.actionability !=
+                UnderstandingActionability.ACTIONABLE
+        ) {
+            return unavailable(traceId)
+        }
+
+        val target =
+            semantics.target
+                ?.trim()
+                ?.lowercase()
+                ?: return unavailable(traceId)
+
+        val requiredCapabilityId =
+            when (target) {
+                "camera",
+                "the camera",
+                -> "capability-camera"
+
+                else -> return unavailable(traceId)
+            }
+
+        val matches =
+            capabilities.filter {
+                it.capabilityId.value == requiredCapabilityId
+            }
+
+        if (matches.size != 1) {
+            return unavailable(traceId)
+        }
+
+        return CapabilitySelectionResolutionResult.create(
+            traceId = traceId,
+            status = CapabilitySelectionResolutionStatus.RESOLVED,
+            capability = matches.single(),
+        )
+    }
+
+    private fun unavailable(
+        traceId: TraceId,
+    ): CapabilitySelectionResolutionResult {
+        return CapabilitySelectionResolutionResult.create(
+            traceId = traceId,
+            status =
+                CapabilitySelectionResolutionStatus.UNAVAILABLE,
+        )
     }
 }
