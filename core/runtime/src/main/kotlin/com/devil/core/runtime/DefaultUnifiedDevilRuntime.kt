@@ -18,7 +18,9 @@ import com.devil.core.runtime.decision.DecisionAuthority
 import com.devil.core.runtime.decision.DefaultDecisionAuthority
 import com.devil.core.runtime.executive.DefaultExecutiveReadinessAuthority
 import com.devil.core.runtime.executive.ExecutiveReadinessAuthority
+import com.devil.core.runtime.execution.DefaultExecutionAttemptPort
 import com.devil.core.runtime.execution.DefaultExecutionAuthority
+import com.devil.core.runtime.execution.ExecutionAttemptPort
 import com.devil.core.runtime.execution.ExecutionAuthority
 import com.devil.core.runtime.identity.DefaultIdentityAuthority
 import com.devil.core.runtime.identity.IdentityAuthority
@@ -106,6 +108,9 @@ class DefaultUnifiedDevilRuntime(
     private val executionAuthority:
         ExecutionAuthority =
         DefaultExecutionAuthority(),
+    private val executionAttemptPort:
+        ExecutionAttemptPort =
+        DefaultExecutionAttemptPort(),
     private val observationAuthority:
         ObservationAuthority =
         DefaultObservationAuthority(),
@@ -287,6 +292,15 @@ class DefaultUnifiedDevilRuntime(
             "Context and execution result must use the same trace identity."
         }
 
+        val executionAttempt =
+            executionAttemptPort.attempt(
+                execution = execution,
+            )
+
+        require(executionAttempt.traceId == context.traceId) {
+            "Context and execution-attempt result must use the same trace identity."
+        }
+
         val observation = observationAuthority.observe(
             context = context,
             identity = identity,
@@ -299,6 +313,7 @@ class DefaultUnifiedDevilRuntime(
             capability = capability,
             readiness = readiness,
             execution = execution,
+            executionAttempt = executionAttempt,
         )
 
         require(observation.traceId == context.traceId) {

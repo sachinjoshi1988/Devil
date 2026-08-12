@@ -5,6 +5,7 @@ import com.devil.core.runtime.authorization.AuthorizationResult
 import com.devil.core.runtime.capability.CapabilitySelectionResult
 import com.devil.core.runtime.decision.DecisionAuthorityResult
 import com.devil.core.runtime.executive.ExecutiveReadinessResult
+import com.devil.core.runtime.execution.ExecutionAttemptResult
 import com.devil.core.runtime.execution.ExecutionResult
 import com.devil.core.runtime.identity.IdentityResult
 import com.devil.core.runtime.plan.PlanAuthorityResult
@@ -33,5 +34,6 @@ interface ObservationAuthority {
         capability: CapabilitySelectionResult,
         readiness: ExecutiveReadinessResult,
         execution: ExecutionResult,
+        executionAttempt: ExecutionAttemptResult,
     ): ObservationResult
 }

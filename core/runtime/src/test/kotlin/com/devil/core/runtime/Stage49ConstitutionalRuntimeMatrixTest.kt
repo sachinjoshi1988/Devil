@@ -1,5 +1,6 @@
 package com.devil.core.runtime
 
+import com.devil.core.runtime.execution.ExecutionAttemptStatus
 import com.devil.core.runtime.execution.ExecutionStatus
 import com.devil.core.runtime.learning.LearningStatus
 import com.devil.core.runtime.memory.MemoryAuthorityStatus
@@ -53,6 +54,7 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "capabilitySelectionAuthority.select(",
                 "executiveReadinessAuthority.evaluate(",
                 "executionAuthority.evaluate(",
+                "executionAttemptPort.attempt(",
                 "observationAuthority.observe(",
                 "verificationAuthority.verify(",
                 "outcomeAuthority.establish(",
@@ -100,6 +102,7 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "conversationPersistence.traceId == context.traceId",
                 "readiness.traceId == context.traceId",
                 "execution.traceId == context.traceId",
+                "executionAttempt.traceId == context.traceId",
                 "observation.traceId == context.traceId",
                 "verification.traceId == context.traceId",
                 "outcome.traceId == context.traceId",
@@ -120,10 +123,15 @@ class Stage49ConstitutionalRuntimeMatrixTest {
     }
 
     @Test
-    fun `execution approval remains distinct from observation verification and outcome`() {
+    fun `execution approval attempt observation verification and outcome remain distinct`() {
         assertEquals(
             ExecutionStatus.APPROVED,
             ExecutionStatus.valueOf("APPROVED"),
+        )
+
+        assertEquals(
+            ExecutionAttemptStatus.ATTEMPTED,
+            ExecutionAttemptStatus.valueOf("ATTEMPTED"),
         )
 
         assertEquals(

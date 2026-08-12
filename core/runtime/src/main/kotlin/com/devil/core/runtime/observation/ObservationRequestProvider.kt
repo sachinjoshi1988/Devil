@@ -1,17 +1,19 @@
 package com.devil.core.runtime.observation
 
-import com.devil.core.runtime.execution.ExecutionResult
+import com.devil.core.runtime.execution.ExecutionAttemptResult
 
 /**
- * Supplies one structured constitutional observation request when bounded
- * execution evaluation produced an approved ExecutionRequest.
+ * Supplies one structured constitutional observation request only after a
+ * genuine bounded execution attempt.
  *
- * This provider does not claim that execution occurred, activate capabilities,
- * create observation evidence, verify outcomes, or report final success.
+ * Execution approval alone is insufficient.
+ *
+ * This provider does not perform execution, create observation evidence, verify
+ * outcomes, or report final success.
  */
 interface ObservationRequestProvider {
 
     fun provide(
-        execution: ExecutionResult,
+        executionAttempt: ExecutionAttemptResult,
     ): ObservationRequestResult
 }

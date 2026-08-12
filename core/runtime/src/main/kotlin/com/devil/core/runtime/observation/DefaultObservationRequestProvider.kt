@@ -1,50 +1,55 @@
 package com.devil.core.runtime.observation
 
 import com.devil.core.model.observation.ObservationRequest
-import com.devil.core.runtime.execution.ExecutionResult
-import com.devil.core.runtime.execution.ExecutionStatus
+import com.devil.core.runtime.execution.ExecutionAttemptResult
+import com.devil.core.runtime.execution.ExecutionAttemptStatus
 
 /**
- * Default Stage 13 constitutional observation-request provider.
+ * Constitutional observation-request provider.
  *
- * A request is available only when constitutional execution evaluation produced
- * an APPROVED ExecutionResult containing one bounded ExecutionRequest.
+ * A request is available only when the execution-attempt boundary produced
+ * ATTEMPTED and preserved the exact ExecutionRequest genuinely attempted.
  *
- * Deferred execution remains unavailable. Execution failure preserves its
- * matching error.
+ * DEFERRED means no justified observation request exists.
  *
- * This implementation does not claim that an action was attempted, create
- * observation evidence, infer execution results, verify outcomes, or report
- * final success.
+ * FAILED preserves its matching operational error.
+ *
+ * ATTEMPTED != OBSERVED.
  */
 class DefaultObservationRequestProvider :
     ObservationRequestProvider {
 
     override fun provide(
-        execution: ExecutionResult,
+        executionAttempt: ExecutionAttemptResult,
     ): ObservationRequestResult {
-        return when (execution.status) {
-            ExecutionStatus.APPROVED ->
+        return when (executionAttempt.status) {
+            ExecutionAttemptStatus.ATTEMPTED ->
                 ObservationRequestResult.create(
-                    traceId = execution.traceId,
+                    traceId = executionAttempt.traceId,
                     status = ObservationRequestStatus.AVAILABLE,
-                    request = ObservationRequest.create(
-                        execution =
-                            requireNotNull(execution.request),
-                    ),
+                    request =
+                        ObservationRequest.create(
+                            execution =
+                                requireNotNull(
+                                    executionAttempt.request,
+                                ),
+                        ),
                 )
 
-            ExecutionStatus.DEFERRED ->
+            ExecutionAttemptStatus.DEFERRED ->
                 ObservationRequestResult.create(
-                    traceId = execution.traceId,
+                    traceId = executionAttempt.traceId,
                     status = ObservationRequestStatus.UNAVAILABLE,
                 )
 
-            ExecutionStatus.FAILED ->
+            ExecutionAttemptStatus.FAILED ->
                 ObservationRequestResult.create(
-                    traceId = execution.traceId,
+                    traceId = executionAttempt.traceId,
                     status = ObservationRequestStatus.FAILED,
-                    error = requireNotNull(execution.error),
+                    error =
+                        requireNotNull(
+                            executionAttempt.error,
+                        ),
                 )
         }
     }

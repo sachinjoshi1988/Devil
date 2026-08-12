@@ -23,8 +23,8 @@ import com.devil.core.model.task.TaskRecord
 import com.devil.core.model.task.TaskState
 import com.devil.core.model.understanding.UnderstandingRecord
 import com.devil.core.model.understanding.UnderstandingState
-import com.devil.core.runtime.execution.ExecutionResult
-import com.devil.core.runtime.execution.ExecutionStatus
+import com.devil.core.runtime.execution.ExecutionAttemptResult
+import com.devil.core.runtime.execution.ExecutionAttemptStatus
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -32,7 +32,7 @@ import kotlin.test.assertNull
 class DefaultObservationRequestProviderTest {
 
     @Test
-    fun `provide returns available request for approved execution`() {
+    fun `provide returns available request for attempted execution`() {
         val traceId = TraceId.from(
             "trace-observation-request-provider-001",
         )
@@ -42,9 +42,9 @@ class DefaultObservationRequestProviderTest {
             DefaultObservationRequestProvider()
 
         val result = provider.provide(
-            execution = ExecutionResult.create(
+            executionAttempt = ExecutionAttemptResult.create(
                 traceId = traceId,
-                status = ExecutionStatus.APPROVED,
+                status = ExecutionAttemptStatus.ATTEMPTED,
                 request = executionRequest,
             ),
         )
@@ -62,16 +62,16 @@ class DefaultObservationRequestProviderTest {
     }
 
     @Test
-    fun `provide returns unavailable for deferred execution`() {
+    fun `provide returns unavailable for deferred execution attempt`() {
         val traceId = TraceId.from(
             "trace-observation-request-provider-002",
         )
 
         val result =
             DefaultObservationRequestProvider().provide(
-                execution = ExecutionResult.create(
+                executionAttempt = ExecutionAttemptResult.create(
                     traceId = traceId,
-                    status = ExecutionStatus.DEFERRED,
+                    status = ExecutionAttemptStatus.DEFERRED,
                 ),
             )
 
@@ -84,7 +84,7 @@ class DefaultObservationRequestProviderTest {
     }
 
     @Test
-    fun `provide preserves failed execution error`() {
+    fun `provide preserves failed execution attempt error`() {
         val traceId = TraceId.from(
             "trace-observation-request-provider-003",
         )
@@ -92,9 +92,9 @@ class DefaultObservationRequestProviderTest {
 
         val result =
             DefaultObservationRequestProvider().provide(
-                execution = ExecutionResult.create(
+                executionAttempt = ExecutionAttemptResult.create(
                     traceId = traceId,
-                    status = ExecutionStatus.FAILED,
+                    status = ExecutionAttemptStatus.FAILED,
                     error = error,
                 ),
             )
@@ -108,16 +108,16 @@ class DefaultObservationRequestProviderTest {
     }
 
     @Test
-    fun `provide does not claim that approved execution was attempted`() {
+    fun `attempted execution only makes observation request available`() {
         val traceId = TraceId.from(
             "trace-observation-request-provider-004",
         )
 
         val result =
             DefaultObservationRequestProvider().provide(
-                execution = ExecutionResult.create(
+                executionAttempt = ExecutionAttemptResult.create(
                     traceId = traceId,
-                    status = ExecutionStatus.APPROVED,
+                    status = ExecutionAttemptStatus.ATTEMPTED,
                     request =
                         createExecutionRequest(traceId),
                 ),

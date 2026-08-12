@@ -32,6 +32,8 @@ import com.devil.core.runtime.decision.DecisionAuthorityResult
 import com.devil.core.runtime.decision.DecisionAuthorityStatus
 import com.devil.core.runtime.executive.ExecutiveReadinessResult
 import com.devil.core.runtime.executive.ExecutiveReadinessStatus
+import com.devil.core.runtime.execution.ExecutionAttemptResult
+import com.devil.core.runtime.execution.ExecutionAttemptStatus
 import com.devil.core.runtime.execution.ExecutionResult
 import com.devil.core.runtime.execution.ExecutionStatus
 import com.devil.core.runtime.identity.IdentityResult
@@ -115,10 +117,10 @@ class DefaultObservationAuthorityTest {
         val authority = DefaultObservationAuthority(
             requestProvider = object : ObservationRequestProvider {
                 override fun provide(
-                    execution: ExecutionResult,
+                    executionAttempt: ExecutionAttemptResult,
                 ): ObservationRequestResult {
                     return ObservationRequestResult.create(
-                        traceId = execution.traceId,
+                        traceId = executionAttempt.traceId,
                         status = ObservationRequestStatus.UNAVAILABLE,
                     )
                 }
@@ -148,10 +150,10 @@ class DefaultObservationAuthorityTest {
         val authority = DefaultObservationAuthority(
             requestProvider = object : ObservationRequestProvider {
                 override fun provide(
-                    execution: ExecutionResult,
+                    executionAttempt: ExecutionAttemptResult,
                 ): ObservationRequestResult {
                     return ObservationRequestResult.create(
-                        traceId = execution.traceId,
+                        traceId = executionAttempt.traceId,
                         status = ObservationRequestStatus.FAILED,
                         error = error,
                     )
@@ -228,6 +230,7 @@ class DefaultObservationAuthorityTest {
                 capability = createCapability(context),
                 readiness = createReadiness(context.traceId),
                 execution = createExecution(context),
+                executionAttempt = createExecutionAttempt(context),
             )
         }
     }
@@ -257,6 +260,7 @@ class DefaultObservationAuthorityTest {
                     ),
                     status = ExecutionStatus.DEFERRED,
                 ),
+                executionAttempt = createExecutionAttempt(context),
             )
         }
     }
@@ -270,7 +274,7 @@ class DefaultObservationAuthorityTest {
         val authority = DefaultObservationAuthority(
             requestProvider = object : ObservationRequestProvider {
                 override fun provide(
-                    execution: ExecutionResult,
+                    executionAttempt: ExecutionAttemptResult,
                 ): ObservationRequestResult {
                     return ObservationRequestResult.create(
                         traceId = TraceId.from(
@@ -379,6 +383,7 @@ class DefaultObservationAuthorityTest {
             capability = createCapability(context),
             readiness = createReadiness(context.traceId),
             execution = createExecution(context),
+            executionAttempt = createExecutionAttempt(context),
         )
     }
 
@@ -524,6 +529,18 @@ class DefaultObservationAuthorityTest {
                     createCapability(context).capability,
                 ),
             ),
+        )
+    }
+
+    private fun createExecutionAttempt(
+        context: ContextEnvelope,
+    ): ExecutionAttemptResult {
+        val execution = createExecution(context)
+
+        return ExecutionAttemptResult.create(
+            traceId = context.traceId,
+            status = ExecutionAttemptStatus.ATTEMPTED,
+            request = requireNotNull(execution.request),
         )
     }
 

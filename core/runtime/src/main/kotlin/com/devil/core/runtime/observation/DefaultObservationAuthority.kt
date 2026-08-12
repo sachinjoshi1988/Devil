@@ -5,6 +5,7 @@ import com.devil.core.runtime.authorization.AuthorizationResult
 import com.devil.core.runtime.capability.CapabilitySelectionResult
 import com.devil.core.runtime.decision.DecisionAuthorityResult
 import com.devil.core.runtime.executive.ExecutiveReadinessResult
+import com.devil.core.runtime.execution.ExecutionAttemptResult
 import com.devil.core.runtime.execution.ExecutionResult
 import com.devil.core.runtime.identity.IdentityResult
 import com.devil.core.runtime.plan.PlanAuthorityResult
@@ -47,6 +48,7 @@ class DefaultObservationAuthority(
         capability: CapabilitySelectionResult,
         readiness: ExecutiveReadinessResult,
         execution: ExecutionResult,
+        executionAttempt: ExecutionAttemptResult,
     ): ObservationResult {
         require(identity.traceId == context.traceId) {
             "Context and identity result must use the same trace identity."
@@ -88,8 +90,12 @@ class DefaultObservationAuthority(
             "Context and execution result must use the same trace identity."
         }
 
+        require(executionAttempt.traceId == context.traceId) {
+            "Context and execution-attempt result must use the same trace identity."
+        }
+
         val requestResult = requestProvider.provide(
-            execution = execution,
+            executionAttempt = executionAttempt,
         )
 
         require(requestResult.traceId == context.traceId) {
