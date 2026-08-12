@@ -10,8 +10,8 @@ Current status:
 - The protected Stage 51 completion point is `devil-stage-51-complete`.
 - The accepted Stage 51 implementation is
   `d75797aba9fd535d1e57f131f9e3ad88d0b930ef`.
-- Closed Beta release infrastructure is being established.
-- No Closed Beta artifact is considered validated merely because this document or workflow exists.
+- Closed Beta release infrastructure is established and the first Closed Beta artifact has completed its recorded validation path.
+- Closed Beta 1 validation evidence is recorded below; Stage 52 remains pending final repository closure and the official completion tag.
 
 Stage 52 must not be considered officially complete until the Closed Beta closure gate passes and the official Stage 52 completion tag is created deliberately.
 
@@ -139,6 +139,141 @@ Required Closed Beta verification includes:
 - no observed regression that invalidates the Closed Beta baseline.
 
 A capability that truthfully reports unavailable, deferred, degraded, denied, failed, or partial status must not be rewritten as success.
+
+
+## Closed Beta 1 Validation Evidence
+
+### Workflow and Source
+
+The first Stage 52 Closed Beta artifact was produced by:
+
+- GitHub Actions workflow:
+  `Devil Closed Beta APK`
+- Workflow run:
+  `31553641457`
+- Workflow result:
+  `success`
+- Workflow source commit:
+  `9ec1ae699a074fcf2a2d19b179b1d5fcab5bc93f`
+
+The workflow source commit exactly matched the Stage 52 Closed Beta infrastructure commit.
+
+The required workflow gates completed successfully, including:
+
+- core model tests;
+- core runtime tests;
+- complete app debug unit tests;
+- debug APK assembly;
+- Closed Beta release-file preparation;
+- SHA-256 generation;
+- SHA-256 verification;
+- GitHub Closed Beta prerelease creation.
+
+### Release Identity and Provenance
+
+The resulting GitHub Closed Beta release is:
+
+- release tag:
+  `devil-closed-beta-1`
+- release name:
+  `Devil Closed Beta 1`
+- release classification:
+  prerelease
+- release target:
+  `9ec1ae699a074fcf2a2d19b179b1d5fcab5bc93f`
+
+The actual Git tag target was independently fetched and resolved to:
+
+`9ec1ae699a074fcf2a2d19b179b1d5fcab5bc93f`
+
+Therefore:
+
+workflow source commit
+=
+GitHub Release target
+=
+actual Git tag target.
+
+### Published Artifacts and Integrity
+
+The Closed Beta release published:
+
+- `devil-closed-beta.apk`
+- `devil-closed-beta.apk.sha256`
+
+Published APK SHA-256:
+
+`18a410910ff8db441d401f2d08607b58889217f3532c7845547427f6079267bc`
+
+The release assets were downloaded through `gh` into an isolated verification directory.
+
+The independently calculated downloaded APK SHA-256 was:
+
+`18a410910ff8db441d401f2d08607b58889217f3532c7845547427f6079267bc`
+
+`sha256sum --check` result:
+
+`devil-closed-beta.apk: OK`
+
+A clearly identified shared-storage install copy was then created:
+
+`~/storage/downloads/Devil-Closed-Beta-1-VERIFIED.apk`
+
+Its independently calculated SHA-256 was also:
+
+`18a410910ff8db441d401f2d08607b58889217f3532c7845547427f6079267bc`
+
+Therefore the prepared physical-device test artifact remained byte-exact with the published Closed Beta APK.
+
+### Physical-Device Closed Beta Validation
+
+Primary validation device:
+
+- Redmi Note 12
+- Android 14 / HyperOS
+
+The verified Closed Beta install copy was used for the Stage 52 physical-device validation path.
+
+The supplied physical-device screen recording showed:
+
+- Devil launching successfully;
+- the accepted Stage 51 `DEVIL INSIDE` awakening remaining intact;
+- the awakening completing and transitioning into the conversation UI;
+- the conversation UI remaining available;
+- typed input of `hello devil`;
+- successful submission presentation;
+- the user conversation entry appearing correctly;
+- runtime-result presentation:
+  `Deferred by the Devil runtime.`;
+- the runtime result remaining truthfully non-successful rather than being rewritten as completed execution;
+- voice-output presentation being exercised through the visible speaking state;
+- accessibility diagnostic presentation truthfully reporting that Devil accessibility was not enabled;
+- no observed crash during the recorded test path;
+- no observed freeze during the recorded test path;
+- no observed broken awakening-to-conversation transition;
+- no observed duplicate runtime entry;
+- no obvious Stage 52 regression in the recorded path that invalidated the Closed Beta baseline.
+
+The physical-device evidence does not claim that every Devil capability is available or operational.
+
+The visible `DEFERRED` runtime result is not treated as verified task success, execution success, or Outcome.
+
+The screen recording demonstrates the observed presentation and interaction behavior only; it does not independently prove every internal constitutional transition.
+
+### Closed Beta 1 Validation Conclusion
+
+Closed Beta 1 passed the bounded Stage 52 artifact-provenance, integrity, CI, and recorded physical-device smoke-test path.
+
+This validation does not make the artifact:
+
+- RC1;
+- RC2;
+- production-ready;
+- final production-signed;
+- evidence that every Devil capability works;
+- evidence of verified task completion where the runtime returned `DEFERRED`.
+
+Stage 52 remains open until this validation record is committed and pushed, final repository closure evidence is verified, and the official `devil-stage-52-complete` tag is created deliberately.
 
 ## Constitutional Boundaries
 
