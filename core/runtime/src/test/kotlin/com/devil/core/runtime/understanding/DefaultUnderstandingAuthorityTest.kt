@@ -13,6 +13,8 @@ import com.devil.core.model.conversation.ConversationIntakeResult
 import com.devil.core.model.conversation.ConversationIntakeState
 import com.devil.core.model.error.ErrorCode
 import com.devil.core.model.error.UniversalErrorRecord
+import com.devil.core.model.understanding.UnderstandingActionability
+import com.devil.core.model.understanding.UnderstandingIntent
 import com.devil.core.model.understanding.UnderstandingRecord
 import com.devil.core.model.understanding.UnderstandingState
 import com.devil.core.runtime.authorization.AuthorizationResult
@@ -57,13 +59,36 @@ class DefaultUnderstandingAuthorityTest {
             UnderstandingAuthorityStatus.PRODUCED,
             result.status,
         )
+
+        val understanding =
+            requireNotNull(result.understanding)
+
+        val semantics =
+            requireNotNull(understanding.semantics)
+
         assertEquals(
-            UnderstandingState.UNSUPPORTED,
-            requireNotNull(result.understanding).state,
+            UnderstandingState.COMPLETE,
+            understanding.state,
         )
         assertEquals(
-            "No structured language-understanding policy is available.",
-            result.understanding.summary,
+            "User requested opening the target: the camera.",
+            understanding.summary,
+        )
+        assertEquals(
+            UnderstandingIntent.OPEN_TARGET,
+            semantics.intent,
+        )
+        assertEquals(
+            UnderstandingActionability.ACTIONABLE,
+            semantics.actionability,
+        )
+        assertEquals(
+            "open target",
+            semantics.meaning,
+        )
+        assertEquals(
+            "the camera",
+            semantics.target,
         )
         assertNull(result.error)
     }
