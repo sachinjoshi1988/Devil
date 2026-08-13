@@ -412,9 +412,225 @@ class DefaultMemoryProposalAuthorityTest {
         }
     }
 
+
+    @Test
+    fun `evaluate proposal preserves prepared typed preference request through existing proposal path`() {
+        val context =
+            createContext(
+                "trace-memory-proposal-authority-prepared-001",
+            )
+
+        val learning =
+            createLearning(context)
+
+        val learningRequest =
+            requireNotNull(learning.request)
+
+        val candidate =
+            com.devil.core.model.preference.PreferenceLearningCandidate.create(
+                key = "usual-map-app",
+                value = "Google Maps",
+                confidence = 2.0 / 3.0,
+                supportingEvidenceCount = 2,
+                totalEvidenceCount = 3,
+                supportingTraceIds =
+                    listOf(
+                        TraceId.from(
+                            "trace-memory-proposal-preference-support-001",
+                        ),
+                        TraceId.from(
+                            "trace-memory-proposal-preference-support-002",
+                        ),
+                    ),
+                evidenceTraceIds =
+                    listOf(
+                        TraceId.from(
+                            "trace-memory-proposal-preference-support-001",
+                        ),
+                        TraceId.from(
+                            "trace-memory-proposal-preference-support-002",
+                        ),
+                        TraceId.from(
+                            "trace-memory-proposal-preference-conflict-001",
+                        ),
+                    ),
+            )
+
+        val preparedRequest =
+            MemoryProposalRequest.create(
+                learning = learningRequest,
+                preferenceCandidate = candidate,
+            )
+
+        val capabilityId =
+            preparedRequest.learning
+                .worldModelUpdate
+                .outcome
+                .verification
+                .observation
+                .execution
+                .capability
+                .capabilityId
+
+        val evidence =
+            MemoryProposalEvidenceResult.create(
+                traceId = context.traceId,
+                status =
+                    MemoryProposalEvidenceStatus.ESTABLISHED,
+                capabilityId = capabilityId,
+                description =
+                    "Authorized bounded Memory Proposal evidence.",
+            )
+
+        val result =
+            evaluateProposal(
+                authority = DefaultMemoryProposalAuthority(),
+                context = context,
+                learning = learning,
+                memoryProposalEvidence = evidence,
+                preparedRequest = preparedRequest,
+            )
+
+        assertEquals(
+            MemoryProposalStatus.PROPOSABLE,
+            result.status,
+        )
+
+        assertEquals(
+            preparedRequest,
+            result.request,
+        )
+
+        assertEquals(
+            candidate,
+            result.request?.preferenceCandidate,
+        )
+
+        assertEquals(
+            "usual-map-app",
+            result.request?.preferenceCandidate?.key,
+        )
+
+        assertEquals(
+            "Google Maps",
+            result.request?.preferenceCandidate?.value,
+        )
+
+        assertEquals(
+            2.0 / 3.0,
+            result.request?.preferenceCandidate?.confidence,
+        )
+
+        assertEquals(
+            2,
+            result.request
+                ?.preferenceCandidate
+                ?.supportingEvidenceCount,
+        )
+
+        assertEquals(
+            3,
+            result.request
+                ?.preferenceCandidate
+                ?.totalEvidenceCount,
+        )
+
+        assertEquals(
+            candidate.supportingTraceIds,
+            result.request
+                ?.preferenceCandidate
+                ?.supportingTraceIds,
+        )
+
+        assertEquals(
+            candidate.evidenceTraceIds,
+            result.request
+                ?.preferenceCandidate
+                ?.evidenceTraceIds,
+        )
+
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `evaluate proposal rejects prepared request when learning is not learnable`() {
+        val context =
+            createContext(
+                "trace-memory-proposal-authority-prepared-002",
+            )
+
+        val validLearning =
+            createLearning(context)
+
+        val preparedRequest =
+            MemoryProposalRequest.create(
+                learning =
+                    requireNotNull(
+                        validLearning.request,
+                    ),
+            )
+
+        val deferredLearning =
+            LearningResult.create(
+                traceId = context.traceId,
+                status = LearningStatus.DEFERRED,
+            )
+
+        assertFailsWith<IllegalArgumentException> {
+            evaluateProposal(
+                authority = DefaultMemoryProposalAuthority(),
+                context = context,
+                learning = deferredLearning,
+                preparedRequest = preparedRequest,
+            )
+        }
+    }
+
+    @Test
+    fun `evaluate proposal rejects prepared request from different learning provenance`() {
+        val context =
+            createContext(
+                "trace-memory-proposal-authority-prepared-003",
+            )
+
+        val learning =
+            createLearning(context)
+
+        val foreignContext =
+            createContext(
+                "trace-memory-proposal-authority-prepared-foreign",
+            )
+
+        val foreignLearning =
+            createLearning(foreignContext)
+
+        val preparedRequest =
+            MemoryProposalRequest.create(
+                learning =
+                    requireNotNull(
+                        foreignLearning.request,
+                    ),
+            )
+
+        assertFailsWith<IllegalArgumentException> {
+            evaluateProposal(
+                authority = DefaultMemoryProposalAuthority(),
+                context = context,
+                learning = learning,
+                preparedRequest = preparedRequest,
+            )
+        }
+    }
+
     private fun evaluateProposal(
         authority: MemoryProposalAuthority,
         context: ContextEnvelope,
+        learning: LearningResult = createLearning(context),
+        memoryProposalEvidence: MemoryProposalEvidenceResult =
+            createDeferredMemoryProposalEvidence(
+                context.traceId,
+            ),
+        preparedRequest: MemoryProposalRequest? = null,
     ): MemoryProposalResult {
         return authority.evaluateProposal(
             context = context,
@@ -432,8 +648,9 @@ class DefaultMemoryProposalAuthorityTest {
             verification = createVerification(context),
             outcome = createOutcome(context),
             worldModelUpdate = createWorldModelUpdate(context),
-            learning = createLearning(context),
-            memoryProposalEvidence = createDeferredMemoryProposalEvidence(context.traceId),
+            learning = learning,
+            memoryProposalEvidence = memoryProposalEvidence,
+            preparedRequest = preparedRequest,
         )
     }
 

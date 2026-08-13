@@ -1,6 +1,7 @@
 package com.devil.core.runtime.memory
 
 import com.devil.core.model.context.ContextEnvelope
+import com.devil.core.model.memory.MemoryProposalRequest
 import com.devil.core.runtime.authorization.AuthorizationResult
 import com.devil.core.runtime.capability.CapabilitySelectionResult
 import com.devil.core.runtime.decision.DecisionAuthorityResult
@@ -20,6 +21,18 @@ import com.devil.core.runtime.worldmodel.WorldModelUpdateResult
 /**
  * Coordinates bounded constitutional memory-proposal evaluation after learning
  * has been evaluated.
+ *
+ * This remains the single constitutional Memory Proposal Authority.
+ *
+ * A caller may supply one already-prepared MemoryProposalRequest only when an
+ * earlier explicitly authorized bounded path has prepared that request without
+ * creating, approving, committing, or persisting logical memory.
+ *
+ * When no prepared request is supplied, the existing generic constitutional
+ * request-provider path remains authoritative.
+ *
+ * Supplying a prepared request does not bypass Memory Proposal evaluation,
+ * Memory Authority, Memory Commitment, or Memory Persistence.
  *
  * This authority may establish only whether one bounded proposal is eligible
  * for later review by the single Memory Authority. It does not create, approve,
@@ -46,5 +59,6 @@ interface MemoryProposalAuthority {
         worldModelUpdate: WorldModelUpdateResult,
         learning: LearningResult,
         memoryProposalEvidence: MemoryProposalEvidenceResult,
+        preparedRequest: MemoryProposalRequest? = null,
     ): MemoryProposalResult
 }

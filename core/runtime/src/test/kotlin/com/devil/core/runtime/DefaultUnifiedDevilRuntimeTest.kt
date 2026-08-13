@@ -209,6 +209,7 @@ class DefaultUnifiedDevilRuntimeTest {
                 worldModelUpdate: WorldModelUpdateResult,
                 learning: LearningResult,
                 memoryProposalEvidence: MemoryProposalEvidenceResult,
+                preparedRequest: MemoryProposalRequest?,
             ): MemoryProposalResult {
                 val resultTraceId =
                     traceId ?: context.traceId

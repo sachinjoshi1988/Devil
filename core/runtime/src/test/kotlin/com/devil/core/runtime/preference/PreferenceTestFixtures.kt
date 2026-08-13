@@ -1,4 +1,4 @@
-package com.devil.core.model.memory
+package com.devil.core.runtime.preference
 
 import com.devil.core.model.capability.CapabilityCategory
 import com.devil.core.model.capability.CapabilityContract
@@ -27,174 +27,10 @@ import com.devil.core.model.understanding.UnderstandingRecord
 import com.devil.core.model.understanding.UnderstandingState
 import com.devil.core.model.verification.VerificationRequest
 import com.devil.core.model.worldmodel.WorldModelUpdateRequest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
-class MemoryProposalRequestTest {
+object PreferenceTestFixtures {
 
-    @Test
-    fun `create preserves constitutionally learnable request`() {
-        val learning = createLearningRequest()
-
-        val request = MemoryProposalRequest.create(
-            learning = learning,
-        )
-
-        assertEquals(
-            learning,
-            request.learning,
-        )
-        assertNull(request.preferenceCandidate)
-    }
-
-    @Test
-    fun `create preserves qualified preference candidate as typed structured data`() {
-        val learning = createLearningRequest()
-
-        val supportingTraceOne =
-            TraceId.from(
-                "trace-memory-proposal-preference-evidence-001",
-            )
-        val supportingTraceTwo =
-            TraceId.from(
-                "trace-memory-proposal-preference-evidence-002",
-            )
-        val conflictingTrace =
-            TraceId.from(
-                "trace-memory-proposal-preference-evidence-003",
-            )
-
-        val preferenceCandidate =
-            PreferenceLearningCandidate.create(
-                key = "usual-map-app",
-                value = "Google Maps",
-                confidence = 2.0 / 3.0,
-                supportingEvidenceCount = 2,
-                totalEvidenceCount = 3,
-                supportingTraceIds =
-                    listOf(
-                        supportingTraceOne,
-                        supportingTraceTwo,
-                    ),
-                evidenceTraceIds =
-                    listOf(
-                        supportingTraceOne,
-                        supportingTraceTwo,
-                        conflictingTrace,
-                    ),
-            )
-
-        val request =
-            MemoryProposalRequest.create(
-                learning = learning,
-                preferenceCandidate = preferenceCandidate,
-            )
-
-        assertEquals(
-            learning,
-            request.learning,
-        )
-        assertEquals(
-            preferenceCandidate,
-            request.preferenceCandidate,
-        )
-        assertEquals(
-            "usual-map-app",
-            request.preferenceCandidate?.key,
-        )
-        assertEquals(
-            "Google Maps",
-            request.preferenceCandidate?.value,
-        )
-        assertEquals(
-            2.0 / 3.0,
-            request.preferenceCandidate?.confidence,
-        )
-        assertEquals(
-            2,
-            request.preferenceCandidate
-                ?.supportingEvidenceCount,
-        )
-        assertEquals(
-            3,
-            request.preferenceCandidate
-                ?.totalEvidenceCount,
-        )
-        assertEquals(
-            listOf(
-                supportingTraceOne,
-                supportingTraceTwo,
-            ),
-            request.preferenceCandidate
-                ?.supportingTraceIds,
-        )
-        assertEquals(
-            listOf(
-                supportingTraceOne,
-                supportingTraceTwo,
-                conflictingTrace,
-            ),
-            request.preferenceCandidate
-                ?.evidenceTraceIds,
-        )
-    }
-
-    @Test
-    fun `create does not reinterpret constitutional dependencies`() {
-        val request = MemoryProposalRequest.create(
-            learning = createLearningRequest(),
-        )
-
-        assertEquals(
-            PlanState.CREATED,
-            request.learning
-                .worldModelUpdate
-                .outcome
-                .verification
-                .observation
-                .execution
-                .plan
-                .state,
-        )
-        assertEquals(
-            TaskState.CREATED,
-            request.learning
-                .worldModelUpdate
-                .outcome
-                .verification
-                .observation
-                .execution
-                .plan
-                .task
-                .state,
-        )
-        assertEquals(
-            "capability-camera",
-            request.learning
-                .worldModelUpdate
-                .outcome
-                .verification
-                .observation
-                .execution
-                .capability
-                .capabilityId
-                .value,
-        )
-        assertEquals(
-            CapabilityCategory.ACTION,
-            request.learning
-                .worldModelUpdate
-                .outcome
-                .verification
-                .observation
-                .execution
-                .capability
-                .category,
-        )
-    }
-
-    private fun createLearningRequest(): LearningRequest {
+    fun learningRequest(): LearningRequest {
         return LearningRequest.create(
             worldModelUpdate =
                 WorldModelUpdateRequest.create(
@@ -210,13 +46,13 @@ class MemoryProposalRequestTest {
                                                         PlanRecord.create(
                                                             planId =
                                                                 PlanId.from(
-                                                                    "plan-memory-proposal-request-001",
+                                                                    "plan-stage72-preference-001",
                                                                 ),
                                                             task =
                                                                 TaskRecord.create(
                                                                     taskId =
                                                                         TaskId.from(
-                                                                            "task-memory-proposal-request-001",
+                                                                            "task-stage72-preference-001",
                                                                         ),
                                                                     decision =
                                                                         DecisionRecord.create(
@@ -226,7 +62,7 @@ class MemoryProposalRequestTest {
                                                                                         ContextEnvelope.create(
                                                                                             traceId =
                                                                                                 TraceId.from(
-                                                                                                    "trace-memory-proposal-request-001",
+                                                                                                    "trace-stage72-preference-learning-001",
                                                                                                 ),
                                                                                             schemaVersion =
                                                                                                 SchemaVersion.from(
@@ -239,48 +75,83 @@ class MemoryProposalRequestTest {
                                                                                             securityLevel =
                                                                                                 ContextSecurityLevel.RESTRICTED,
                                                                                             observedAt =
-                                                                                                DevilTimestamp
-                                                                                                    .fromEpochMilliseconds(
-                                                                                                        1_754_000_155_000L,
-                                                                                                    ),
+                                                                                                DevilTimestamp.fromEpochMilliseconds(
+                                                                                                    1_754_000_200_000L,
+                                                                                                ),
                                                                                         ),
                                                                                     state =
                                                                                         UnderstandingState.COMPLETE,
                                                                                     summary =
-                                                                                        "Open the camera application.",
+                                                                                        "Use Google Maps.",
                                                                                 ),
                                                                             state =
                                                                                 DecisionState.SELECTED,
                                                                             summary =
-                                                                                "Open the camera application.",
+                                                                                "Use Google Maps.",
                                                                         ),
                                                                     state =
                                                                         TaskState.CREATED,
                                                                     summary =
-                                                                        "Open the camera application.",
+                                                                        "Use Google Maps.",
                                                                 ),
                                                             state =
                                                                 PlanState.CREATED,
                                                             summary =
-                                                                "Use the constitutionally approved capability path.",
+                                                                "Use the approved Maps capability.",
                                                         ),
                                                     capability =
                                                         CapabilityContract.create(
                                                             capabilityId =
                                                                 CapabilityId.from(
-                                                                    "capability-camera",
+                                                                    "capability-maps",
                                                                 ),
                                                             category =
                                                                 CapabilityCategory.ACTION,
                                                             name =
-                                                                "Camera",
+                                                                "Maps",
                                                             description =
-                                                                "Performs one bounded registered camera action.",
+                                                                "Performs one bounded Maps action.",
                                                         ),
                                                 ),
                                         ),
                                 ),
                         ),
+                ),
+        )
+    }
+
+    fun candidate(): PreferenceLearningCandidate {
+        val first =
+            TraceId.from(
+                "trace-stage72-preference-evidence-001",
+            )
+
+        val second =
+            TraceId.from(
+                "trace-stage72-preference-evidence-002",
+            )
+
+        val third =
+            TraceId.from(
+                "trace-stage72-preference-evidence-003",
+            )
+
+        return PreferenceLearningCandidate.create(
+            key = "usual-map-app",
+            value = "Google Maps",
+            confidence = 2.0 / 3.0,
+            supportingEvidenceCount = 2,
+            totalEvidenceCount = 3,
+            supportingTraceIds =
+                listOf(
+                    first,
+                    second,
+                ),
+            evidenceTraceIds =
+                listOf(
+                    first,
+                    second,
+                    third,
                 ),
         )
     }

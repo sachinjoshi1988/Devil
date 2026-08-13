@@ -1,6 +1,7 @@
 package com.devil.core.runtime.memory
 
 import com.devil.core.model.context.ContextEnvelope
+import com.devil.core.model.memory.MemoryProposalRequest
 import com.devil.core.runtime.authorization.AuthorizationResult
 import com.devil.core.runtime.capability.CapabilitySelectionResult
 import com.devil.core.runtime.decision.DecisionAuthorityResult
@@ -8,6 +9,7 @@ import com.devil.core.runtime.executive.ExecutiveReadinessResult
 import com.devil.core.runtime.execution.ExecutionResult
 import com.devil.core.runtime.identity.IdentityResult
 import com.devil.core.runtime.learning.LearningResult
+import com.devil.core.runtime.learning.LearningStatus
 import com.devil.core.runtime.observation.ObservationResult
 import com.devil.core.runtime.outcome.OutcomeResult
 import com.devil.core.runtime.plan.PlanAuthorityResult
@@ -18,18 +20,29 @@ import com.devil.core.runtime.verification.VerificationResult
 import com.devil.core.runtime.worldmodel.WorldModelUpdateResult
 
 /**
- * Default Stage 18 constitutional Memory Proposal Authority coordinator.
+ * Default constitutional Memory Proposal Authority coordinator.
  *
- * This authority prepares one bounded MemoryProposalRequest, delegates
- * constitutional proposal evaluation, and maps that evaluation into the stable
- * operational MemoryProposalResult contract.
+ * This authority selects exactly one bounded MemoryProposalRequest, delegates
+ * constitutional Memory Proposal evaluation, and maps that evaluation into the
+ * stable operational MemoryProposalResult contract.
  *
- * It does not resolve identity, evaluate trust, grant authorization, produce
- * understanding, select decisions, create tasks or plans, select capabilities,
- * establish readiness, approve execution, create observations, establish
- * verification, outcome, World Model update, or learning evidence, create or
- * approve a memory proposal, commit logical memory, mutate world state, or
- * communicate externally.
+ * A supplied prepared request is accepted only when constitutional Learning is
+ * LEARNABLE and the request preserves the exact LearningRequest carried by that
+ * LearningResult.
+ *
+ * Otherwise the existing MemoryProposalRequestProvider remains the request
+ * source.
+ *
+ * A prepared request therefore changes only request preparation. It grants no
+ * Memory Proposal authority of its own and cannot bypass proposal evaluation,
+ * Memory Authority, Memory Commitment, or Memory Persistence.
+ *
+ * This authority does not resolve identity, evaluate trust, grant
+ * authorization, produce understanding, select decisions, create tasks or
+ * plans, select capabilities, establish readiness, approve execution, create
+ * observations, establish verification, outcome, World Model update, or
+ * learning evidence, approve logical memory, commit logical memory, persist
+ * logical memory, mutate world state, or communicate externally.
  */
 class DefaultMemoryProposalAuthority(
     private val requestProvider: MemoryProposalRequestProvider =
@@ -58,6 +71,7 @@ class DefaultMemoryProposalAuthority(
         worldModelUpdate: WorldModelUpdateResult,
         learning: LearningResult,
         memoryProposalEvidence: MemoryProposalEvidenceResult,
+        preparedRequest: MemoryProposalRequest?,
     ): MemoryProposalResult {
         require(identity.traceId == context.traceId) {
             "Context and identity result must use the same trace identity."
@@ -123,9 +137,31 @@ class DefaultMemoryProposalAuthority(
             "Context and Memory Proposal evidence result must use the same trace identity."
         }
 
-        val requestResult = requestProvider.provide(
-            learning = learning,
-        )
+        val requestResult =
+            if (preparedRequest != null) {
+                require(learning.status == LearningStatus.LEARNABLE) {
+                    "A prepared Memory Proposal request requires constitutionally learnable Learning."
+                }
+
+                val learningRequest =
+                    requireNotNull(learning.request) {
+                        "Learnable Learning must preserve its bounded Learning request."
+                    }
+
+                require(preparedRequest.learning == learningRequest) {
+                    "Prepared Memory Proposal request must preserve the exact constitutional Learning request."
+                }
+
+                MemoryProposalRequestResult.create(
+                    traceId = context.traceId,
+                    status = MemoryProposalRequestStatus.AVAILABLE,
+                    request = preparedRequest,
+                )
+            } else {
+                requestProvider.provide(
+                    learning = learning,
+                )
+            }
 
         require(requestResult.traceId == context.traceId) {
             "Context and memory proposal request result must use the same trace identity."
@@ -133,20 +169,22 @@ class DefaultMemoryProposalAuthority(
 
         return when (requestResult.status) {
             MemoryProposalRequestStatus.AVAILABLE -> {
-                val evaluation = evaluator.evaluate(
-                    traceId = context.traceId,
-                    request = requireNotNull(requestResult.request),
-                    evidence = memoryProposalEvidence,
-                )
+                val evaluation =
+                    evaluator.evaluate(
+                        traceId = context.traceId,
+                        request = requireNotNull(requestResult.request),
+                        evidence = memoryProposalEvidence,
+                    )
 
                 require(evaluation.traceId == context.traceId) {
                     "Context and memory proposal evaluation result must use the same trace identity."
                 }
 
-                val result = resultMapper.map(
-                    traceId = context.traceId,
-                    evaluation = evaluation,
-                )
+                val result =
+                    resultMapper.map(
+                        traceId = context.traceId,
+                        evaluation = evaluation,
+                    )
 
                 require(result.traceId == context.traceId) {
                     "Context and mapped memory proposal result must use the same trace identity."
