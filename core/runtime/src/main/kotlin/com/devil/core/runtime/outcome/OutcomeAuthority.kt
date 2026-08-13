@@ -15,11 +15,12 @@ import com.devil.core.runtime.understanding.UnderstandingAuthorityResult
 import com.devil.core.runtime.verification.VerificationResult
 
 /**
- * Coordinates bounded constitutional outcome evaluation after verification.
+ * Coordinates bounded constitutional outcome evaluation after verification and
+ * genuine outcome-evidence acquisition.
  *
- * This authority does not fabricate outcome evidence, update world state,
- * change task or plan state, create memory or learning, communicate externally,
- * or absorb the responsibilities of earlier constitutional authorities.
+ * This authority does not fabricate outcome evidence, update world state, change
+ * task or plan state, create memory or learning, communicate externally, or
+ * absorb the responsibilities of earlier constitutional authorities.
  */
 interface OutcomeAuthority {
 
@@ -37,5 +38,6 @@ interface OutcomeAuthority {
         execution: ExecutionResult,
         observation: ObservationResult,
         verification: VerificationResult,
+        outcomeEvidence: OutcomeEvidenceResult,
     ): OutcomeResult
 }

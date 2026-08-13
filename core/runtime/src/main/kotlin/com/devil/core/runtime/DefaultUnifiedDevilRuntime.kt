@@ -40,7 +40,9 @@ import com.devil.core.runtime.observation.ObservationEvidencePort
 import com.devil.core.runtime.observation.DefaultObservationAuthority
 import com.devil.core.runtime.observation.ObservationAuthority
 import com.devil.core.runtime.outcome.DefaultOutcomeAuthority
+import com.devil.core.runtime.outcome.DefaultOutcomeEvidencePort
 import com.devil.core.runtime.outcome.OutcomeAuthority
+import com.devil.core.runtime.outcome.OutcomeEvidencePort
 import com.devil.core.runtime.plan.DefaultPlanAuthority
 import com.devil.core.runtime.plan.PlanAuthority
 import com.devil.core.runtime.task.DefaultTaskAuthority
@@ -127,6 +129,9 @@ class DefaultUnifiedDevilRuntime(
     private val verificationAuthority:
         VerificationAuthority =
         DefaultVerificationAuthority(),
+    private val outcomeEvidencePort:
+        OutcomeEvidencePort =
+        DefaultOutcomeEvidencePort(),
     private val outcomeAuthority:
         OutcomeAuthority =
         DefaultOutcomeAuthority(),
@@ -369,6 +374,16 @@ class DefaultUnifiedDevilRuntime(
             "Context and verification result must use the same trace identity."
         }
 
+        val outcomeEvidence =
+            outcomeEvidencePort.establish(
+                verification = verification,
+                verificationEvidence = verificationEvidence,
+            )
+
+        require(outcomeEvidence.traceId == context.traceId) {
+            "Context and outcome-evidence result must use the same trace identity."
+        }
+
         val outcome = outcomeAuthority.establish(
             context = context,
             identity = identity,
@@ -383,6 +398,7 @@ class DefaultUnifiedDevilRuntime(
             execution = execution,
             observation = observation,
             verification = verification,
+            outcomeEvidence = outcomeEvidence,
         )
 
         require(outcome.traceId == context.traceId) {

@@ -42,6 +42,7 @@ class DefaultOutcomeEvaluatorTest {
         val result = evaluator.evaluate(
             traceId = traceId,
             request = createRequest(traceId),
+            evidence = createDeferredOutcomeEvidence(traceId),
         )
 
         assertEquals(traceId, result.traceId)
@@ -63,6 +64,7 @@ class DefaultOutcomeEvaluatorTest {
         val result = DefaultOutcomeEvaluator().evaluate(
             traceId = traceId,
             request = request,
+            evidence = createDeferredOutcomeEvidence(traceId),
         )
 
         assertEquals(
@@ -94,8 +96,22 @@ class DefaultOutcomeEvaluatorTest {
                         "trace-default-outcome-request-other",
                     ),
                 ),
+                evidence = createDeferredOutcomeEvidence(
+                    TraceId.from(
+                        "trace-default-outcome-evaluator-003",
+                    ),
+                ),
             )
         }
+    }
+
+    private fun createDeferredOutcomeEvidence(
+        traceId: TraceId,
+    ): OutcomeEvidenceResult {
+        return OutcomeEvidenceResult.create(
+            traceId = traceId,
+            status = OutcomeEvidenceStatus.DEFERRED,
+        )
     }
 
     private fun createRequest(

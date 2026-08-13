@@ -38,6 +38,7 @@ import com.devil.app.notification.AndroidNotificationAnalysisCoordinator
 import com.devil.app.notification.AndroidNotificationPerceptionCoordinator
 import com.devil.app.outcome.AndroidOutcomeAdapter
 import com.devil.app.outcome.DefaultAndroidOutcomeAdapter
+import com.devil.app.outcome.DefaultAndroidOutcomeEvidencePort
 import com.devil.app.runtime.AndroidRuntimeInputCoordinator
 import com.devil.app.runtime.DefaultAndroidContextEnvelopeProvider
 import com.devil.app.runtime.DefaultAndroidRuntimeGateway
@@ -65,6 +66,7 @@ import com.devil.core.runtime.DefaultUnifiedDevilRuntime
 import com.devil.core.runtime.UnifiedDevilRuntime
 import com.devil.core.runtime.execution.ExecutionAttemptPort
 import com.devil.core.runtime.observation.ObservationEvidencePort
+import com.devil.core.runtime.outcome.OutcomeEvidencePort
 import com.devil.core.runtime.verification.VerificationEvidencePort
 
 /**
@@ -120,6 +122,7 @@ class DevilApplication : Application() {
             executionAttemptPort = executionAttemptPort,
             observationEvidencePort = observationEvidencePort,
             verificationEvidencePort = verificationEvidencePort,
+            outcomeEvidencePort = outcomeEvidencePort,
         )
     }
 
@@ -218,6 +221,14 @@ class DevilApplication : Application() {
     ) {
         DefaultAndroidVerificationEvidencePort(
             verificationAdapter = verificationAdapter,
+        )
+    }
+
+    private val outcomeEvidencePort: OutcomeEvidencePort by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidOutcomeEvidencePort(
+            outcomeAdapter = outcomeAdapter,
         )
     }
 

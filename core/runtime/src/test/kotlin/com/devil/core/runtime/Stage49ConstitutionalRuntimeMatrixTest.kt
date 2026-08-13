@@ -1,5 +1,4 @@
 package com.devil.core.runtime
-
 import com.devil.core.runtime.execution.ExecutionAttemptStatus
 import com.devil.core.runtime.execution.ExecutionStatus
 import com.devil.core.runtime.learning.LearningStatus
@@ -9,6 +8,7 @@ import com.devil.core.runtime.memory.MemoryPersistenceStatus
 import com.devil.core.runtime.memory.MemoryProposalStatus
 import com.devil.core.runtime.observation.ObservationEvidenceStatus
 import com.devil.core.runtime.observation.ObservationStatus
+import com.devil.core.runtime.outcome.OutcomeEvidenceStatus
 import com.devil.core.runtime.outcome.OutcomeStatus
 import com.devil.core.runtime.verification.VerificationEvidenceStatus
 import com.devil.core.runtime.verification.VerificationStatus
@@ -17,7 +17,6 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-
 /**
  * Stage 49 constitutional end-to-end runtime matrix.
  *
@@ -34,12 +33,10 @@ import kotlin.test.assertTrue
  * placement does not replace or bypass the constitutional authorities.
  */
 class Stage49ConstitutionalRuntimeMatrixTest {
-
     @Test
     fun `unified runtime preserves one ordered constitutional path`() {
         val source =
             unifiedRuntimeSource()
-
         val orderedMarkers =
             listOf(
                 "constitutionValidationAuthority.validate(",
@@ -61,6 +58,7 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "observationAuthority.observe(",
                 "verificationEvidencePort.verify(",
                 "verificationAuthority.verify(",
+                "outcomeEvidencePort.establish(",
                 "outcomeAuthority.establish(",
                 "worldModelUpdateAuthority.evaluateUpdate(",
                 "learningAuthority.evaluateLearning(",
@@ -69,35 +67,28 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "memoryCommitmentAuthority.evaluateCommitment(",
                 "memoryPersistenceAuthority.evaluatePersistence(",
             )
-
         var previousIndex = -1
-
         orderedMarkers.forEach { marker ->
             val currentIndex =
                 source.indexOf(
                     marker,
                     startIndex = previousIndex + 1,
                 )
-
             assertTrue(
                 currentIndex >= 0,
                 "Missing constitutional runtime marker: $marker",
             )
-
             assertTrue(
                 currentIndex > previousIndex,
                 "Constitutional runtime marker is out of order: $marker",
             )
-
             previousIndex = currentIndex
         }
     }
-
     @Test
     fun `runtime preserves trace identity across downstream constitutional evidence`() {
         val source =
             unifiedRuntimeSource()
-
         val traceGuards =
             listOf(
                 "validation.traceId == context.traceId",
@@ -111,6 +102,7 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "observation.traceId == context.traceId",
                 "verificationEvidence.traceId == context.traceId",
                 "verification.traceId == context.traceId",
+                "outcomeEvidence.traceId == context.traceId",
                 "outcome.traceId == context.traceId",
                 "worldModelUpdate.traceId == context.traceId",
                 "learning.traceId == context.traceId",
@@ -119,7 +111,6 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "memoryCommitment.traceId == context.traceId",
                 "memoryPersistence.traceId == context.traceId",
             )
-
         traceGuards.forEach { guard ->
             assertTrue(
                 source.contains(guard),
@@ -127,108 +118,93 @@ class Stage49ConstitutionalRuntimeMatrixTest {
             )
         }
     }
-
     @Test
     fun `execution approval attempt observation verification and outcome remain distinct`() {
         assertEquals(
             ExecutionStatus.APPROVED,
             ExecutionStatus.valueOf("APPROVED"),
         )
-
         assertEquals(
             ExecutionAttemptStatus.ATTEMPTED,
             ExecutionAttemptStatus.valueOf("ATTEMPTED"),
         )
-
         assertEquals(
             ObservationEvidenceStatus.OBSERVED,
             ObservationEvidenceStatus.valueOf("OBSERVED"),
         )
-
         assertEquals(
             ObservationStatus.OBSERVED,
             ObservationStatus.valueOf("OBSERVED"),
         )
-
         assertEquals(
             VerificationEvidenceStatus.VERIFIED,
             VerificationEvidenceStatus.valueOf("VERIFIED"),
         )
-
         assertEquals(
             VerificationStatus.VERIFIED,
             VerificationStatus.valueOf("VERIFIED"),
         )
-
+        assertEquals(
+            OutcomeEvidenceStatus.ESTABLISHED,
+            OutcomeEvidenceStatus.valueOf("ESTABLISHED"),
+        )
         assertEquals(
             OutcomeStatus.ESTABLISHED,
             OutcomeStatus.valueOf("ESTABLISHED"),
         )
     }
-
     @Test
     fun `world model learning and memory stages remain constitutionally distinct`() {
         assertEquals(
             WorldModelUpdateStatus.APPLICABLE,
             WorldModelUpdateStatus.valueOf("APPLICABLE"),
         )
-
         assertEquals(
             LearningStatus.LEARNABLE,
             LearningStatus.valueOf("LEARNABLE"),
         )
-
         assertEquals(
             MemoryProposalStatus.PROPOSABLE,
             MemoryProposalStatus.valueOf("PROPOSABLE"),
         )
-
         assertEquals(
             MemoryAuthorityStatus.COMMITTABLE,
             MemoryAuthorityStatus.valueOf("COMMITTABLE"),
         )
-
         assertEquals(
             MemoryCommitmentStatus.COMMITTABLE,
             MemoryCommitmentStatus.valueOf("COMMITTABLE"),
         )
-
         assertEquals(
             MemoryPersistenceStatus.PERSISTABLE,
             MemoryPersistenceStatus.valueOf("PERSISTABLE"),
         )
     }
-
     @Test
     fun `memory persistence remains evaluation rather than fabricated persistence`() {
         val source =
             unifiedRuntimeSource()
-
         assertTrue(
             source.contains(
                 "MemoryPersistenceStatus.PERSISTABLE",
             ),
         )
-
         assertTrue(
             source.contains(
                 "status = RuntimeStatus.ACCEPTED",
             ),
         )
-
         assertTrue(
             source.contains(
                 "It activates no capability",
             ),
         )
-
         assertTrue(
             source.contains(
                 "persists, stores, exposes, recalls, deletes, or commits no logical memory",
             ),
         )
     }
-
     private fun unifiedRuntimeSource(): String {
         val candidates =
             listOf(
@@ -239,7 +215,6 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                     "core/runtime/src/main/kotlin/com/devil/core/runtime/DefaultUnifiedDevilRuntime.kt",
                 ),
             )
-
         val sourceFile =
             candidates.firstOrNull {
                 it.isFile
@@ -247,7 +222,6 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 ?: error(
                     "Unable to locate production DefaultUnifiedDevilRuntime source.",
                 )
-
         return sourceFile.readText()
     }
 }

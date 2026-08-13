@@ -15,18 +15,18 @@ import com.devil.core.runtime.understanding.UnderstandingAuthorityResult
 import com.devil.core.runtime.verification.VerificationResult
 
 /**
- * Default Stage 15 constitutional Outcome Authority coordinator.
+ * Default constitutional Outcome Authority coordinator.
  *
- * This authority prepares one bounded OutcomeRequest, delegates constitutional
- * outcome evaluation, and maps the evaluation into the stable operational
+ * This authority prepares one bounded OutcomeRequest, evaluates it against
+ * genuine outcome evidence, and maps the evaluation into the stable operational
  * OutcomeResult contract.
  *
  * It does not resolve identity, evaluate trust, grant authorization, produce
  * understanding, select decisions, create tasks or plans, select capabilities,
  * establish Executive readiness, approve execution, create observations,
- * establish verification evidence, fabricate outcome evidence, update world
- * state, change task or plan state, create memory or learning, or communicate
- * externally.
+ * establish verification evidence, fabricate outcome evidence, update World
+ * Model state, change task or plan state, create memory or learning, or
+ * communicate externally.
  */
 class DefaultOutcomeAuthority(
     private val requestProvider: OutcomeRequestProvider =
@@ -51,6 +51,7 @@ class DefaultOutcomeAuthority(
         execution: ExecutionResult,
         observation: ObservationResult,
         verification: VerificationResult,
+        outcomeEvidence: OutcomeEvidenceResult,
     ): OutcomeResult {
         require(identity.traceId == context.traceId) {
             "Context and identity result must use the same trace identity."
@@ -100,9 +101,14 @@ class DefaultOutcomeAuthority(
             "Context and verification result must use the same trace identity."
         }
 
-        val requestResult = requestProvider.provide(
-            verification = verification,
-        )
+        require(outcomeEvidence.traceId == context.traceId) {
+            "Context and outcome-evidence result must use the same trace identity."
+        }
+
+        val requestResult =
+            requestProvider.provide(
+                verification = verification,
+            )
 
         require(requestResult.traceId == context.traceId) {
             "Context and outcome request result must use the same trace identity."
@@ -110,19 +116,22 @@ class DefaultOutcomeAuthority(
 
         return when (requestResult.status) {
             OutcomeRequestStatus.AVAILABLE -> {
-                val evaluation = evaluator.evaluate(
-                    traceId = context.traceId,
-                    request = requireNotNull(requestResult.request),
-                )
+                val evaluation =
+                    evaluator.evaluate(
+                        traceId = context.traceId,
+                        request = requireNotNull(requestResult.request),
+                        evidence = outcomeEvidence,
+                    )
 
                 require(evaluation.traceId == context.traceId) {
                     "Context and outcome evaluation result must use the same trace identity."
                 }
 
-                val result = resultMapper.map(
-                    traceId = context.traceId,
-                    evaluation = evaluation,
-                )
+                val result =
+                    resultMapper.map(
+                        traceId = context.traceId,
+                        evaluation = evaluation,
+                    )
 
                 require(result.traceId == context.traceId) {
                     "Context and mapped outcome result must use the same trace identity."

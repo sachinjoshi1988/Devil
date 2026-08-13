@@ -85,6 +85,7 @@ class DefaultOutcomeAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: OutcomeRequest,
+                    evidence: OutcomeEvidenceResult,
                 ): OutcomeEvaluationResult {
                     return OutcomeEvaluationResult.create(
                         traceId = traceId,
@@ -98,6 +99,7 @@ class DefaultOutcomeAuthorityTest {
         val result = createOutcome(
             authority = authority,
             context = context,
+            outcomeEvidence = createEstablishedOutcomeEvidence(context),
         )
 
         assertEquals(OutcomeStatus.ESTABLISHED, result.status)
@@ -194,6 +196,7 @@ class DefaultOutcomeAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: OutcomeRequest,
+                    evidence: OutcomeEvidenceResult,
                 ): OutcomeEvaluationResult {
                     return OutcomeEvaluationResult.create(
                         traceId = traceId,
@@ -207,6 +210,7 @@ class DefaultOutcomeAuthorityTest {
         val result = createOutcome(
             authority = authority,
             context = context,
+            outcomeEvidence = createEstablishedOutcomeEvidence(context),
         )
 
         assertEquals(OutcomeStatus.FAILED, result.status)
@@ -240,6 +244,7 @@ class DefaultOutcomeAuthorityTest {
                 execution = createExecution(context),
                 observation = createObservation(context),
                 verification = createVerification(context),
+                outcomeEvidence = createDeferredOutcomeEvidence(context.traceId),
             )
         }
     }
@@ -271,6 +276,7 @@ class DefaultOutcomeAuthorityTest {
                     ),
                     status = VerificationStatus.DEFERRED,
                 ),
+                outcomeEvidence = createDeferredOutcomeEvidence(context.traceId),
             )
         }
     }
@@ -316,6 +322,7 @@ class DefaultOutcomeAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: OutcomeRequest,
+                    evidence: OutcomeEvidenceResult,
                 ): OutcomeEvaluationResult {
                     return OutcomeEvaluationResult.create(
                         traceId = TraceId.from(
@@ -331,6 +338,7 @@ class DefaultOutcomeAuthorityTest {
             createOutcome(
                 authority = authority,
                 context = context,
+                outcomeEvidence = createEstablishedOutcomeEvidence(context),
             )
         }
     }
@@ -346,6 +354,7 @@ class DefaultOutcomeAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: OutcomeRequest,
+                    evidence: OutcomeEvidenceResult,
                 ): OutcomeEvaluationResult {
                     return OutcomeEvaluationResult.create(
                         traceId = traceId,
@@ -373,6 +382,7 @@ class DefaultOutcomeAuthorityTest {
             createOutcome(
                 authority = authority,
                 context = context,
+                outcomeEvidence = createEstablishedOutcomeEvidence(context),
             )
         }
     }
@@ -380,6 +390,8 @@ class DefaultOutcomeAuthorityTest {
     private fun createOutcome(
         authority: OutcomeAuthority,
         context: ContextEnvelope,
+        outcomeEvidence: OutcomeEvidenceResult =
+            createDeferredOutcomeEvidence(context.traceId),
     ): OutcomeResult {
         return authority.establish(
             context = context,
@@ -396,6 +408,7 @@ class DefaultOutcomeAuthorityTest {
             execution = createExecution(context),
             observation = createObservation(context),
             verification = createVerification(context),
+            outcomeEvidence = outcomeEvidence,
         )
     }
 
@@ -568,6 +581,29 @@ class DefaultOutcomeAuthorityTest {
                     createObservation(context).request,
                 ),
             ),
+        )
+    }
+
+    private fun createEstablishedOutcomeEvidence(
+        context: ContextEnvelope,
+    ): OutcomeEvidenceResult {
+        return OutcomeEvidenceResult.create(
+            traceId = context.traceId,
+            status = OutcomeEvidenceStatus.ESTABLISHED,
+            capabilityId = CapabilityId.from(
+                "capability-camera",
+            ),
+            description =
+                "Bounded constitutional outcome evidence was independently established.",
+        )
+    }
+
+    private fun createDeferredOutcomeEvidence(
+        traceId: TraceId,
+    ): OutcomeEvidenceResult {
+        return OutcomeEvidenceResult.create(
+            traceId = traceId,
+            status = OutcomeEvidenceStatus.DEFERRED,
         )
     }
 
