@@ -50,7 +50,9 @@ import com.devil.core.runtime.trust.TrustAuthority
 import com.devil.core.runtime.understanding.DefaultUnderstandingAuthority
 import com.devil.core.runtime.understanding.UnderstandingAuthority
 import com.devil.core.runtime.verification.DefaultVerificationAuthority
+import com.devil.core.runtime.verification.DefaultVerificationEvidencePort
 import com.devil.core.runtime.verification.VerificationAuthority
+import com.devil.core.runtime.verification.VerificationEvidencePort
 import com.devil.core.runtime.worldmodel.DefaultWorldModelUpdateAuthority
 import com.devil.core.runtime.worldmodel.WorldModelUpdateAuthority
 
@@ -119,6 +121,9 @@ class DefaultUnifiedDevilRuntime(
     private val observationAuthority:
         ObservationAuthority =
         DefaultObservationAuthority(),
+    private val verificationEvidencePort:
+        VerificationEvidencePort =
+        DefaultVerificationEvidencePort(),
     private val verificationAuthority:
         VerificationAuthority =
         DefaultVerificationAuthority(),
@@ -335,6 +340,15 @@ class DefaultUnifiedDevilRuntime(
             "Context and observation result must use the same trace identity."
         }
 
+        val verificationEvidence =
+            verificationEvidencePort.verify(
+                observation = observation,
+            )
+
+        require(verificationEvidence.traceId == context.traceId) {
+            "Context and verification-evidence result must use the same trace identity."
+        }
+
         val verification = verificationAuthority.verify(
             context = context,
             identity = identity,
@@ -348,6 +362,7 @@ class DefaultUnifiedDevilRuntime(
             readiness = readiness,
             execution = execution,
             observation = observation,
+            verificationEvidence = verificationEvidence,
         )
 
         require(verification.traceId == context.traceId) {

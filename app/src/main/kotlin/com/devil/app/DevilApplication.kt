@@ -44,6 +44,7 @@ import com.devil.app.runtime.DefaultAndroidRuntimeGateway
 import com.devil.app.runtime.DefaultAndroidRuntimeInputCoordinator
 import com.devil.app.verification.AndroidVerificationAdapter
 import com.devil.app.verification.DefaultAndroidVerificationAdapter
+import com.devil.app.verification.DefaultAndroidVerificationEvidencePort
 import com.devil.app.voice.AndroidVoiceOutputSource
 import com.devil.app.voice.DefaultAndroidVoiceOutputSource
 import com.devil.app.voice.HandsFreeProductionCoordinator
@@ -64,6 +65,7 @@ import com.devil.core.runtime.DefaultUnifiedDevilRuntime
 import com.devil.core.runtime.UnifiedDevilRuntime
 import com.devil.core.runtime.execution.ExecutionAttemptPort
 import com.devil.core.runtime.observation.ObservationEvidencePort
+import com.devil.core.runtime.verification.VerificationEvidencePort
 
 /**
  * Android process bootstrap for Devil.
@@ -117,6 +119,7 @@ class DevilApplication : Application() {
         DefaultUnifiedDevilRuntime(
             executionAttemptPort = executionAttemptPort,
             observationEvidencePort = observationEvidencePort,
+            verificationEvidencePort = verificationEvidencePort,
         )
     }
 
@@ -208,6 +211,14 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         DefaultAndroidVerificationAdapter()
+    }
+
+    private val verificationEvidencePort: VerificationEvidencePort by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidVerificationEvidencePort(
+            verificationAdapter = verificationAdapter,
+        )
     }
 
     val outcomeAdapter: AndroidOutcomeAdapter by lazy(

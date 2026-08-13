@@ -10,6 +10,7 @@ import com.devil.core.runtime.memory.MemoryProposalStatus
 import com.devil.core.runtime.observation.ObservationEvidenceStatus
 import com.devil.core.runtime.observation.ObservationStatus
 import com.devil.core.runtime.outcome.OutcomeStatus
+import com.devil.core.runtime.verification.VerificationEvidenceStatus
 import com.devil.core.runtime.verification.VerificationStatus
 import com.devil.core.runtime.worldmodel.WorldModelUpdateStatus
 import java.io.File
@@ -58,6 +59,7 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "executionAttemptPort.attempt(",
                 "observationEvidencePort.observe(",
                 "observationAuthority.observe(",
+                "verificationEvidencePort.verify(",
                 "verificationAuthority.verify(",
                 "outcomeAuthority.establish(",
                 "worldModelUpdateAuthority.evaluateUpdate(",
@@ -107,6 +109,7 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "executionAttempt.traceId == context.traceId",
                 "observationEvidence.traceId == context.traceId",
                 "observation.traceId == context.traceId",
+                "verificationEvidence.traceId == context.traceId",
                 "verification.traceId == context.traceId",
                 "outcome.traceId == context.traceId",
                 "worldModelUpdate.traceId == context.traceId",
@@ -145,6 +148,11 @@ class Stage49ConstitutionalRuntimeMatrixTest {
         assertEquals(
             ObservationStatus.OBSERVED,
             ObservationStatus.valueOf("OBSERVED"),
+        )
+
+        assertEquals(
+            VerificationEvidenceStatus.VERIFIED,
+            VerificationEvidenceStatus.valueOf("VERIFIED"),
         )
 
         assertEquals(

@@ -12,6 +12,8 @@ import com.devil.core.model.context.ContextSource
 import com.devil.core.model.context.ContextTrustLevel
 import com.devil.core.model.decision.DecisionRecord
 import com.devil.core.model.decision.DecisionState
+import com.devil.core.model.error.ErrorCode
+import com.devil.core.model.error.UniversalErrorRecord
 import com.devil.core.model.execution.ExecutionRequest
 import com.devil.core.model.observation.ObservationRequest
 import com.devil.core.model.plan.PlanId
@@ -22,195 +24,120 @@ import com.devil.core.model.task.TaskRecord
 import com.devil.core.model.task.TaskState
 import com.devil.core.model.understanding.UnderstandingRecord
 import com.devil.core.model.understanding.UnderstandingState
-import com.devil.core.model.verification.VerificationRequest
+import com.devil.core.runtime.observation.ObservationResult
+import com.devil.core.runtime.observation.ObservationStatus
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
-class DefaultVerificationEvaluatorTest {
+class DefaultVerificationEvidencePortTest {
 
     @Test
-    fun `evaluate returns unavailable when verification evidence is deferred`() {
+    fun `observed result remains deferred without configured verification embodiment`() {
         val traceId =
             TraceId.from(
-                "trace-default-verification-evaluator-001",
+                "trace-default-verification-evidence-port-001",
             )
 
         val result =
-            DefaultVerificationEvaluator().evaluate(
-                traceId = traceId,
-                request = createRequest(traceId),
-                evidence = deferredEvidence(traceId),
-            )
-
-        assertEquals(traceId, result.traceId)
-        assertEquals(
-            VerificationEvaluationStatus.UNAVAILABLE,
-            result.status,
-        )
-        assertNull(result.request)
-        assertNull(result.error)
-    }
-
-    @Test
-    fun `evaluate does not treat observation as verification evidence`() {
-        val traceId =
-            TraceId.from(
-                "trace-default-verification-evaluator-002",
-            )
-
-        val request = createRequest(traceId)
-
-        val result =
-            DefaultVerificationEvaluator().evaluate(
-                traceId = traceId,
-                request = request,
-                evidence = deferredEvidence(traceId),
-            )
-
-        assertEquals(
-            "capability-camera",
-            request.observation
-                .execution
-                .capability
-                .capabilityId
-                .value,
-        )
-
-        assertEquals(
-            VerificationEvaluationStatus.UNAVAILABLE,
-            result.status,
-        )
-        assertNull(result.request)
-        assertNull(result.error)
-    }
-
-    @Test
-    fun `evaluate maps genuine matching verification evidence to verified`() {
-        val traceId =
-            TraceId.from(
-                "trace-default-verification-evaluator-003",
-            )
-
-        val request = createRequest(traceId)
-
-        val result =
-            DefaultVerificationEvaluator().evaluate(
-                traceId = traceId,
-                request = request,
-                evidence =
-                    verifiedEvidence(
+            DefaultVerificationEvidencePort().verify(
+                observation =
+                    observed(
                         traceId = traceId,
-                        capabilityId =
-                            request.observation
-                                .execution
-                                .capability
-                                .capabilityId,
                     ),
             )
 
         assertEquals(traceId, result.traceId)
         assertEquals(
-            VerificationEvaluationStatus.VERIFIED,
+            VerificationEvidenceStatus.DEFERRED,
             result.status,
         )
-        assertEquals(request, result.request)
+        assertNull(result.capabilityId)
+        assertNull(result.description)
         assertNull(result.error)
     }
 
     @Test
-    fun `evaluate rejects request from a different trace`() {
+    fun `deferred observation remains deferred`() {
         val traceId =
             TraceId.from(
-                "trace-default-verification-evaluator-004",
+                "trace-default-verification-evidence-port-002",
             )
 
-        assertFailsWith<IllegalArgumentException> {
-            DefaultVerificationEvaluator().evaluate(
-                traceId = traceId,
-                request =
-                    createRequest(
-                        TraceId.from(
-                            "trace-default-verification-request-other",
-                        ),
-                    ),
-                evidence = deferredEvidence(traceId),
-            )
-        }
-    }
-
-    @Test
-    fun `evaluate rejects verification evidence from a different trace`() {
-        val traceId =
-            TraceId.from(
-                "trace-default-verification-evaluator-005",
-            )
-
-        assertFailsWith<IllegalArgumentException> {
-            DefaultVerificationEvaluator().evaluate(
-                traceId = traceId,
-                request = createRequest(traceId),
-                evidence =
-                    deferredEvidence(
-                        TraceId.from(
-                            "trace-default-verification-evidence-other",
-                        ),
-                    ),
-            )
-        }
-    }
-
-    @Test
-    fun `evaluate rejects verified evidence for another capability`() {
-        val traceId =
-            TraceId.from(
-                "trace-default-verification-evaluator-006",
-            )
-
-        assertFailsWith<IllegalArgumentException> {
-            DefaultVerificationEvaluator().evaluate(
-                traceId = traceId,
-                request = createRequest(traceId),
-                evidence =
-                    verifiedEvidence(
+        val result =
+            DefaultVerificationEvidencePort().verify(
+                observation =
+                    ObservationResult.create(
                         traceId = traceId,
-                        capabilityId =
-                            CapabilityId.from(
-                                "capability-verification-other",
-                            ),
+                        status = ObservationStatus.DEFERRED,
                     ),
             )
-        }
+
+        assertEquals(
+            VerificationEvidenceStatus.DEFERRED,
+            result.status,
+        )
+        assertNull(result.capabilityId)
+        assertNull(result.description)
+        assertNull(result.error)
     }
 
-    private fun deferredEvidence(
-        traceId: TraceId,
-    ): VerificationEvidenceResult {
-        return VerificationEvidenceResult.create(
-            traceId = traceId,
-            status = VerificationEvidenceStatus.DEFERRED,
+    @Test
+    fun `failed observation preserves matching operational error`() {
+        val traceId =
+            TraceId.from(
+                "trace-default-verification-evidence-port-003",
+            )
+
+        val error = createError(traceId)
+
+        val result =
+            DefaultVerificationEvidencePort().verify(
+                observation =
+                    ObservationResult.create(
+                        traceId = traceId,
+                        status = ObservationStatus.FAILED,
+                        error = error,
+                    ),
+            )
+
+        assertEquals(
+            VerificationEvidenceStatus.FAILED,
+            result.status,
+        )
+        assertEquals(error, result.error)
+        assertNull(result.capabilityId)
+        assertNull(result.description)
+    }
+
+    @Test
+    fun `default port never manufactures verified evidence`() {
+        val traceId =
+            TraceId.from(
+                "trace-default-verification-evidence-port-004",
+            )
+
+        val result =
+            DefaultVerificationEvidencePort().verify(
+                observation =
+                    observed(
+                        traceId = traceId,
+                    ),
+            )
+
+        assertEquals(
+            VerificationEvidenceStatus.DEFERRED,
+            result.status,
         )
     }
 
-    private fun verifiedEvidence(
+    private fun observed(
         traceId: TraceId,
-        capabilityId: CapabilityId,
-    ): VerificationEvidenceResult {
-        return VerificationEvidenceResult.create(
+    ): ObservationResult {
+        return ObservationResult.create(
             traceId = traceId,
-            status = VerificationEvidenceStatus.VERIFIED,
-            capabilityId = capabilityId,
-            description =
-                "The bounded observed capability effect was independently verified.",
-        )
-    }
-
-    private fun createRequest(
-        traceId: TraceId,
-    ): VerificationRequest {
-        return VerificationRequest.create(
-            observation =
+            status = ObservationStatus.OBSERVED,
+            request =
                 ObservationRequest.create(
                     execution =
                         ExecutionRequest.create(
@@ -218,13 +145,13 @@ class DefaultVerificationEvaluatorTest {
                                 PlanRecord.create(
                                     planId =
                                         PlanId.from(
-                                            "plan-default-verification-evaluator",
+                                            "plan-default-verification-evidence-port",
                                         ),
                                     task =
                                         TaskRecord.create(
                                             taskId =
                                                 TaskId.from(
-                                                    "task-default-verification-evaluator",
+                                                    "task-default-verification-evidence-port",
                                                 ),
                                             decision =
                                                 DecisionRecord.create(
@@ -236,7 +163,7 @@ class DefaultVerificationEvaluatorTest {
                                                                     schemaVersion =
                                                                         SchemaVersion.from(1),
                                                                     source =
-                                                                        ContextSource.TEXT,
+                                                                        ContextSource.TEST,
                                                                     trustLevel =
                                                                         ContextTrustLevel.VERIFIED,
                                                                     securityLevel =
@@ -244,7 +171,7 @@ class DefaultVerificationEvaluatorTest {
                                                                     observedAt =
                                                                         DevilTimestamp
                                                                             .fromEpochMilliseconds(
-                                                                                1_754_000_123_000L,
+                                                                                1_754_000_128_000L,
                                                                             ),
                                                                 ),
                                                             state =
@@ -269,16 +196,35 @@ class DefaultVerificationEvaluatorTest {
                                 CapabilityContract.create(
                                     capabilityId =
                                         CapabilityId.from(
-                                            "capability-camera",
+                                            "capability-verification-evidence-port",
                                         ),
                                     category =
                                         CapabilityCategory.ACTION,
-                                    name = "Camera",
+                                    name =
+                                        "Verification Evidence Test Capability",
                                     description =
-                                        "Performs one bounded registered camera action.",
+                                        "Represents one bounded capability for verification-evidence testing.",
                                 ),
                         ),
                 ),
+        )
+    }
+
+    private fun createError(
+        traceId: TraceId,
+    ): UniversalErrorRecord {
+        return UniversalErrorRecord.create(
+            errorCode =
+                ErrorCode.from(
+                    "OBSERVATION_FAILED",
+                ),
+            traceId = traceId,
+            occurredAt =
+                DevilTimestamp.fromEpochMilliseconds(
+                    1_754_000_128_500L,
+                ),
+            summary =
+                "Bounded observation failed.",
         )
     }
 }

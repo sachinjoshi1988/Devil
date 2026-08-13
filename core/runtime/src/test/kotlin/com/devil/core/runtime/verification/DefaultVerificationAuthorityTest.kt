@@ -82,6 +82,7 @@ class DefaultVerificationAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: VerificationRequest,
+                    evidence: VerificationEvidenceResult,
                 ): VerificationEvaluationResult {
                     return VerificationEvaluationResult.create(
                         traceId = traceId,
@@ -192,6 +193,7 @@ class DefaultVerificationAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: VerificationRequest,
+                    evidence: VerificationEvidenceResult,
                 ): VerificationEvaluationResult {
                     return VerificationEvaluationResult.create(
                         traceId = traceId,
@@ -236,6 +238,7 @@ class DefaultVerificationAuthorityTest {
                 capability = createCapability(context),
                 readiness = createReadiness(context.traceId),
                 execution = createExecution(context),
+                verificationEvidence = createVerificationEvidence(context),
                 observation = createObservation(context),
             )
         }
@@ -261,6 +264,7 @@ class DefaultVerificationAuthorityTest {
                 capability = createCapability(context),
                 readiness = createReadiness(context.traceId),
                 execution = createExecution(context),
+                verificationEvidence = createVerificationEvidence(context),
                 observation = ObservationResult.create(
                     traceId = TraceId.from(
                         "trace-verification-observation-other",
@@ -313,6 +317,7 @@ class DefaultVerificationAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: VerificationRequest,
+                    evidence: VerificationEvidenceResult,
                 ): VerificationEvaluationResult {
                     return VerificationEvaluationResult.create(
                         traceId = TraceId.from(
@@ -344,6 +349,7 @@ class DefaultVerificationAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: VerificationRequest,
+                    evidence: VerificationEvidenceResult,
                 ): VerificationEvaluationResult {
                     return VerificationEvaluationResult.create(
                         traceId = traceId,
@@ -393,6 +399,7 @@ class DefaultVerificationAuthorityTest {
             capability = createCapability(context),
             readiness = createReadiness(context.traceId),
             execution = createExecution(context),
+                verificationEvidence = createVerificationEvidence(context),
             observation = createObservation(context),
         )
     }
@@ -553,6 +560,15 @@ class DefaultVerificationAuthorityTest {
                     createExecution(context).request,
                 ),
             ),
+        )
+    }
+
+    private fun createVerificationEvidence(
+        context: ContextEnvelope,
+    ): VerificationEvidenceResult {
+        return VerificationEvidenceResult.create(
+            traceId = context.traceId,
+            status = VerificationEvidenceStatus.DEFERRED,
         )
     }
 

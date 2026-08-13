@@ -4,21 +4,25 @@ import com.devil.core.model.common.TraceId
 import com.devil.core.model.verification.VerificationRequest
 
 /**
- * Default Stage 14 constitutional verification evaluator.
+ * Default constitutional verification evaluator.
  *
- * No genuine verification evidence source or approved constitutional
- * verification policy exists yet. This evaluator therefore preserves trace
- * continuity and returns UNAVAILABLE rather than treating observation as proof
- * that the intended outcome was achieved or inventing verification evidence.
+ * Genuine neutral verification evidence may establish VERIFIED only when trace
+ * identity and capability identity both match the VerificationRequest.
  *
- * It does not update world state, report final success or failure, change task
- * or plan state, or produce a final outcome.
+ * DEFERRED evidence remains unavailable.
+ *
+ * FAILED evidence preserves its matching operational error.
+ *
+ * This evaluator performs no platform verification and does not establish a
+ * final Outcome, report task completion, update world state, perform Learning,
+ * or commit Memory.
  */
 class DefaultVerificationEvaluator : VerificationEvaluator {
 
     override fun evaluate(
         traceId: TraceId,
         request: VerificationRequest,
+        evidence: VerificationEvidenceResult,
     ): VerificationEvaluationResult {
         require(
             request.observation
@@ -33,9 +37,38 @@ class DefaultVerificationEvaluator : VerificationEvaluator {
             "Verification evaluator trace and request must use the same trace identity."
         }
 
-        return VerificationEvaluationResult.create(
-            traceId = traceId,
-            status = VerificationEvaluationStatus.UNAVAILABLE,
-        )
+        require(evidence.traceId == traceId) {
+            "Verification evaluator trace and evidence result must use the same trace identity."
+        }
+
+        return when (evidence.status) {
+            VerificationEvidenceStatus.VERIFIED -> {
+                require(
+                    evidence.capabilityId ==
+                        request.observation.execution.capability.capabilityId,
+                ) {
+                    "Verification evidence and request must refer to the same capability identity."
+                }
+
+                VerificationEvaluationResult.create(
+                    traceId = traceId,
+                    status = VerificationEvaluationStatus.VERIFIED,
+                    request = request,
+                )
+            }
+
+            VerificationEvidenceStatus.DEFERRED ->
+                VerificationEvaluationResult.create(
+                    traceId = traceId,
+                    status = VerificationEvaluationStatus.UNAVAILABLE,
+                )
+
+            VerificationEvidenceStatus.FAILED ->
+                VerificationEvaluationResult.create(
+                    traceId = traceId,
+                    status = VerificationEvaluationStatus.FAILED,
+                    error = requireNotNull(evidence.error),
+                )
+        }
     }
 }

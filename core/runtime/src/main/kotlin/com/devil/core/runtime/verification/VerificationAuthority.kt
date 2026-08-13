@@ -35,5 +35,6 @@ interface VerificationAuthority {
         readiness: ExecutiveReadinessResult,
         execution: ExecutionResult,
         observation: ObservationResult,
+        verificationEvidence: VerificationEvidenceResult,
     ): VerificationResult
 }

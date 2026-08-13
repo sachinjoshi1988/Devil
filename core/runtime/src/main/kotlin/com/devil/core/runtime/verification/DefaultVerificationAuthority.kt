@@ -48,6 +48,7 @@ class DefaultVerificationAuthority(
         readiness: ExecutiveReadinessResult,
         execution: ExecutionResult,
         observation: ObservationResult,
+        verificationEvidence: VerificationEvidenceResult,
     ): VerificationResult {
         require(identity.traceId == context.traceId) {
             "Context and identity result must use the same trace identity."
@@ -90,8 +91,14 @@ class DefaultVerificationAuthority(
         }
 
         require(observation.traceId == context.traceId) {
-            "Context and observation result must use the same trace identity."
+
+        require(verificationEvidence.traceId == context.traceId) {
+            "Context and verification-evidence result must use the same trace identity."
         }
+            "Context and observation result must use the same trace identity."
+
+        }
+
 
         val requestResult = requestProvider.provide(
             observation = observation,
@@ -106,6 +113,7 @@ class DefaultVerificationAuthority(
                 val evaluation = evaluator.evaluate(
                     traceId = context.traceId,
                     request = requireNotNull(requestResult.request),
+                    evidence = verificationEvidence,
                 )
 
                 require(evaluation.traceId == context.traceId) {
