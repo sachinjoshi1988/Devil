@@ -4,20 +4,25 @@ import com.devil.core.model.common.TraceId
 import com.devil.core.model.memory.MemoryAuthorityRequest
 
 /**
- * Default Stage 19 constitutional Memory Authority evaluator.
+ * Default constitutional Memory Authority evaluator.
  *
- * No approved constitutional memory-commitment policy, security-review path,
- * memory-classification process, sensitivity assessment, confidence assessment,
- * retention-policy evaluation, source-attribution process, owner-visible reason
- * generation, or persistent logical-memory mechanism exists yet.
+ * The evaluator remains fail-closed unless genuine Memory Authority evidence
+ * has been established.
  *
- * This evaluator therefore preserves trace continuity and returns UNAVAILABLE
- * rather than treating a proposable memory request as permission to create,
- * persist, or commit logical memory.
+ * ESTABLISHED evidence makes the bounded MemoryAuthorityRequest eligible for
+ * the existing Memory Authority result path. It still does not commit logical
+ * memory, persist logical memory, mutate world state, assign memory class,
+ * sensitivity, confidence, retention policy, source attribution,
+ * owner-visible reason, or storage destination.
  *
- * It does not mutate world state, change task or plan state, communicate
- * externally, bypass constitutional security review, or produce a runtime
- * result.
+ * DEFERRED evidence remains unavailable.
+ *
+ * FAILED evidence preserves its matching operational error.
+ *
+ * MEMORY_PROPOSAL != MEMORY_AUTHORITY_EVIDENCE.
+ * MEMORY_AUTHORITY_EVIDENCE != MEMORY_AUTHORITY_APPROVAL.
+ * MEMORY_AUTHORITY_APPROVAL != MEMORY_COMMITMENT.
+ * MEMORY_COMMITMENT != MEMORY_PERSISTENCE.
  */
 class DefaultMemoryAuthorityEvaluator :
     MemoryAuthorityEvaluator {
@@ -25,6 +30,7 @@ class DefaultMemoryAuthorityEvaluator :
     override fun evaluate(
         traceId: TraceId,
         request: MemoryAuthorityRequest,
+        evidence: MemoryAuthorityEvidenceResult,
     ): MemoryAuthorityEvaluationResult {
         require(
             request.proposal
@@ -44,9 +50,46 @@ class DefaultMemoryAuthorityEvaluator :
             "Memory Authority evaluator trace and request must use the same trace identity."
         }
 
-        return MemoryAuthorityEvaluationResult.create(
-            traceId = traceId,
-            status = MemoryAuthorityEvaluationStatus.UNAVAILABLE,
-        )
+        require(evidence.traceId == traceId) {
+            "Memory Authority evidence and evaluator must use the same trace identity."
+        }
+
+        return when (evidence.status) {
+            MemoryAuthorityEvidenceStatus.ESTABLISHED -> {
+                val capabilityId =
+                    request.proposal
+                        .learning
+                        .worldModelUpdate
+                        .outcome
+                        .verification
+                        .observation
+                        .execution
+                        .capability
+                        .capabilityId
+
+                require(evidence.capabilityId == capabilityId) {
+                    "Memory Authority request and evidence must refer to the same capability identity."
+                }
+
+                MemoryAuthorityEvaluationResult.create(
+                    traceId = traceId,
+                    status = MemoryAuthorityEvaluationStatus.COMMITTABLE,
+                    request = request,
+                )
+            }
+
+            MemoryAuthorityEvidenceStatus.DEFERRED ->
+                MemoryAuthorityEvaluationResult.create(
+                    traceId = traceId,
+                    status = MemoryAuthorityEvaluationStatus.UNAVAILABLE,
+                )
+
+            MemoryAuthorityEvidenceStatus.FAILED ->
+                MemoryAuthorityEvaluationResult.create(
+                    traceId = traceId,
+                    status = MemoryAuthorityEvaluationStatus.FAILED,
+                    error = requireNotNull(evidence.error),
+                )
+        }
     }
 }

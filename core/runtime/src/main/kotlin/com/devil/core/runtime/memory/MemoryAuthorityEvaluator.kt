@@ -19,5 +19,6 @@ interface MemoryAuthorityEvaluator {
     fun evaluate(
         traceId: TraceId,
         request: MemoryAuthorityRequest,
+        evidence: MemoryAuthorityEvidenceResult,
     ): MemoryAuthorityEvaluationResult
 }

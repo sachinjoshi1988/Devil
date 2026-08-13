@@ -29,11 +29,13 @@ import com.devil.core.runtime.learning.DefaultLearningEvidencePort
 import com.devil.core.runtime.learning.LearningAuthority
 import com.devil.core.runtime.learning.LearningEvidencePort
 import com.devil.core.runtime.memory.DefaultMemoryAuthority
+import com.devil.core.runtime.memory.DefaultMemoryAuthorityEvidencePort
 import com.devil.core.runtime.memory.DefaultMemoryCommitmentAuthority
 import com.devil.core.runtime.memory.DefaultMemoryPersistenceAuthority
 import com.devil.core.runtime.memory.DefaultMemoryProposalAuthority
 import com.devil.core.runtime.memory.DefaultMemoryProposalEvidencePort
 import com.devil.core.runtime.memory.MemoryAuthority
+import com.devil.core.runtime.memory.MemoryAuthorityEvidencePort
 import com.devil.core.runtime.memory.MemoryCommitmentAuthority
 import com.devil.core.runtime.memory.MemoryPersistenceAuthority
 import com.devil.core.runtime.memory.MemoryPersistenceStatus
@@ -161,6 +163,10 @@ class DefaultUnifiedDevilRuntime(
     private val memoryProposalAuthority:
         MemoryProposalAuthority =
         DefaultMemoryProposalAuthority(),
+    private val memoryAuthorityEvidencePort:
+        MemoryAuthorityEvidencePort =
+        DefaultMemoryAuthorityEvidencePort(),
+
     private val memoryAuthority: MemoryAuthority =
         DefaultMemoryAuthority(),
     private val memoryCommitmentAuthority:
@@ -521,6 +527,15 @@ class DefaultUnifiedDevilRuntime(
             "Context and memory proposal result must use the same trace identity."
         }
 
+        val memoryAuthorityEvidence =
+            memoryAuthorityEvidencePort.establish(
+                memoryProposal = memoryProposal,
+            )
+
+        require(memoryAuthorityEvidence.traceId == context.traceId) {
+            "Context and Memory Authority evidence result must use the same trace identity."
+        }
+
         val memory = memoryAuthority.evaluateMemory(
             context = context,
             identity = identity,
@@ -539,6 +554,7 @@ class DefaultUnifiedDevilRuntime(
             worldModelUpdate = worldModelUpdate,
             learning = learning,
             memoryProposal = memoryProposal,
+            memoryAuthorityEvidence = memoryAuthorityEvidence,
         )
 
         require(memory.traceId == context.traceId) {

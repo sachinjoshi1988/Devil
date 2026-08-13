@@ -15,6 +15,8 @@ import com.devil.core.model.decision.DecisionState
 import com.devil.core.model.execution.ExecutionRequest
 import com.devil.core.model.learning.LearningRequest
 import com.devil.core.model.memory.MemoryAuthorityRequest
+import com.devil.core.runtime.memory.MemoryAuthorityEvidenceResult
+import com.devil.core.runtime.memory.MemoryAuthorityEvidenceStatus
 import com.devil.core.model.memory.MemoryProposalRequest
 import com.devil.core.model.observation.ObservationRequest
 import com.devil.core.model.outcome.OutcomeRequest
@@ -45,6 +47,7 @@ class DefaultMemoryAuthorityEvaluatorTest {
 
         val result = evaluator.evaluate(
             traceId = traceId,
+            evidence = createDeferredMemoryAuthorityEvidence(traceId),
             request = createRequest(traceId),
         )
 
@@ -66,6 +69,7 @@ class DefaultMemoryAuthorityEvaluatorTest {
 
         val result = DefaultMemoryAuthorityEvaluator().evaluate(
             traceId = traceId,
+            evidence = createDeferredMemoryAuthorityEvidence(traceId),
             request = request,
         )
 
@@ -109,6 +113,11 @@ class DefaultMemoryAuthorityEvaluatorTest {
                 traceId = TraceId.from(
                     "trace-default-memory-authority-evaluator-003",
                 ),
+                evidence = createDeferredMemoryAuthorityEvidence(
+                    TraceId.from(
+                        "trace-default-memory-authority-evaluator-003",
+                    ),
+                ),
                 request = createRequest(
                     TraceId.from(
                         "trace-default-memory-authority-request-other",
@@ -116,6 +125,15 @@ class DefaultMemoryAuthorityEvaluatorTest {
                 ),
             )
         }
+    }
+
+    private fun createDeferredMemoryAuthorityEvidence(
+        traceId: TraceId,
+    ): MemoryAuthorityEvidenceResult {
+        return MemoryAuthorityEvidenceResult.create(
+            traceId = traceId,
+            status = MemoryAuthorityEvidenceStatus.DEFERRED,
+        )
     }
 
     private fun createRequest(

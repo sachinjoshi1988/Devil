@@ -44,6 +44,8 @@ import com.devil.core.runtime.identity.IdentityResult
 import com.devil.core.runtime.identity.IdentityStatus
 import com.devil.core.runtime.learning.LearningResult
 import com.devil.core.runtime.learning.LearningStatus
+import com.devil.core.runtime.memory.MemoryAuthorityEvidenceResult
+import com.devil.core.runtime.memory.MemoryAuthorityEvidenceStatus
 import com.devil.core.runtime.observation.ObservationResult
 import com.devil.core.runtime.observation.ObservationStatus
 import com.devil.core.runtime.outcome.OutcomeResult
@@ -94,6 +96,7 @@ class DefaultMemoryAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: MemoryAuthorityRequest,
+                    evidence: MemoryAuthorityEvidenceResult,
                 ): MemoryAuthorityEvaluationResult {
                     return MemoryAuthorityEvaluationResult.create(
                         traceId = traceId,
@@ -220,6 +223,7 @@ class DefaultMemoryAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: MemoryAuthorityRequest,
+                    evidence: MemoryAuthorityEvidenceResult,
                 ): MemoryAuthorityEvaluationResult {
                     return MemoryAuthorityEvaluationResult.create(
                         traceId = traceId,
@@ -272,6 +276,10 @@ class DefaultMemoryAuthorityTest {
                     ),
                     status = MemoryProposalStatus.DEFERRED,
                 ),
+                memoryAuthorityEvidence =
+                    createDeferredMemoryAuthorityEvidence(
+                        context.traceId,
+                    ),
             )
         }
     }
@@ -298,6 +306,19 @@ class DefaultMemoryAuthorityTest {
             worldModelUpdate = createWorldModelUpdate(context),
             learning = createLearning(context),
             memoryProposal = createMemoryProposal(context),
+            memoryAuthorityEvidence =
+                createDeferredMemoryAuthorityEvidence(
+                    context.traceId,
+                ),
+        )
+    }
+
+    private fun createDeferredMemoryAuthorityEvidence(
+        traceId: TraceId,
+    ): MemoryAuthorityEvidenceResult {
+        return MemoryAuthorityEvidenceResult.create(
+            traceId = traceId,
+            status = MemoryAuthorityEvidenceStatus.DEFERRED,
         )
     }
 

@@ -41,6 +41,7 @@ import com.devil.core.runtime.execution.ExecutionResult
 import com.devil.core.runtime.identity.IdentityResult
 import com.devil.core.runtime.learning.LearningResult
 import com.devil.core.runtime.memory.MemoryAuthority
+import com.devil.core.runtime.memory.MemoryAuthorityEvidenceResult
 import com.devil.core.runtime.memory.MemoryAuthorityResult
 import com.devil.core.runtime.memory.MemoryAuthorityStatus
 import com.devil.core.runtime.memory.MemoryCommitmentAuthority
@@ -267,6 +268,7 @@ class DefaultUnifiedDevilRuntimeTest {
                 worldModelUpdate: WorldModelUpdateResult,
                 learning: LearningResult,
                 memoryProposal: MemoryProposalResult,
+                memoryAuthorityEvidence: MemoryAuthorityEvidenceResult,
             ): MemoryAuthorityResult {
                 val resultTraceId =
                     traceId ?: context.traceId
