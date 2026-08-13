@@ -18,6 +18,7 @@ import com.devil.app.conversation.DefaultConversationRuntimeSubmissionCoordinato
 import com.devil.app.conversation.DefaultConversationSubmissionFlowCoordinator
 import com.devil.app.conversation.VoiceConversationRuntimeInputMetadataProvider
 import com.devil.app.execution.AndroidExecutionAdapter
+import com.devil.app.execution.DefaultAndroidExecutionAttemptPort
 import com.devil.app.execution.DefaultAndroidExecutionAdapter
 import com.devil.app.internet.AndroidInternetKnowledgeCoordinator
 import com.devil.app.internet.AndroidInternetKnowledgeSafetyCoordinator
@@ -29,6 +30,9 @@ import com.devil.app.vision.DefaultAndroidVisionFrameSource
 import com.devil.app.vision.AndroidVisionFramePerceptionCoordinator
 import com.devil.app.observation.AndroidObservationAdapter
 import com.devil.app.observation.DefaultAndroidObservationAdapter
+import com.devil.app.permission.AndroidPermissionAuthorityAdapter
+import com.devil.app.permission.DefaultAndroidPermissionAuthorityAdapter
+import com.devil.app.permission.DefaultAndroidPermissionGrantChecker
 import com.devil.app.notification.AndroidNotificationAnalysisCoordinator
 import com.devil.app.notification.AndroidNotificationPerceptionCoordinator
 import com.devil.app.outcome.AndroidOutcomeAdapter
@@ -57,6 +61,7 @@ import com.devil.core.model.privacy.PrivacyRepresentationReducer
 import com.devil.core.runtime.privacy.PrivacyProtectedContextResolver
 import com.devil.core.runtime.DefaultUnifiedDevilRuntime
 import com.devil.core.runtime.UnifiedDevilRuntime
+import com.devil.core.runtime.execution.ExecutionAttemptPort
 
 /**
  * Android process bootstrap for Devil.
@@ -107,7 +112,9 @@ class DevilApplication : Application() {
     val runtime: UnifiedDevilRuntime by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
-        DefaultUnifiedDevilRuntime()
+        DefaultUnifiedDevilRuntime(
+            executionAttemptPort = executionAttemptPort,
+        )
     }
 
     /**
@@ -152,10 +159,31 @@ class DevilApplication : Application() {
                 ),
         )
     }
+    val permissionAuthorityAdapter: AndroidPermissionAuthorityAdapter by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidPermissionAuthorityAdapter(
+            grantChecker =
+                DefaultAndroidPermissionGrantChecker(
+                    context = applicationContext,
+                ),
+        )
+    }
+
     val executionAdapter: AndroidExecutionAdapter by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         DefaultAndroidExecutionAdapter()
+    }
+
+    private val executionAttemptPort: ExecutionAttemptPort by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidExecutionAttemptPort(
+            capabilityStateProvider = capabilityStateProvider,
+            permissionAuthorityAdapter = permissionAuthorityAdapter,
+            executionAdapter = executionAdapter,
+        )
     }
 
     val observationAdapter: AndroidObservationAdapter by lazy(
