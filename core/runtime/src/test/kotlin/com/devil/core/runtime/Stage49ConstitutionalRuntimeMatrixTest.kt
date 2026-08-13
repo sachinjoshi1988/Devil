@@ -7,6 +7,7 @@ import com.devil.core.runtime.memory.MemoryAuthorityStatus
 import com.devil.core.runtime.memory.MemoryCommitmentStatus
 import com.devil.core.runtime.memory.MemoryPersistenceStatus
 import com.devil.core.runtime.memory.MemoryProposalStatus
+import com.devil.core.runtime.observation.ObservationEvidenceStatus
 import com.devil.core.runtime.observation.ObservationStatus
 import com.devil.core.runtime.outcome.OutcomeStatus
 import com.devil.core.runtime.verification.VerificationStatus
@@ -55,6 +56,7 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "executiveReadinessAuthority.evaluate(",
                 "executionAuthority.evaluate(",
                 "executionAttemptPort.attempt(",
+                "observationEvidencePort.observe(",
                 "observationAuthority.observe(",
                 "verificationAuthority.verify(",
                 "outcomeAuthority.establish(",
@@ -103,6 +105,7 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "readiness.traceId == context.traceId",
                 "execution.traceId == context.traceId",
                 "executionAttempt.traceId == context.traceId",
+                "observationEvidence.traceId == context.traceId",
                 "observation.traceId == context.traceId",
                 "verification.traceId == context.traceId",
                 "outcome.traceId == context.traceId",
@@ -132,6 +135,11 @@ class Stage49ConstitutionalRuntimeMatrixTest {
         assertEquals(
             ExecutionAttemptStatus.ATTEMPTED,
             ExecutionAttemptStatus.valueOf("ATTEMPTED"),
+        )
+
+        assertEquals(
+            ObservationEvidenceStatus.OBSERVED,
+            ObservationEvidenceStatus.valueOf("OBSERVED"),
         )
 
         assertEquals(

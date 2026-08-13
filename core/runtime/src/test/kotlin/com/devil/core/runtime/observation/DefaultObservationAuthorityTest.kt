@@ -81,6 +81,7 @@ class DefaultObservationAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: ObservationRequest,
+                    evidence: ObservationEvidenceResult,
                 ): ObservationEvaluationResult {
                     return ObservationEvaluationResult.create(
                         traceId = traceId,
@@ -186,6 +187,7 @@ class DefaultObservationAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: ObservationRequest,
+                    evidence: ObservationEvidenceResult,
                 ): ObservationEvaluationResult {
                     return ObservationEvaluationResult.create(
                         traceId = traceId,
@@ -231,6 +233,7 @@ class DefaultObservationAuthorityTest {
                 readiness = createReadiness(context.traceId),
                 execution = createExecution(context),
                 executionAttempt = createExecutionAttempt(context),
+                observationEvidence = createObservationEvidence(context),
             )
         }
     }
@@ -261,6 +264,7 @@ class DefaultObservationAuthorityTest {
                     status = ExecutionStatus.DEFERRED,
                 ),
                 executionAttempt = createExecutionAttempt(context),
+                observationEvidence = createObservationEvidence(context),
             )
         }
     }
@@ -305,6 +309,7 @@ class DefaultObservationAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: ObservationRequest,
+                    evidence: ObservationEvidenceResult,
                 ): ObservationEvaluationResult {
                     return ObservationEvaluationResult.create(
                         traceId = TraceId.from(
@@ -335,6 +340,7 @@ class DefaultObservationAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: ObservationRequest,
+                    evidence: ObservationEvidenceResult,
                 ): ObservationEvaluationResult {
                     return ObservationEvaluationResult.create(
                         traceId = traceId,
@@ -384,6 +390,7 @@ class DefaultObservationAuthorityTest {
             readiness = createReadiness(context.traceId),
             execution = createExecution(context),
             executionAttempt = createExecutionAttempt(context),
+                observationEvidence = createObservationEvidence(context),
         )
     }
 
@@ -541,6 +548,15 @@ class DefaultObservationAuthorityTest {
             traceId = context.traceId,
             status = ExecutionAttemptStatus.ATTEMPTED,
             request = requireNotNull(execution.request),
+        )
+    }
+
+    private fun createObservationEvidence(
+        context: ContextEnvelope,
+    ): ObservationEvidenceResult {
+        return ObservationEvidenceResult.create(
+            traceId = context.traceId,
+            status = ObservationEvidenceStatus.DEFERRED,
         )
     }
 

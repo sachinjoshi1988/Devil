@@ -30,7 +30,7 @@ import kotlin.test.assertNull
 class DefaultObservationEvaluatorTest {
 
     @Test
-    fun `evaluate returns unavailable without inventing observation evidence`() {
+    fun `evaluate returns unavailable when observation evidence is deferred`() {
         val traceId = TraceId.from(
             "trace-default-observation-evaluator-001",
         )
@@ -40,6 +40,7 @@ class DefaultObservationEvaluatorTest {
         val result = evaluator.evaluate(
             traceId = traceId,
             request = createRequest(traceId),
+            evidence = deferredEvidence(traceId),
         )
 
         assertEquals(traceId, result.traceId)
@@ -52,7 +53,7 @@ class DefaultObservationEvaluatorTest {
     }
 
     @Test
-    fun `evaluate does not treat approved execution as proof that execution occurred`() {
+    fun `evaluate does not treat execution request as observation evidence`() {
         val traceId = TraceId.from(
             "trace-default-observation-evaluator-002",
         )
@@ -61,6 +62,7 @@ class DefaultObservationEvaluatorTest {
         val result = DefaultObservationEvaluator().evaluate(
             traceId = traceId,
             request = request,
+            evidence = deferredEvidence(traceId),
         )
 
         assertEquals(
@@ -72,22 +74,113 @@ class DefaultObservationEvaluatorTest {
             result.status,
         )
         assertNull(result.request)
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `evaluate maps genuine matching evidence to observed`() {
+        val traceId = TraceId.from(
+            "trace-default-observation-evaluator-003",
+        )
+        val request = createRequest(traceId)
+
+        val result = DefaultObservationEvaluator().evaluate(
+            traceId = traceId,
+            request = request,
+            evidence = observedEvidence(
+                traceId = traceId,
+                capabilityId =
+                    request.execution.capability.capabilityId,
+            ),
+        )
+
+        assertEquals(
+            ObservationEvaluationStatus.OBSERVED,
+            result.status,
+        )
+        assertEquals(request, result.request)
+        assertNull(result.error)
     }
 
     @Test
     fun `evaluate rejects request from a different trace`() {
+        val traceId = TraceId.from(
+            "trace-default-observation-evaluator-004",
+        )
+
         assertFailsWith<IllegalArgumentException> {
             DefaultObservationEvaluator().evaluate(
-                traceId = TraceId.from(
-                    "trace-default-observation-evaluator-003",
-                ),
+                traceId = traceId,
                 request = createRequest(
                     TraceId.from(
                         "trace-default-observation-request-other",
                     ),
                 ),
+                evidence = deferredEvidence(traceId),
             )
         }
+    }
+
+    @Test
+    fun `evaluate rejects evidence from a different trace`() {
+        val traceId = TraceId.from(
+            "trace-default-observation-evaluator-005",
+        )
+
+        assertFailsWith<IllegalArgumentException> {
+            DefaultObservationEvaluator().evaluate(
+                traceId = traceId,
+                request = createRequest(traceId),
+                evidence = deferredEvidence(
+                    TraceId.from(
+                        "trace-default-observation-evidence-other",
+                    ),
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun `evaluate rejects observed evidence for another capability`() {
+        val traceId = TraceId.from(
+            "trace-default-observation-evaluator-006",
+        )
+
+        assertFailsWith<IllegalArgumentException> {
+            DefaultObservationEvaluator().evaluate(
+                traceId = traceId,
+                request = createRequest(traceId),
+                evidence = observedEvidence(
+                    traceId = traceId,
+                    capabilityId =
+                        CapabilityId.from(
+                            "capability-observation-other",
+                        ),
+                ),
+            )
+        }
+    }
+
+    private fun deferredEvidence(
+        traceId: TraceId,
+    ): ObservationEvidenceResult {
+        return ObservationEvidenceResult.create(
+            traceId = traceId,
+            status = ObservationEvidenceStatus.DEFERRED,
+        )
+    }
+
+    private fun observedEvidence(
+        traceId: TraceId,
+        capabilityId: CapabilityId,
+    ): ObservationEvidenceResult {
+        return ObservationEvidenceResult.create(
+            traceId = traceId,
+            status = ObservationEvidenceStatus.OBSERVED,
+            capabilityId = capabilityId,
+            description =
+                "Genuine bounded observation evidence was produced.",
+        )
     }
 
     private fun createRequest(

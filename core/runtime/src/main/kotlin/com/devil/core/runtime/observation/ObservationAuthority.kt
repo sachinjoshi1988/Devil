@@ -7,6 +7,7 @@ import com.devil.core.runtime.decision.DecisionAuthorityResult
 import com.devil.core.runtime.executive.ExecutiveReadinessResult
 import com.devil.core.runtime.execution.ExecutionAttemptResult
 import com.devil.core.runtime.execution.ExecutionResult
+import com.devil.core.runtime.observation.ObservationEvidenceResult
 import com.devil.core.runtime.identity.IdentityResult
 import com.devil.core.runtime.plan.PlanAuthorityResult
 import com.devil.core.runtime.task.TaskAuthorityResult
@@ -35,5 +36,6 @@ interface ObservationAuthority {
         readiness: ExecutiveReadinessResult,
         execution: ExecutionResult,
         executionAttempt: ExecutionAttemptResult,
+        observationEvidence: ObservationEvidenceResult,
     ): ObservationResult
 }

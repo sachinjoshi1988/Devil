@@ -49,6 +49,7 @@ class DefaultObservationAuthority(
         readiness: ExecutiveReadinessResult,
         execution: ExecutionResult,
         executionAttempt: ExecutionAttemptResult,
+        observationEvidence: ObservationEvidenceResult,
     ): ObservationResult {
         require(identity.traceId == context.traceId) {
             "Context and identity result must use the same trace identity."
@@ -94,6 +95,10 @@ class DefaultObservationAuthority(
             "Context and execution-attempt result must use the same trace identity."
         }
 
+        require(observationEvidence.traceId == context.traceId) {
+            "Context and observation-evidence result must use the same trace identity."
+        }
+
         val requestResult = requestProvider.provide(
             executionAttempt = executionAttempt,
         )
@@ -107,6 +112,7 @@ class DefaultObservationAuthority(
                 val evaluation = evaluator.evaluate(
                     traceId = context.traceId,
                     request = requireNotNull(requestResult.request),
+                    evidence = observationEvidence,
                 )
 
                 require(evaluation.traceId == context.traceId) {

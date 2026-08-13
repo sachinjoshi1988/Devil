@@ -30,6 +30,7 @@ import com.devil.app.vision.DefaultAndroidVisionFrameSource
 import com.devil.app.vision.AndroidVisionFramePerceptionCoordinator
 import com.devil.app.observation.AndroidObservationAdapter
 import com.devil.app.observation.DefaultAndroidObservationAdapter
+import com.devil.app.observation.DefaultAndroidObservationEvidencePort
 import com.devil.app.permission.AndroidPermissionAuthorityAdapter
 import com.devil.app.permission.DefaultAndroidPermissionAuthorityAdapter
 import com.devil.app.permission.DefaultAndroidPermissionGrantChecker
@@ -62,6 +63,7 @@ import com.devil.core.runtime.privacy.PrivacyProtectedContextResolver
 import com.devil.core.runtime.DefaultUnifiedDevilRuntime
 import com.devil.core.runtime.UnifiedDevilRuntime
 import com.devil.core.runtime.execution.ExecutionAttemptPort
+import com.devil.core.runtime.observation.ObservationEvidencePort
 
 /**
  * Android process bootstrap for Devil.
@@ -114,6 +116,7 @@ class DevilApplication : Application() {
     ) {
         DefaultUnifiedDevilRuntime(
             executionAttemptPort = executionAttemptPort,
+            observationEvidencePort = observationEvidencePort,
         )
     }
 
@@ -191,6 +194,15 @@ class DevilApplication : Application() {
     ) {
         DefaultAndroidObservationAdapter()
     }
+
+    private val observationEvidencePort: ObservationEvidencePort by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidObservationEvidencePort(
+            observationAdapter = observationAdapter,
+        )
+    }
+
 
     val verificationAdapter: AndroidVerificationAdapter by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,

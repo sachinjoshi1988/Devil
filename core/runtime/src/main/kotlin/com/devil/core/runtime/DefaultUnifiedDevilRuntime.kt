@@ -35,6 +35,8 @@ import com.devil.core.runtime.memory.MemoryCommitmentAuthority
 import com.devil.core.runtime.memory.MemoryPersistenceAuthority
 import com.devil.core.runtime.memory.MemoryPersistenceStatus
 import com.devil.core.runtime.memory.MemoryProposalAuthority
+import com.devil.core.runtime.observation.DefaultObservationEvidencePort
+import com.devil.core.runtime.observation.ObservationEvidencePort
 import com.devil.core.runtime.observation.DefaultObservationAuthority
 import com.devil.core.runtime.observation.ObservationAuthority
 import com.devil.core.runtime.outcome.DefaultOutcomeAuthority
@@ -111,6 +113,9 @@ class DefaultUnifiedDevilRuntime(
     private val executionAttemptPort:
         ExecutionAttemptPort =
         DefaultExecutionAttemptPort(),
+    private val observationEvidencePort:
+        ObservationEvidencePort =
+        DefaultObservationEvidencePort(),
     private val observationAuthority:
         ObservationAuthority =
         DefaultObservationAuthority(),
@@ -301,6 +306,15 @@ class DefaultUnifiedDevilRuntime(
             "Context and execution-attempt result must use the same trace identity."
         }
 
+        val observationEvidence =
+            observationEvidencePort.observe(
+                executionAttempt = executionAttempt,
+            )
+
+        require(observationEvidence.traceId == context.traceId) {
+            "Context and observation-evidence result must use the same trace identity."
+        }
+
         val observation = observationAuthority.observe(
             context = context,
             identity = identity,
@@ -314,6 +328,7 @@ class DefaultUnifiedDevilRuntime(
             readiness = readiness,
             execution = execution,
             executionAttempt = executionAttempt,
+            observationEvidence = observationEvidence,
         )
 
         require(observation.traceId == context.traceId) {
