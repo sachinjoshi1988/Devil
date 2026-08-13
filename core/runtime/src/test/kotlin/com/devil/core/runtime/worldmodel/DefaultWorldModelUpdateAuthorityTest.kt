@@ -87,6 +87,7 @@ class DefaultWorldModelUpdateAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: WorldModelUpdateRequest,
+                    evidence: WorldModelUpdateEvidenceResult,
                 ): WorldModelUpdateEvaluationResult {
                     return WorldModelUpdateEvaluationResult.create(
                         traceId = traceId,
@@ -210,6 +211,7 @@ class DefaultWorldModelUpdateAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: WorldModelUpdateRequest,
+                    evidence: WorldModelUpdateEvidenceResult,
                 ): WorldModelUpdateEvaluationResult {
                     return WorldModelUpdateEvaluationResult.create(
                         traceId = traceId,
@@ -257,6 +259,7 @@ class DefaultWorldModelUpdateAuthorityTest {
                 execution = createExecution(context),
                 observation = createObservation(context),
                 verification = createVerification(context),
+                worldModelUpdateEvidence = createDeferredWorldModelUpdateEvidence(context.traceId),
                 outcome = createOutcome(context),
             )
         }
@@ -284,6 +287,7 @@ class DefaultWorldModelUpdateAuthorityTest {
                 execution = createExecution(context),
                 observation = createObservation(context),
                 verification = createVerification(context),
+                worldModelUpdateEvidence = createDeferredWorldModelUpdateEvidence(context.traceId),
                 outcome = OutcomeResult.create(
                     traceId = TraceId.from(
                         "trace-world-model-update-outcome-other",
@@ -334,6 +338,7 @@ class DefaultWorldModelUpdateAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: WorldModelUpdateRequest,
+                    evidence: WorldModelUpdateEvidenceResult,
                 ): WorldModelUpdateEvaluationResult {
                     return WorldModelUpdateEvaluationResult.create(
                         traceId = TraceId.from(
@@ -364,6 +369,7 @@ class DefaultWorldModelUpdateAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: WorldModelUpdateRequest,
+                    evidence: WorldModelUpdateEvidenceResult,
                 ): WorldModelUpdateEvaluationResult {
                     return WorldModelUpdateEvaluationResult.create(
                         traceId = traceId,
@@ -415,6 +421,7 @@ class DefaultWorldModelUpdateAuthorityTest {
             execution = createExecution(context),
             observation = createObservation(context),
             verification = createVerification(context),
+                worldModelUpdateEvidence = createDeferredWorldModelUpdateEvidence(context.traceId),
             outcome = createOutcome(context),
         )
     }
@@ -604,6 +611,16 @@ class DefaultWorldModelUpdateAuthorityTest {
             ),
         )
     }
+
+    private fun createDeferredWorldModelUpdateEvidence(
+        traceId: TraceId,
+    ): WorldModelUpdateEvidenceResult {
+        return WorldModelUpdateEvidenceResult.create(
+            traceId = traceId,
+            status = WorldModelUpdateEvidenceStatus.DEFERRED,
+        )
+    }
+
 
     private fun createError(
         traceId: TraceId,

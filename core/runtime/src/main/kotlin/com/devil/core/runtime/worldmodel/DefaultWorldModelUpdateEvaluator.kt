@@ -4,15 +4,18 @@ import com.devil.core.model.common.TraceId
 import com.devil.core.model.worldmodel.WorldModelUpdateRequest
 
 /**
- * Default Stage 16 constitutional World Model update evaluator.
+ * Default constitutional World Model update evaluator.
  *
- * No approved constitutional World Model update policy or genuine World Model
- * mutation mechanism exists yet. This evaluator therefore preserves trace
- * continuity and returns UNAVAILABLE rather than treating an established
- * outcome as permission to mutate world state or claiming that state changed.
+ * The evaluator remains fail-closed unless genuine World Model update evidence
+ * has been established.
  *
- * It does not change task or plan state, create memory or learning,
- * communicate externally, or produce a runtime result.
+ * ESTABLISHED evidence makes the bounded update request constitutionally
+ * applicable for the next World Model authority/result step. It still does not
+ * mutate World Model state or prove that world state changed.
+ *
+ * DEFERRED evidence remains unavailable.
+ *
+ * FAILED evidence preserves its matching operational error.
  */
 class DefaultWorldModelUpdateEvaluator :
     WorldModelUpdateEvaluator {
@@ -20,6 +23,7 @@ class DefaultWorldModelUpdateEvaluator :
     override fun evaluate(
         traceId: TraceId,
         request: WorldModelUpdateRequest,
+        evidence: WorldModelUpdateEvidenceResult,
     ): WorldModelUpdateEvaluationResult {
         require(
             request.outcome
@@ -33,12 +37,49 @@ class DefaultWorldModelUpdateEvaluator :
                 .context
                 .traceId == traceId,
         ) {
-            "World Model update evaluator trace and request must use the same trace identity."
+            "World Model update request and evaluator must use the same trace identity."
         }
 
-        return WorldModelUpdateEvaluationResult.create(
-            traceId = traceId,
-            status = WorldModelUpdateEvaluationStatus.UNAVAILABLE,
-        )
+        require(evidence.traceId == traceId) {
+            "World Model update evidence and evaluator must use the same trace identity."
+        }
+
+        return when (evidence.status) {
+            WorldModelUpdateEvidenceStatus.ESTABLISHED -> {
+                val capabilityId =
+                    request.outcome
+                        .verification
+                        .observation
+                        .execution
+                        .capability
+                        .capabilityId
+
+                require(evidence.capabilityId == capabilityId) {
+                    "World Model update request and evidence must refer to the same capability identity."
+                }
+
+                WorldModelUpdateEvaluationResult.create(
+                    traceId = traceId,
+                    status =
+                        WorldModelUpdateEvaluationStatus.APPLICABLE,
+                    request = request,
+                )
+            }
+
+            WorldModelUpdateEvidenceStatus.DEFERRED ->
+                WorldModelUpdateEvaluationResult.create(
+                    traceId = traceId,
+                    status =
+                        WorldModelUpdateEvaluationStatus.UNAVAILABLE,
+                )
+
+            WorldModelUpdateEvidenceStatus.FAILED ->
+                WorldModelUpdateEvaluationResult.create(
+                    traceId = traceId,
+                    status =
+                        WorldModelUpdateEvaluationStatus.FAILED,
+                    error = requireNotNull(evidence.error),
+                )
+        }
     }
 }

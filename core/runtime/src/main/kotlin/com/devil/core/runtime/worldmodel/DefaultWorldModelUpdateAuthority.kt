@@ -53,6 +53,7 @@ class DefaultWorldModelUpdateAuthority(
         observation: ObservationResult,
         verification: VerificationResult,
         outcome: OutcomeResult,
+        worldModelUpdateEvidence: WorldModelUpdateEvidenceResult,
     ): WorldModelUpdateResult {
         require(identity.traceId == context.traceId) {
             "Context and identity result must use the same trace identity."
@@ -102,6 +103,10 @@ class DefaultWorldModelUpdateAuthority(
             "Context and verification result must use the same trace identity."
         }
 
+        require(worldModelUpdateEvidence.traceId == context.traceId) {
+            "Context and World Model update-evidence result must use the same trace identity."
+        }
+
         require(outcome.traceId == context.traceId) {
             "Context and outcome result must use the same trace identity."
         }
@@ -119,6 +124,7 @@ class DefaultWorldModelUpdateAuthority(
                 val evaluation = evaluator.evaluate(
                     traceId = context.traceId,
                     request = requireNotNull(requestResult.request),
+                    evidence = worldModelUpdateEvidence,
                 )
 
                 require(evaluation.traceId == context.traceId) {

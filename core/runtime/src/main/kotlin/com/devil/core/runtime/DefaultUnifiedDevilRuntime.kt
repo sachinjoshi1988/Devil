@@ -55,7 +55,9 @@ import com.devil.core.runtime.verification.DefaultVerificationAuthority
 import com.devil.core.runtime.verification.DefaultVerificationEvidencePort
 import com.devil.core.runtime.verification.VerificationAuthority
 import com.devil.core.runtime.verification.VerificationEvidencePort
+import com.devil.core.runtime.worldmodel.DefaultWorldModelUpdateEvidencePort
 import com.devil.core.runtime.worldmodel.DefaultWorldModelUpdateAuthority
+import com.devil.core.runtime.worldmodel.WorldModelUpdateEvidencePort
 import com.devil.core.runtime.worldmodel.WorldModelUpdateAuthority
 
 /**
@@ -135,6 +137,9 @@ class DefaultUnifiedDevilRuntime(
     private val outcomeAuthority:
         OutcomeAuthority =
         DefaultOutcomeAuthority(),
+    private val worldModelUpdateEvidencePort:
+        WorldModelUpdateEvidencePort =
+        DefaultWorldModelUpdateEvidencePort(),
     private val worldModelUpdateAuthority:
         WorldModelUpdateAuthority =
         DefaultWorldModelUpdateAuthority(),
@@ -405,6 +410,15 @@ class DefaultUnifiedDevilRuntime(
             "Context and outcome result must use the same trace identity."
         }
 
+        val worldModelUpdateEvidence =
+            worldModelUpdateEvidencePort.establish(
+                outcome = outcome,
+            )
+
+        require(worldModelUpdateEvidence.traceId == context.traceId) {
+            "Context and World Model update-evidence result must use the same trace identity."
+        }
+
         val worldModelUpdate =
             worldModelUpdateAuthority.evaluateUpdate(
                 context = context,
@@ -421,6 +435,7 @@ class DefaultUnifiedDevilRuntime(
                 observation = observation,
                 verification = verification,
                 outcome = outcome,
+                worldModelUpdateEvidence = worldModelUpdateEvidence,
             )
 
         require(worldModelUpdate.traceId == context.traceId) {

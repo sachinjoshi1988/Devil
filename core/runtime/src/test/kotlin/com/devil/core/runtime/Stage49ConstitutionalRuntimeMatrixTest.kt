@@ -12,6 +12,7 @@ import com.devil.core.runtime.outcome.OutcomeEvidenceStatus
 import com.devil.core.runtime.outcome.OutcomeStatus
 import com.devil.core.runtime.verification.VerificationEvidenceStatus
 import com.devil.core.runtime.verification.VerificationStatus
+import com.devil.core.runtime.worldmodel.WorldModelUpdateEvidenceStatus
 import com.devil.core.runtime.worldmodel.WorldModelUpdateStatus
 import java.io.File
 import kotlin.test.Test
@@ -60,6 +61,7 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "verificationAuthority.verify(",
                 "outcomeEvidencePort.establish(",
                 "outcomeAuthority.establish(",
+                "worldModelUpdateEvidencePort.establish(",
                 "worldModelUpdateAuthority.evaluateUpdate(",
                 "learningAuthority.evaluateLearning(",
                 "memoryProposalAuthority.evaluateProposal(",
@@ -104,6 +106,7 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "verification.traceId == context.traceId",
                 "outcomeEvidence.traceId == context.traceId",
                 "outcome.traceId == context.traceId",
+                "worldModelUpdateEvidence.traceId == context.traceId",
                 "worldModelUpdate.traceId == context.traceId",
                 "learning.traceId == context.traceId",
                 "memoryProposal.traceId == context.traceId",
@@ -155,6 +158,11 @@ class Stage49ConstitutionalRuntimeMatrixTest {
     }
     @Test
     fun `world model learning and memory stages remain constitutionally distinct`() {
+        assertEquals(
+            WorldModelUpdateEvidenceStatus.ESTABLISHED,
+            WorldModelUpdateEvidenceStatus.valueOf("ESTABLISHED"),
+        )
+
         assertEquals(
             WorldModelUpdateStatus.APPLICABLE,
             WorldModelUpdateStatus.valueOf("APPLICABLE"),

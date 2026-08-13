@@ -42,6 +42,7 @@ class DefaultWorldModelUpdateEvaluatorTest {
 
         val result = evaluator.evaluate(
             traceId = traceId,
+            evidence = createDeferredWorldModelUpdateEvidence(traceId),
             request = createRequest(traceId),
         )
 
@@ -64,6 +65,7 @@ class DefaultWorldModelUpdateEvaluatorTest {
         val result =
             DefaultWorldModelUpdateEvaluator().evaluate(
                 traceId = traceId,
+                evidence = createDeferredWorldModelUpdateEvidence(traceId),
                 request = request,
             )
 
@@ -101,6 +103,11 @@ class DefaultWorldModelUpdateEvaluatorTest {
                 traceId = TraceId.from(
                     "trace-default-world-model-update-evaluator-003",
                 ),
+                evidence = createDeferredWorldModelUpdateEvidence(
+                    TraceId.from(
+                        "trace-default-world-model-update-evaluator-003",
+                    ),
+                ),
                 request = createRequest(
                     TraceId.from(
                         "trace-default-world-model-update-request-other",
@@ -109,6 +116,16 @@ class DefaultWorldModelUpdateEvaluatorTest {
             )
         }
     }
+
+    private fun createDeferredWorldModelUpdateEvidence(
+        traceId: TraceId,
+    ): WorldModelUpdateEvidenceResult {
+        return WorldModelUpdateEvidenceResult.create(
+            traceId = traceId,
+            status = WorldModelUpdateEvidenceStatus.DEFERRED,
+        )
+    }
+
 
     private fun createRequest(
         traceId: TraceId,

@@ -41,5 +41,6 @@ interface WorldModelUpdateAuthority {
         observation: ObservationResult,
         verification: VerificationResult,
         outcome: OutcomeResult,
+        worldModelUpdateEvidence: WorldModelUpdateEvidenceResult,
     ): WorldModelUpdateResult
 }
