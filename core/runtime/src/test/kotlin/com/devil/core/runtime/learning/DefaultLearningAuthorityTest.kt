@@ -90,6 +90,7 @@ class DefaultLearningAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: LearningRequest,
+                    evidence: LearningEvidenceResult,
                 ): LearningEvaluationResult {
                     return LearningEvaluationResult.create(
                         traceId = traceId,
@@ -207,6 +208,7 @@ class DefaultLearningAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: LearningRequest,
+                    evidence: LearningEvidenceResult,
                 ): LearningEvaluationResult {
                     return LearningEvaluationResult.create(
                         traceId = traceId,
@@ -253,6 +255,7 @@ class DefaultLearningAuthorityTest {
                 observation = createObservation(context),
                 verification = createVerification(context),
                 outcome = createOutcome(context),
+                learningEvidence = createDeferredLearningEvidence(context.traceId),
                 worldModelUpdate = createWorldModelUpdate(context),
             )
         }
@@ -280,6 +283,7 @@ class DefaultLearningAuthorityTest {
                 observation = createObservation(context),
                 verification = createVerification(context),
                 outcome = createOutcome(context),
+                learningEvidence = createDeferredLearningEvidence(context.traceId),
                 worldModelUpdate = WorldModelUpdateResult.create(
                     traceId = TraceId.from(
                         "trace-learning-world-model-other",
@@ -328,6 +332,7 @@ class DefaultLearningAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: LearningRequest,
+                    evidence: LearningEvidenceResult,
                 ): LearningEvaluationResult {
                     return LearningEvaluationResult.create(
                         traceId = TraceId.from(
@@ -357,6 +362,7 @@ class DefaultLearningAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: LearningRequest,
+                    evidence: LearningEvidenceResult,
                 ): LearningEvaluationResult {
                     return LearningEvaluationResult.create(
                         traceId = traceId,
@@ -407,6 +413,7 @@ class DefaultLearningAuthorityTest {
             observation = createObservation(context),
             verification = createVerification(context),
             outcome = createOutcome(context),
+                learningEvidence = createDeferredLearningEvidence(context.traceId),
             worldModelUpdate = createWorldModelUpdate(context),
         )
     }
@@ -610,6 +617,16 @@ class DefaultLearningAuthorityTest {
             ),
         )
     }
+
+    private fun createDeferredLearningEvidence(
+        traceId: TraceId,
+    ): LearningEvidenceResult {
+        return LearningEvidenceResult.create(
+            traceId = traceId,
+            status = LearningEvidenceStatus.DEFERRED,
+        )
+    }
+
 
     private fun createError(
         traceId: TraceId,

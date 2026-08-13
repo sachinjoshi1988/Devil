@@ -55,6 +55,7 @@ class DefaultLearningAuthority(
         verification: VerificationResult,
         outcome: OutcomeResult,
         worldModelUpdate: WorldModelUpdateResult,
+        learningEvidence: LearningEvidenceResult,
     ): LearningResult {
         require(identity.traceId == context.traceId) {
             "Context and identity result must use the same trace identity."
@@ -108,6 +109,10 @@ class DefaultLearningAuthority(
             "Context and outcome result must use the same trace identity."
         }
 
+        require(learningEvidence.traceId == context.traceId) {
+            "Context and Learning-evidence result must use the same trace identity."
+        }
+
         require(worldModelUpdate.traceId == context.traceId) {
             "Context and World Model update result must use the same trace identity."
         }
@@ -125,6 +130,7 @@ class DefaultLearningAuthority(
                 val evaluation = evaluator.evaluate(
                     traceId = context.traceId,
                     request = requireNotNull(requestResult.request),
+                    evidence = learningEvidence,
                 )
 
                 require(evaluation.traceId == context.traceId) {

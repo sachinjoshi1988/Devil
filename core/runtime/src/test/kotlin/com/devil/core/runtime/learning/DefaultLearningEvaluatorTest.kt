@@ -43,6 +43,7 @@ class DefaultLearningEvaluatorTest {
 
         val result = evaluator.evaluate(
             traceId = traceId,
+            evidence = createDeferredLearningEvidence(traceId),
             request = createRequest(traceId),
         )
 
@@ -64,6 +65,7 @@ class DefaultLearningEvaluatorTest {
 
         val result = DefaultLearningEvaluator().evaluate(
             traceId = traceId,
+                evidence = createDeferredLearningEvidence(traceId),
             request = request,
         )
 
@@ -103,6 +105,11 @@ class DefaultLearningEvaluatorTest {
                 traceId = TraceId.from(
                     "trace-default-learning-evaluator-003",
                 ),
+                evidence = createDeferredLearningEvidence(
+                    TraceId.from(
+                        "trace-default-learning-evaluator-003",
+                    ),
+                ),
                 request = createRequest(
                     TraceId.from(
                         "trace-default-learning-request-other",
@@ -111,6 +118,16 @@ class DefaultLearningEvaluatorTest {
             )
         }
     }
+
+    private fun createDeferredLearningEvidence(
+        traceId: TraceId,
+    ): LearningEvidenceResult {
+        return LearningEvidenceResult.create(
+            traceId = traceId,
+            status = LearningEvidenceStatus.DEFERRED,
+        )
+    }
+
 
     private fun createRequest(
         traceId: TraceId,

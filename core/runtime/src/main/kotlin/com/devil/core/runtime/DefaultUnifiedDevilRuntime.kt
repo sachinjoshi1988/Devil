@@ -25,7 +25,9 @@ import com.devil.core.runtime.execution.ExecutionAuthority
 import com.devil.core.runtime.identity.DefaultIdentityAuthority
 import com.devil.core.runtime.identity.IdentityAuthority
 import com.devil.core.runtime.learning.DefaultLearningAuthority
+import com.devil.core.runtime.learning.DefaultLearningEvidencePort
 import com.devil.core.runtime.learning.LearningAuthority
+import com.devil.core.runtime.learning.LearningEvidencePort
 import com.devil.core.runtime.memory.DefaultMemoryAuthority
 import com.devil.core.runtime.memory.DefaultMemoryCommitmentAuthority
 import com.devil.core.runtime.memory.DefaultMemoryPersistenceAuthority
@@ -143,6 +145,10 @@ class DefaultUnifiedDevilRuntime(
     private val worldModelUpdateAuthority:
         WorldModelUpdateAuthority =
         DefaultWorldModelUpdateAuthority(),
+    private val learningEvidencePort:
+        LearningEvidencePort =
+        DefaultLearningEvidencePort(),
+
     private val learningAuthority:
         LearningAuthority =
         DefaultLearningAuthority(),
@@ -442,6 +448,15 @@ class DefaultUnifiedDevilRuntime(
             "Context and World Model update result must use the same trace identity."
         }
 
+        val learningEvidence =
+            learningEvidencePort.establish(
+                worldModelUpdate = worldModelUpdate,
+            )
+
+        require(learningEvidence.traceId == context.traceId) {
+            "Context and Learning-evidence result must use the same trace identity."
+        }
+
         val learning =
             learningAuthority.evaluateLearning(
                 context = context,
@@ -459,6 +474,7 @@ class DefaultUnifiedDevilRuntime(
                 verification = verification,
                 outcome = outcome,
                 worldModelUpdate = worldModelUpdate,
+                learningEvidence = learningEvidence,
             )
 
         require(learning.traceId == context.traceId) {

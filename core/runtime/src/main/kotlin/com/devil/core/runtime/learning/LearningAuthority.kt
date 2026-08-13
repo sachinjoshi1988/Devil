@@ -17,12 +17,19 @@ import com.devil.core.runtime.verification.VerificationResult
 import com.devil.core.runtime.worldmodel.WorldModelUpdateResult
 
 /**
- * Coordinates bounded constitutional learning evaluation after a World Model
- * update has been evaluated.
+ * Constitutional authority for bounded Learning evaluation.
  *
- * This authority does not create learning, create or commit memory, mutate
- * world state, change task or plan state, communicate externally, or absorb the
- * responsibilities of earlier constitutional authorities.
+ * The authority may evaluate Learning only after the preceding constitutional
+ * chain has produced one WorldModelUpdateResult and one genuine bounded
+ * LearningEvidenceResult.
+ *
+ * It does not create Learning evidence, mutate world state, create or approve
+ * Memory, commit Memory, persist Memory, change task or plan state, communicate
+ * externally, or bypass the single Unified Devil Runtime.
+ *
+ * WORLD_MODEL_UPDATE != LEARNING_EVIDENCE.
+ * LEARNING_EVIDENCE != LEARNING.
+ * LEARNING != MEMORY_PROPOSAL.
  */
 interface LearningAuthority {
 
@@ -42,5 +49,6 @@ interface LearningAuthority {
         verification: VerificationResult,
         outcome: OutcomeResult,
         worldModelUpdate: WorldModelUpdateResult,
+        learningEvidence: LearningEvidenceResult,
     ): LearningResult
 }

@@ -4,16 +4,19 @@ import com.devil.core.model.common.TraceId
 import com.devil.core.model.learning.LearningRequest
 
 /**
- * Default Stage 17 constitutional learning evaluator.
+ * Default constitutional Learning evaluator.
  *
- * No approved constitutional learning policy, learning-evidence source, or
- * controlled learning mechanism exists yet. This evaluator therefore preserves
- * trace continuity and returns UNAVAILABLE rather than treating an applicable
- * World Model update as proof that learning should occur.
+ * The evaluator remains fail-closed unless genuine Learning evidence has been
+ * established.
  *
- * It does not create learning, create or commit memory, mutate world state,
- * change task or plan state, communicate externally, or produce a runtime
- * result.
+ * ESTABLISHED evidence makes the bounded Learning request constitutionally
+ * learnable for the next Learning authority/result step. It still does not
+ * create Learning, propose Memory, invoke Memory Authority, commit Memory,
+ * persist Memory, mutate world state, or prove broader completion.
+ *
+ * DEFERRED evidence remains unavailable.
+ *
+ * FAILED evidence preserves its matching operational error.
  */
 class DefaultLearningEvaluator :
     LearningEvaluator {
@@ -21,6 +24,7 @@ class DefaultLearningEvaluator :
     override fun evaluate(
         traceId: TraceId,
         request: LearningRequest,
+        evidence: LearningEvidenceResult,
     ): LearningEvaluationResult {
         require(
             request.worldModelUpdate
@@ -38,9 +42,44 @@ class DefaultLearningEvaluator :
             "Learning evaluator trace and request must use the same trace identity."
         }
 
-        return LearningEvaluationResult.create(
-            traceId = traceId,
-            status = LearningEvaluationStatus.UNAVAILABLE,
-        )
+        require(evidence.traceId == traceId) {
+            "Learning evidence and evaluator must use the same trace identity."
+        }
+
+        return when (evidence.status) {
+            LearningEvidenceStatus.ESTABLISHED -> {
+                val capabilityId =
+                    request.worldModelUpdate
+                        .outcome
+                        .verification
+                        .observation
+                        .execution
+                        .capability
+                        .capabilityId
+
+                require(evidence.capabilityId == capabilityId) {
+                    "Learning request and evidence must refer to the same capability identity."
+                }
+
+                LearningEvaluationResult.create(
+                    traceId = traceId,
+                    status = LearningEvaluationStatus.LEARNABLE,
+                    request = request,
+                )
+            }
+
+            LearningEvidenceStatus.DEFERRED ->
+                LearningEvaluationResult.create(
+                    traceId = traceId,
+                    status = LearningEvaluationStatus.UNAVAILABLE,
+                )
+
+            LearningEvidenceStatus.FAILED ->
+                LearningEvaluationResult.create(
+                    traceId = traceId,
+                    status = LearningEvaluationStatus.FAILED,
+                    error = requireNotNull(evidence.error),
+                )
+        }
     }
 }
