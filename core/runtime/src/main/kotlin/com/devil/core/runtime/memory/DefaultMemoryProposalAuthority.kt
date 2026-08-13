@@ -57,6 +57,7 @@ class DefaultMemoryProposalAuthority(
         outcome: OutcomeResult,
         worldModelUpdate: WorldModelUpdateResult,
         learning: LearningResult,
+        memoryProposalEvidence: MemoryProposalEvidenceResult,
     ): MemoryProposalResult {
         require(identity.traceId == context.traceId) {
             "Context and identity result must use the same trace identity."
@@ -118,6 +119,10 @@ class DefaultMemoryProposalAuthority(
             "Context and learning result must use the same trace identity."
         }
 
+        require(memoryProposalEvidence.traceId == context.traceId) {
+            "Context and Memory Proposal evidence result must use the same trace identity."
+        }
+
         val requestResult = requestProvider.provide(
             learning = learning,
         )
@@ -131,6 +136,7 @@ class DefaultMemoryProposalAuthority(
                 val evaluation = evaluator.evaluate(
                     traceId = context.traceId,
                     request = requireNotNull(requestResult.request),
+                    evidence = memoryProposalEvidence,
                 )
 
                 require(evaluation.traceId == context.traceId) {

@@ -24,6 +24,7 @@ class DefaultMemoryProposalEvaluator :
     override fun evaluate(
         traceId: TraceId,
         request: MemoryProposalRequest,
+        evidence: MemoryProposalEvidenceResult,
     ): MemoryProposalEvaluationResult {
         require(
             request.learning
@@ -40,11 +41,54 @@ class DefaultMemoryProposalEvaluator :
                 .traceId == traceId,
         ) {
             "Memory proposal evaluator trace and request must use the same trace identity."
+
+        require(evidence.traceId == traceId) {
+            "Memory Proposal evidence and evaluator must use the same trace identity."
+        }
         }
 
-        return MemoryProposalEvaluationResult.create(
-            traceId = traceId,
-            status = MemoryProposalEvaluationStatus.UNAVAILABLE,
-        )
+        require(evidence.traceId == traceId) {
+            "Memory Proposal evidence and evaluator must use the same trace identity."
+        }
+
+        return when (evidence.status) {
+            MemoryProposalEvidenceStatus.ESTABLISHED -> {
+                val capabilityId =
+                    request.learning
+                        .worldModelUpdate
+                        .outcome
+                        .verification
+                        .observation
+                        .execution
+                        .capability
+                        .capabilityId
+
+                require(evidence.capabilityId == capabilityId) {
+                    "Memory Proposal request and evidence must refer to the same capability identity."
+                }
+
+                MemoryProposalEvaluationResult.create(
+                    traceId = traceId,
+                    status =
+                        MemoryProposalEvaluationStatus.PROPOSABLE,
+                    request = request,
+                )
+            }
+
+            MemoryProposalEvidenceStatus.DEFERRED ->
+                MemoryProposalEvaluationResult.create(
+                    traceId = traceId,
+                    status =
+                        MemoryProposalEvaluationStatus.UNAVAILABLE,
+                )
+
+            MemoryProposalEvidenceStatus.FAILED ->
+                MemoryProposalEvaluationResult.create(
+                    traceId = traceId,
+                    status =
+                        MemoryProposalEvaluationStatus.FAILED,
+                    error = requireNotNull(evidence.error),
+                )
+        }
     }
 }

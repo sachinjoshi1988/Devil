@@ -2,6 +2,7 @@ package com.devil.core.runtime
 import com.devil.core.runtime.execution.ExecutionAttemptStatus
 import com.devil.core.runtime.execution.ExecutionStatus
 import com.devil.core.runtime.learning.LearningEvidenceStatus
+import com.devil.core.runtime.memory.MemoryProposalEvidenceStatus
 import com.devil.core.runtime.learning.LearningStatus
 import com.devil.core.runtime.memory.MemoryAuthorityStatus
 import com.devil.core.runtime.memory.MemoryCommitmentStatus
@@ -66,6 +67,7 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "worldModelUpdateAuthority.evaluateUpdate(",
                 "learningEvidencePort.establish(",
                 "learningAuthority.evaluateLearning(",
+                "memoryProposalEvidencePort.establish(",
                 "memoryProposalAuthority.evaluateProposal(",
                 "memoryAuthority.evaluateMemory(",
                 "memoryCommitmentAuthority.evaluateCommitment(",
@@ -112,6 +114,7 @@ class Stage49ConstitutionalRuntimeMatrixTest {
                 "worldModelUpdate.traceId == context.traceId",
                 "learningEvidence.traceId == context.traceId",
                 "learning.traceId == context.traceId",
+                "memoryProposalEvidence.traceId == context.traceId",
                 "memoryProposal.traceId == context.traceId",
                 "memory.traceId == context.traceId",
                 "memoryCommitment.traceId == context.traceId",
@@ -179,6 +182,11 @@ class Stage49ConstitutionalRuntimeMatrixTest {
             LearningStatus.LEARNABLE,
             LearningStatus.valueOf("LEARNABLE"),
         )
+        assertEquals(
+            MemoryProposalEvidenceStatus.ESTABLISHED,
+            MemoryProposalEvidenceStatus.valueOf("ESTABLISHED"),
+        )
+
         assertEquals(
             MemoryProposalStatus.PROPOSABLE,
             MemoryProposalStatus.valueOf("PROPOSABLE"),

@@ -93,6 +93,7 @@ class DefaultMemoryProposalAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: MemoryProposalRequest,
+                    evidence: MemoryProposalEvidenceResult,
                 ): MemoryProposalEvaluationResult {
                     return MemoryProposalEvaluationResult.create(
                         traceId = traceId,
@@ -216,6 +217,7 @@ class DefaultMemoryProposalAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: MemoryProposalRequest,
+                    evidence: MemoryProposalEvidenceResult,
                 ): MemoryProposalEvaluationResult {
                     return MemoryProposalEvaluationResult.create(
                         traceId = traceId,
@@ -265,6 +267,7 @@ class DefaultMemoryProposalAuthorityTest {
                 outcome = createOutcome(context),
                 worldModelUpdate = createWorldModelUpdate(context),
                 learning = createLearning(context),
+                memoryProposalEvidence = createDeferredMemoryProposalEvidence(context.traceId),
             )
         }
     }
@@ -299,6 +302,7 @@ class DefaultMemoryProposalAuthorityTest {
                     ),
                     status = LearningStatus.DEFERRED,
                 ),
+                memoryProposalEvidence = createDeferredMemoryProposalEvidence(context.traceId),
             )
         }
     }
@@ -343,6 +347,7 @@ class DefaultMemoryProposalAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: MemoryProposalRequest,
+                    evidence: MemoryProposalEvidenceResult,
                 ): MemoryProposalEvaluationResult {
                     return MemoryProposalEvaluationResult.create(
                         traceId = TraceId.from(
@@ -373,6 +378,7 @@ class DefaultMemoryProposalAuthorityTest {
                 override fun evaluate(
                     traceId: TraceId,
                     request: MemoryProposalRequest,
+                    evidence: MemoryProposalEvidenceResult,
                 ): MemoryProposalEvaluationResult {
                     return MemoryProposalEvaluationResult.create(
                         traceId = traceId,
@@ -427,8 +433,19 @@ class DefaultMemoryProposalAuthorityTest {
             outcome = createOutcome(context),
             worldModelUpdate = createWorldModelUpdate(context),
             learning = createLearning(context),
+            memoryProposalEvidence = createDeferredMemoryProposalEvidence(context.traceId),
         )
     }
+
+    private fun createDeferredMemoryProposalEvidence(
+        traceId: TraceId,
+    ): MemoryProposalEvidenceResult {
+        return MemoryProposalEvidenceResult.create(
+            traceId = traceId,
+            status = MemoryProposalEvidenceStatus.DEFERRED,
+        )
+    }
+
 
     private fun createIdentity(
         traceId: TraceId,

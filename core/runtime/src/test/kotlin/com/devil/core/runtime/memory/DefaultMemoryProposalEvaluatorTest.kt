@@ -44,6 +44,7 @@ class DefaultMemoryProposalEvaluatorTest {
 
         val result = evaluator.evaluate(
             traceId = traceId,
+            evidence = createDeferredMemoryProposalEvidence(traceId),
             request = createRequest(traceId),
         )
 
@@ -65,6 +66,7 @@ class DefaultMemoryProposalEvaluatorTest {
 
         val result = DefaultMemoryProposalEvaluator().evaluate(
             traceId = traceId,
+            evidence = createDeferredMemoryProposalEvidence(traceId),
             request = request,
         )
 
@@ -118,6 +120,11 @@ class DefaultMemoryProposalEvaluatorTest {
                 traceId = TraceId.from(
                     "trace-default-memory-proposal-evaluator-003",
                 ),
+                evidence = createDeferredMemoryProposalEvidence(
+                    TraceId.from(
+                        "trace-default-memory-proposal-evaluator-003",
+                    ),
+                ),
                 request = createRequest(
                     TraceId.from(
                         "trace-default-memory-proposal-request-other",
@@ -125,6 +132,15 @@ class DefaultMemoryProposalEvaluatorTest {
                 ),
             )
         }
+    }
+
+    private fun createDeferredMemoryProposalEvidence(
+        traceId: TraceId,
+    ): MemoryProposalEvidenceResult {
+        return MemoryProposalEvidenceResult.create(
+            traceId = traceId,
+            status = MemoryProposalEvidenceStatus.DEFERRED,
+        )
     }
 
     private fun createRequest(

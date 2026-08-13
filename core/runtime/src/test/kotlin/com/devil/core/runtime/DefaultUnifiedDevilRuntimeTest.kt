@@ -50,6 +50,7 @@ import com.devil.core.runtime.memory.MemoryPersistenceAuthority
 import com.devil.core.runtime.memory.MemoryPersistenceResult
 import com.devil.core.runtime.memory.MemoryPersistenceStatus
 import com.devil.core.runtime.memory.MemoryProposalAuthority
+import com.devil.core.runtime.memory.MemoryProposalEvidenceResult
 import com.devil.core.runtime.memory.MemoryProposalResult
 import com.devil.core.runtime.memory.MemoryProposalStatus
 import com.devil.core.runtime.observation.ObservationResult
@@ -206,6 +207,7 @@ class DefaultUnifiedDevilRuntimeTest {
                 outcome: OutcomeResult,
                 worldModelUpdate: WorldModelUpdateResult,
                 learning: LearningResult,
+                memoryProposalEvidence: MemoryProposalEvidenceResult,
             ): MemoryProposalResult {
                 val resultTraceId =
                     traceId ?: context.traceId

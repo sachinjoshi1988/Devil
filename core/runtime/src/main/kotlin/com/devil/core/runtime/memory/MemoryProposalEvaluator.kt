@@ -15,5 +15,6 @@ interface MemoryProposalEvaluator {
     fun evaluate(
         traceId: TraceId,
         request: MemoryProposalRequest,
+        evidence: MemoryProposalEvidenceResult,
     ): MemoryProposalEvaluationResult
 }

@@ -45,5 +45,6 @@ interface MemoryProposalAuthority {
         outcome: OutcomeResult,
         worldModelUpdate: WorldModelUpdateResult,
         learning: LearningResult,
+        memoryProposalEvidence: MemoryProposalEvidenceResult,
     ): MemoryProposalResult
 }
