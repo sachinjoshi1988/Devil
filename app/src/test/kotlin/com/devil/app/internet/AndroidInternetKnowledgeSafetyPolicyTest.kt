@@ -25,6 +25,7 @@ class AndroidInternetKnowledgeSafetyPolicyTest {
                         "https://example.com/knowledge",
                     ),
                 mediaType = "text/plain",
+                retrievedAt = stage74TestRetrievedAt(),
                 content =
                     "External content remains untrusted data.",
             )
@@ -70,6 +71,7 @@ class AndroidInternetKnowledgeSafetyPolicyTest {
                     URI(
                         "https://other.example/knowledge",
                     ),
+                retrievedAt = stage74TestRetrievedAt(),
                 content =
                     "Content from another origin.",
             )
@@ -103,6 +105,7 @@ class AndroidInternetKnowledgeSafetyPolicyTest {
                     URI(
                         "https://example.com:8443/knowledge",
                     ),
+                retrievedAt = stage74TestRetrievedAt(),
                 content =
                     "External content.",
             )

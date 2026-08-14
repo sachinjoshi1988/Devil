@@ -1,11 +1,18 @@
 package com.devil.app.internet
 
+import com.devil.core.model.common.DevilTimestamp
 import java.net.URI
 
 /**
- * Immutable Stage 42 representation of bounded external Internet content.
+ * Immutable Stage 74 representation of bounded external Internet content.
  *
- * sourceUri preserves retrieval provenance.
+ * sourceUri preserves retrieval-source provenance.
+ *
+ * retrievedAt preserves when Devil's bounded Internet embodiment actually
+ * observed this retrieved representation.
+ *
+ * retrievedAt is retrieval observation time only. It is not publication time,
+ * source freshness, factual freshness, truth, or trust.
  *
  * mediaType preserves optional externally supplied representation metadata.
  *
@@ -15,6 +22,7 @@ import java.net.URI
  *
  * - source authenticity beyond transport destination;
  * - factual truth;
+ * - factual freshness;
  * - sender identity;
  * - subject trust;
  * - constitutional authority;
@@ -29,6 +37,7 @@ import java.net.URI
 @ConsistentCopyVisibility
 data class AndroidInternetKnowledgeDocument private constructor(
     val sourceUri: URI,
+    val retrievedAt: DevilTimestamp,
     val mediaType: String?,
     val content: String,
 ) {
@@ -37,6 +46,7 @@ data class AndroidInternetKnowledgeDocument private constructor(
 
         fun create(
             sourceUri: URI,
+            retrievedAt: DevilTimestamp,
             mediaType: String? = null,
             content: String,
         ): AndroidInternetKnowledgeDocument {
@@ -69,6 +79,7 @@ data class AndroidInternetKnowledgeDocument private constructor(
 
             return AndroidInternetKnowledgeDocument(
                 sourceUri = sourceUri.normalize(),
+                retrievedAt = retrievedAt,
                 mediaType = normalizedMediaType,
                 content = normalizedContent,
             )

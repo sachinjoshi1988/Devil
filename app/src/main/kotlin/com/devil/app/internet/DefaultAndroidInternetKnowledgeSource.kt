@@ -54,6 +54,9 @@ class DefaultAndroidInternetKnowledgeSource(
         DEFAULT_CONNECT_TIMEOUT_MILLISECONDS,
     private val readTimeoutMilliseconds: Int =
         DEFAULT_READ_TIMEOUT_MILLISECONDS,
+    private val retrievalTimeProvider:
+        AndroidInternetRetrievalTimeProvider =
+        DefaultAndroidInternetRetrievalTimeProvider(),
     private val maximumResponseBytes: Int =
         DEFAULT_MAXIMUM_RESPONSE_BYTES,
 ) : AndroidInternetKnowledgeSource {
@@ -200,6 +203,8 @@ class DefaultAndroidInternetKnowledgeSource(
             val document =
                 AndroidInternetKnowledgeDocument.create(
                     sourceUri = finalUri,
+                    retrievedAt =
+                        retrievalTimeProvider.observedAt(),
                     mediaType = mediaType,
                     content = content,
                 )

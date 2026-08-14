@@ -19,6 +19,7 @@ class AndroidInternetKnowledgeCoordinatorTest {
                     URI(
                         "https://example.com/knowledge",
                     ),
+                retrievedAt = stage74TestRetrievedAt(),
                 content =
                     "Bounded external knowledge.",
             )

@@ -15,6 +15,7 @@ class AndroidInternetKnowledgeSafetyResultTest {
                     URI(
                         "https://example.com/source",
                     ),
+                retrievedAt = stage74TestRetrievedAt(),
                 content =
                     "Untrusted external text.",
             )
@@ -64,6 +65,7 @@ class AndroidInternetKnowledgeSafetyResultTest {
                     URI(
                         "https://example.com/source",
                     ),
+                retrievedAt = stage74TestRetrievedAt(),
                 content =
                     "External text.",
             )

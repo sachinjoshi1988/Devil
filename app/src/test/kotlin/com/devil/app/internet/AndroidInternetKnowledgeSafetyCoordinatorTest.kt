@@ -15,6 +15,7 @@ class AndroidInternetKnowledgeSafetyCoordinatorTest {
                         AndroidInternetKnowledgeDocument.create(
                             sourceUri = request.uri,
                             mediaType = "text/plain",
+                retrievedAt = stage74TestRetrievedAt(),
                             content =
                                 "This external content remains untrusted.",
                         ),

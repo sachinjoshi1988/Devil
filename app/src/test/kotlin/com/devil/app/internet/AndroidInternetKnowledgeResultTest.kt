@@ -15,6 +15,7 @@ class AndroidInternetKnowledgeResultTest {
                     URI(
                         "https://example.com/",
                     ),
+                retrievedAt = stage74TestRetrievedAt(),
                 content =
                     "External knowledge.",
             )
