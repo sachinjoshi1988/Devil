@@ -49,6 +49,10 @@ class DefaultWorldModelUpdateResultMapperTest {
                 traceId = traceId,
                 status = WorldModelUpdateEvaluationStatus.APPLICABLE,
                 request = request,
+                representation =
+                    createStage73TestWorldModelRepresentation(
+                        traceId,
+                    ),
             ),
         )
 
@@ -121,6 +125,10 @@ class DefaultWorldModelUpdateResultMapperTest {
                 traceId = traceId,
                 status = WorldModelUpdateEvaluationStatus.APPLICABLE,
                 request = createRequest(traceId),
+                representation =
+                    createStage73TestWorldModelRepresentation(
+                        traceId,
+                    ),
             ),
         )
 

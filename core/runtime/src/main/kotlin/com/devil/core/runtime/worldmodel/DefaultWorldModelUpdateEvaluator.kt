@@ -1,6 +1,7 @@
 package com.devil.core.runtime.worldmodel
 
 import com.devil.core.model.common.TraceId
+import com.devil.core.model.worldmodel.WorldModelRepresentation
 import com.devil.core.model.worldmodel.WorldModelUpdateRequest
 
 /**
@@ -10,8 +11,12 @@ import com.devil.core.model.worldmodel.WorldModelUpdateRequest
  * has been established.
  *
  * ESTABLISHED evidence makes the bounded update request constitutionally
- * applicable for the next World Model authority/result step. It still does not
- * mutate World Model state or prove that world state changed.
+ * applicable for the next World Model authority/result step and preserves that
+ * evidence as one immutable WorldModelRepresentation.
+ *
+ * The representation is created only from the already-established evidence
+ * trace identity, capability identity, and description. The evaluator does not
+ * invent or reinterpret world state.
  *
  * DEFERRED evidence remains unavailable.
  *
@@ -58,11 +63,25 @@ class DefaultWorldModelUpdateEvaluator :
                     "World Model update request and evidence must refer to the same capability identity."
                 }
 
+                val representation =
+                    WorldModelRepresentation.create(
+                        traceId = evidence.traceId,
+                        capabilityId =
+                            requireNotNull(
+                                evidence.capabilityId,
+                            ),
+                        description =
+                            requireNotNull(
+                                evidence.description,
+                            ),
+                    )
+
                 WorldModelUpdateEvaluationResult.create(
                     traceId = traceId,
                     status =
                         WorldModelUpdateEvaluationStatus.APPLICABLE,
                     request = request,
+                    representation = representation,
                 )
             }
 

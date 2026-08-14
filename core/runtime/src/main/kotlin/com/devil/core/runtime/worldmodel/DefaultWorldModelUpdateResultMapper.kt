@@ -3,16 +3,28 @@ package com.devil.core.runtime.worldmodel
 import com.devil.core.model.common.TraceId
 
 /**
- * Default Stage 16 mapping from bounded World Model update-evaluation results
- * into the stable WorldModelUpdateResult contract.
+ * Maps bounded World Model update-evaluation results into the stable
+ * WorldModelUpdateResult contract.
  *
- * Genuine constitutional update evidence becomes operational APPLICABLE and
- * preserves the bounded WorldModelUpdateRequest. Evaluation unavailability
- * becomes DEFERRED. Evaluation failure preserves its matching error.
+ * APPLICABLE evaluation must preserve both:
  *
- * This mapper does not mutate world state, claim that state changed, change
- * task or plan state, create memory or learning, communicate externally, or
- * bypass unified runtime handling.
+ * - the bounded WorldModelUpdateRequest; and
+ * - the evidence-backed WorldModelRepresentation established during evaluation.
+ *
+ * The mapper never manufactures a representation from task text, plan text,
+ * capability metadata, outcome, or any other non-evidence source. If an
+ * APPLICABLE evaluation reaches this default production mapper without its
+ * representation, mapping fails closed.
+ *
+ * Evaluation unavailability becomes DEFERRED. Evaluation failure preserves its
+ * matching error.
+ *
+ * This mapper does not create World Model evidence, mutate world state, claim
+ * that state changed, change task or plan state, create Learning or Memory,
+ * communicate externally, or bypass unified runtime handling.
+ *
+ * WORLD_MODEL_UPDATE_EVIDENCE != WORLD_MODEL_REPRESENTATION.
+ * WORLD_MODEL_REPRESENTATION != WORLD_STATE_MUTATION.
  */
 class DefaultWorldModelUpdateResultMapper :
     WorldModelUpdateResultMapper {
@@ -29,21 +41,36 @@ class DefaultWorldModelUpdateResultMapper :
             WorldModelUpdateEvaluationStatus.APPLICABLE ->
                 WorldModelUpdateResult.create(
                     traceId = traceId,
-                    status = WorldModelUpdateStatus.APPLICABLE,
-                    request = requireNotNull(evaluation.request),
+                    status =
+                        WorldModelUpdateStatus.APPLICABLE,
+                    request =
+                        requireNotNull(
+                            evaluation.request,
+                        ),
+                    representation =
+                        requireNotNull(
+                            evaluation.representation,
+                        ) {
+                            "Applicable World Model update evaluation must preserve one evidence-backed representation before stable World Model result mapping."
+                        },
                 )
 
             WorldModelUpdateEvaluationStatus.UNAVAILABLE ->
                 WorldModelUpdateResult.create(
                     traceId = traceId,
-                    status = WorldModelUpdateStatus.DEFERRED,
+                    status =
+                        WorldModelUpdateStatus.DEFERRED,
                 )
 
             WorldModelUpdateEvaluationStatus.FAILED ->
                 WorldModelUpdateResult.create(
                     traceId = traceId,
-                    status = WorldModelUpdateStatus.FAILED,
-                    error = requireNotNull(evaluation.error),
+                    status =
+                        WorldModelUpdateStatus.FAILED,
+                    error =
+                        requireNotNull(
+                            evaluation.error,
+                        ),
                 )
         }
     }

@@ -94,6 +94,10 @@ class DefaultWorldModelUpdateAuthorityTest {
                         status =
                             WorldModelUpdateEvaluationStatus.APPLICABLE,
                         request = request,
+                        representation =
+                            createStage73TestWorldModelRepresentation(
+                                traceId,
+                            ),
                     )
                 }
             },
