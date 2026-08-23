@@ -1,0 +1,29 @@
+package com.devil.core.runtime.personality
+
+/**
+ * Stage 245 bounded Devil Core Personality status.
+ *
+ * ESTABLISHED means one structurally valid DevilCorePersonalityRecord has been
+ * established from an exact Stage 244 personality foundation and valid explicitly
+ * supplied Stage 245 core-personality metadata.
+ *
+ * DEFERRED means Stage 245 cannot truthfully establish Devil Core Personality from
+ * the supplied inputs.
+ *
+ * DEVIL_CORE_PERSONALITY_ESTABLISHED != RELATIONSHIP_CONTINUITY.
+ * DEVIL_CORE_PERSONALITY_ESTABLISHED != ADAPTIVE_COMMUNICATION_STYLE.
+ * DEVIL_CORE_PERSONALITY_ESTABLISHED != HUMOR_OR_SOCIAL_INTERACTION.
+ * DEVIL_CORE_PERSONALITY_ESTABLISHED != PERSONA_PRESENTATION.
+ * DEVIL_CORE_PERSONALITY_ESTABLISHED != OWNER_EXPERIENCE.
+ * DEVIL_CORE_PERSONALITY_ESTABLISHED != BRAIN_DECISION.
+ * DEVIL_CORE_PERSONALITY_ESTABLISHED != AUTHORIZATION.
+ * DEVIL_CORE_PERSONALITY_ESTABLISHED != EXECUTION.
+ * DEVIL_CORE_PERSONALITY_ESTABLISHED != VERIFIED_TRUTH.
+ * DEVIL_CORE_PERSONALITY_ESTABLISHED != MEMORY.
+ * DEVIL_CORE_PERSONALITY_ESTABLISHED != AUTHENTICATION.
+ * DEVIL_CORE_PERSONALITY_ESTABLISHED != TRUST.
+ */
+enum class DevilCorePersonalityStatus {
+    ESTABLISHED,
+    DEFERRED,
+}
