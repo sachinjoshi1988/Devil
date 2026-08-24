@@ -19,6 +19,7 @@ import com.devil.app.conversation.ConversationTimelineEntry
 import com.devil.app.conversation.ConversationUiState
 import com.devil.app.ui.education.DevilEducationInterface
 import com.devil.app.ui.education.DevilLanguageLearningInterface
+import com.devil.app.ui.finance.DevilFinanceInterface
 import com.devil.app.ui.research.DevilResearchInterface
 import com.devil.app.ui.launch.DevilAwakeningScreen
 import com.devil.app.ui.memory.DevilMemoryInterface
@@ -229,6 +230,11 @@ class DevilActivity : ComponentActivity() {
 
         setContent {
             DevilTheme {
+                /* Stage 260 presentation navigation only. */
+                var showFinanceInterface by remember {
+                    mutableStateOf(false)
+                }
+
                 /* Stage 259 presentation navigation only. */
                 var showResearchInterface by remember {
                     mutableStateOf(false)
@@ -293,6 +299,45 @@ class DevilActivity : ComponentActivity() {
                             showTaskAutomationInterface = false
                         },
                     )
+                  } else if (showFinanceInterface) {
+                      DevilFinanceInterface(
+                          financialSubject = null,
+                          suppliedFinancialFacts = null,
+                          integrationFocus = null,
+                          integrationObjective = null,
+                          integrationStatus = null,
+                          personalFinanceFocus = null,
+                          personalFinanceObjective = null,
+                          personalFinanceApproach = null,
+                          personalFinanceStatus = null,
+                          accountingFocus = null,
+                          accountingObjective = null,
+                          accountingBasis = null,
+                          accountingStatus = null,
+                          businessAccountingFocus = null,
+                          businessAccountingObjective = null,
+                          businessAccountingApproach = null,
+                          businessAccountingStatus = null,
+                          taxFocus = null,
+                          taxObjective = null,
+                          taxContext = null,
+                          taxStatus = null,
+                          indianTaxFocus = null,
+                          indianTaxObjective = null,
+                          indianTaxContext = null,
+                          indianTaxStatus = null,
+                          documentFocus = null,
+                          suppliedDocumentDescription = null,
+                          documentInterpretationObjective = null,
+                          documentStatus = null,
+                          safetyFocus = null,
+                          verificationBasisDescription = null,
+                          safetyInterpretation = null,
+                          safetyStatus = null,
+                          onBack = {
+                              showFinanceInterface = false
+                          },
+                      )
                   } else if (showResearchInterface) {
                       DevilResearchInterface(
                           researchSubject = null,
@@ -373,6 +418,9 @@ class DevilActivity : ComponentActivity() {
                     },
                     onTaskOpen = {
                         showTaskAutomationInterface = true
+                    },
+                    onFinanceOpen = {
+                        showFinanceInterface = true
                     },
                     onResearchOpen = {
                         showResearchInterface = true

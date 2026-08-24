@@ -86,6 +86,7 @@ fun ConversationScreen(
     onTaskOpen: () -> Unit = {},
     onEducationOpen: () -> Unit = {},
     onResearchOpen: () -> Unit = {},
+    onFinanceOpen: () -> Unit = {},
     onVoiceInput: () -> Unit = {},
     isVoiceListening: Boolean = false,
     voiceInputEnabled: Boolean = true,
@@ -121,6 +122,7 @@ fun ConversationScreen(
                 onTaskOpen = onTaskOpen,
                 onEducationOpen = onEducationOpen,
                   onResearchOpen = onResearchOpen,
+                  onFinanceOpen = onFinanceOpen,
                 taskNavigationEnabled =
                     state.isSubmitting.not() &&
                         isVoiceListening.not() &&
@@ -131,6 +133,11 @@ fun ConversationScreen(
                         isVoiceListening.not() &&
                         isVoiceSpeaking.not() &&
                         handsFreeEnabled.not(),
+                  financeNavigationEnabled =
+                      state.isSubmitting.not() &&
+                          isVoiceListening.not() &&
+                          isVoiceSpeaking.not() &&
+                          handsFreeEnabled.not(),
                   researchNavigationEnabled =
                       state.isSubmitting.not() &&
                           isVoiceListening.not() &&
@@ -204,6 +211,7 @@ fun ConversationScreen(
  * Stage 256 adds presentation-only navigation to the Task & Automation Interface.
  * Stage 257 adds presentation-only navigation to the Education Interface.
  * Stage 259 adds presentation-only navigation to the Research Interface.
+ * Stage 260 adds presentation-only navigation to the Finance Interface.
  *
  * MEMORY_NAVIGATION != MEMORY_RECALL.
  * MEMORY_NAVIGATION != MEMORY_DISCLOSURE.
@@ -221,6 +229,12 @@ fun ConversationScreen(
  * RESEARCH_NAVIGATION != RESEARCH_VERIFICATION.
  * RESEARCH_NAVIGATION != WORLD_MODEL_UPDATE.
  * RESEARCH_NAVIGATION != MEMORY.
+ *
+ * FINANCE_NAVIGATION != FINANCIAL_AUTHORITY.
+ * FINANCE_NAVIGATION != ACCOUNT_ACCESS.
+ * FINANCE_NAVIGATION != TRANSACTION.
+ * FINANCE_NAVIGATION != EXECUTION.
+ * FINANCE_NAVIGATION != FINANCIAL_VERIFICATION.
  */
 @Composable
 private fun DevilConversationHeader(
@@ -229,9 +243,11 @@ private fun DevilConversationHeader(
     onTaskOpen: () -> Unit,
     onEducationOpen: () -> Unit,
     onResearchOpen: () -> Unit,
+    onFinanceOpen: () -> Unit,
     taskNavigationEnabled: Boolean,
     memoryNavigationEnabled: Boolean,
     educationNavigationEnabled: Boolean,
+    financeNavigationEnabled: Boolean,
     researchNavigationEnabled: Boolean,
 ) {
     Row(
@@ -413,6 +429,38 @@ private fun DevilConversationHeader(
         ) {
             Text(
                 text = "RESEARCH",
+                style =
+                    MaterialTheme.typography.labelMedium,
+                fontWeight =
+                    FontWeight.Bold,
+            )
+        }
+
+        Spacer(
+            modifier =
+                Modifier.width(6.dp),
+        )
+
+        Button(
+            onClick = onFinanceOpen,
+            enabled = financeNavigationEnabled,
+            shape =
+                RoundedCornerShape(16.dp),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor =
+                        devilRed.copy(alpha = 0.14f),
+                    contentColor =
+                        devilRed,
+                ),
+            contentPadding =
+                PaddingValues(
+                    horizontal = 12.dp,
+                    vertical = 9.dp,
+                ),
+        ) {
+            Text(
+                text = "FINANCE",
                 style =
                     MaterialTheme.typography.labelMedium,
                 fontWeight =
