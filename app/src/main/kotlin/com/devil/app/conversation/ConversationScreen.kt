@@ -83,6 +83,7 @@ fun ConversationScreen(
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
     onMemoryOpen: () -> Unit = {},
+    onTaskOpen: () -> Unit = {},
     onVoiceInput: () -> Unit = {},
     isVoiceListening: Boolean = false,
     voiceInputEnabled: Boolean = true,
@@ -115,6 +116,12 @@ fun ConversationScreen(
             DevilConversationHeader(
                 devilRed = devilRed,
                 onMemoryOpen = onMemoryOpen,
+                onTaskOpen = onTaskOpen,
+                taskNavigationEnabled =
+                    state.isSubmitting.not() &&
+                        isVoiceListening.not() &&
+                        isVoiceSpeaking.not() &&
+                        handsFreeEnabled.not(),
                 memoryNavigationEnabled =
                     state.isSubmitting.not() &&
                         isVoiceListening.not() &&
@@ -189,6 +196,8 @@ fun ConversationScreen(
 private fun DevilConversationHeader(
     devilRed: Color,
     onMemoryOpen: () -> Unit,
+    onTaskOpen: () -> Unit,
+    taskNavigationEnabled: Boolean,
     memoryNavigationEnabled: Boolean,
 ) {
     Row(
@@ -274,6 +283,33 @@ private fun DevilConversationHeader(
         ) {
             Text(
                 text = "MEMORY",
+                style =
+                    MaterialTheme.typography.labelMedium,
+                fontWeight =
+                    FontWeight.Bold,
+            )
+        }
+
+        Button(
+            onClick = onTaskOpen,
+            enabled = taskNavigationEnabled,
+            shape =
+                RoundedCornerShape(16.dp),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor =
+                        devilRed.copy(alpha = 0.14f),
+                    contentColor =
+                        devilRed,
+                ),
+            contentPadding =
+                PaddingValues(
+                    horizontal = 14.dp,
+                    vertical = 9.dp,
+                ),
+        ) {
+            Text(
+                text = "TASKS",
                 style =
                     MaterialTheme.typography.labelMedium,
                 fontWeight =

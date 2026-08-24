@@ -19,6 +19,7 @@ import com.devil.app.conversation.ConversationTimelineEntry
 import com.devil.app.conversation.ConversationUiState
 import com.devil.app.ui.launch.DevilAwakeningScreen
 import com.devil.app.ui.memory.DevilMemoryInterface
+import com.devil.app.ui.task.DevilTaskAutomationInterface
 import com.devil.app.ui.theme.DevilTheme
 import com.devil.app.voice.AndroidVoiceInputListener
 import com.devil.app.voice.AndroidVoiceInputResult
@@ -225,6 +226,11 @@ class DevilActivity : ComponentActivity() {
 
         setContent {
             DevilTheme {
+                /* Stage 256 presentation navigation only. */
+                var showTaskAutomationInterface by remember {
+                    mutableStateOf(false)
+                }
+
                 /* Stage 255 presentation navigation only. */
                 var showMemoryInterface by remember {
                     mutableStateOf(false)
@@ -252,10 +258,30 @@ class DevilActivity : ComponentActivity() {
                             showMemoryInterface = false
                         },
                     )
+                } else if (showTaskAutomationInterface) {
+                    DevilTaskAutomationInterface(
+                        taskId = null,
+                        taskSummary = null,
+                        taskState = null,
+                        triggerKind = null,
+                        triggerCondition = null,
+                        proactiveStatus = null,
+                        proactiveMessage = null,
+                        controlledAutonomyStatus = null,
+                        controlledAutonomyScope = null,
+                        recoveryDisposition = null,
+                        recoveryAttemptStatus = null,
+                        onBack = {
+                            showTaskAutomationInterface = false
+                        },
+                    )
                 } else {
                 ConversationScreen(
                     onMemoryOpen = {
                         showMemoryInterface = true
+                    },
+                    onTaskOpen = {
+                        showTaskAutomationInterface = true
                     },
                     state =
                         conversationState,
