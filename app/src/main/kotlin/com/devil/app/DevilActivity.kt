@@ -19,6 +19,7 @@ import com.devil.app.conversation.ConversationTimelineEntry
 import com.devil.app.conversation.ConversationUiState
 import com.devil.app.ui.education.DevilEducationInterface
 import com.devil.app.ui.education.DevilLanguageLearningInterface
+import com.devil.app.ui.research.DevilResearchInterface
 import com.devil.app.ui.launch.DevilAwakeningScreen
 import com.devil.app.ui.memory.DevilMemoryInterface
 import com.devil.app.ui.task.DevilTaskAutomationInterface
@@ -228,6 +229,11 @@ class DevilActivity : ComponentActivity() {
 
         setContent {
             DevilTheme {
+                /* Stage 259 presentation navigation only. */
+                var showResearchInterface by remember {
+                    mutableStateOf(false)
+                }
+
                 /* Stage 258 presentation navigation only. */
                 var showLanguageLearningInterface by remember {
                     mutableStateOf(false)
@@ -287,6 +293,26 @@ class DevilActivity : ComponentActivity() {
                             showTaskAutomationInterface = false
                         },
                     )
+                  } else if (showResearchInterface) {
+                      DevilResearchInterface(
+                          researchSubject = null,
+                          evidenceSourceReference = null,
+                          evidenceSourceKind = null,
+                          evidenceDescription = null,
+                          sourceAuthenticity = null,
+                          sourceTrust = null,
+                          sourceFreshness = null,
+                          corroborationStatus = null,
+                          conflictStatus = null,
+                          confidenceStatus = null,
+                          synthesisStatus = null,
+                          synthesisDescription = null,
+                          internetAdmissionStatus = null,
+                          internetAnalysisStatus = null,
+                          onBack = {
+                              showResearchInterface = false
+                          },
+                      )
                   } else if (showLanguageLearningInterface) {
                       DevilLanguageLearningInterface(
                           languageSessionId = null,
@@ -347,6 +373,9 @@ class DevilActivity : ComponentActivity() {
                     },
                     onTaskOpen = {
                         showTaskAutomationInterface = true
+                    },
+                    onResearchOpen = {
+                        showResearchInterface = true
                     },
                     onEducationOpen = {
                         showEducationInterface = true
