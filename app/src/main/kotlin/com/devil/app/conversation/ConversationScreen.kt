@@ -1,51 +1,81 @@
 package com.devil.app.conversation
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.devil.app.R
 
 /**
- * Compose presentation surface for the unified Devil conversation pipeline.
+ * Stage 253 Main Conversation Experience.
  *
- * Stage 24 established typed conversation presentation.
+ * This screen is a futuristic Devil presentation surface around the already
+ * established unified conversation pipeline.
  *
- * Stage 35 added bounded one-shot voice input.
+ * Stage 253 changes presentation only.
  *
- * Stage 36 added bounded voice-output presentation.
+ * It preserves:
  *
- * Stage 37 adds an explicit hands-free presentation control.
+ * - existing ConversationUiState;
+ * - exact ConversationTimelineEntry content and role;
+ * - typed submission callbacks;
+ * - voice-input callbacks and state;
+ * - voice-output presentation state;
+ * - hands-free callbacks and state;
+ * - truthful submission notices;
+ * - accessibility semantics and live-region announcements.
  *
- * Stage 48 adds bounded accessibility semantics for navigation and truthful
- * presentation-state announcements.
+ * It does not:
  *
- * The screen does not perform SpeechRecognizer work, TextToSpeech work,
- * authentication, session establishment, runtime submission, authorization,
- * capability execution, verification, or outcome establishment.
+ * - generate conversation meaning;
+ * - fabricate timestamps, delivery state, authentication, trust, Owner Mode,
+ *   authorization, execution, observation, verification, or Outcome;
+ * - modify runtime submission;
+ * - create Memory;
+ * - implement Stage 254 Voice Interface.
  *
- * Hands-free UI state is presentation/control state only.
- *
- * Accessibility semantics expose only information already present in the
- * rendered UI. They do not create authority, runtime state, observation,
- * verification, or Outcome.
+ * CONVERSATION_PRESENTATION != RUNTIME_TRUTH.
+ * CONVERSATION_PRESENTATION != AUTHENTICATION.
+ * CONVERSATION_PRESENTATION != AUTHORIZATION.
+ * CONVERSATION_PRESENTATION != EXECUTION.
+ * CONVERSATION_PRESENTATION != VERIFICATION.
+ * CONVERSATION_PRESENTATION != MEMORY.
  */
 @Composable
 fun ConversationScreen(
@@ -64,38 +94,27 @@ fun ConversationScreen(
     handsFreeMessage: String? = null,
     accessibilityDiagnosticMessage: String? = null,
 ) {
+    val background =
+        MaterialTheme.colorScheme.background
+
+    val devilRed =
+        MaterialTheme.colorScheme.primary
+
     Surface(
-        modifier = modifier.fillMaxSize(),
+        modifier =
+            modifier.fillMaxSize(),
+        color =
+            background,
     ) {
         Column(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
-            verticalArrangement =
-                Arrangement.spacedBy(12.dp),
+                    .background(background),
         ) {
-            Text(
-                text = "Devil",
-                modifier =
-                    Modifier.semantics {
-                        heading()
-                    },
-                style =
-                    MaterialTheme.typography.headlineMedium,
+            DevilConversationHeader(
+                devilRed = devilRed,
             )
-
-            Text(
-                text = "Conversation",
-                modifier =
-                    Modifier.semantics {
-                        heading()
-                    },
-                style =
-                    MaterialTheme.typography.titleMedium,
-            )
-
-            HorizontalDivider()
 
             ConversationTimeline(
                 entries = state.entries,
@@ -105,182 +124,110 @@ fun ConversationScreen(
                         .weight(1f),
             )
 
-            OutlinedTextField(
-                value = state.draft,
-                onValueChange = onDraftChange,
-                modifier =
-                    Modifier.fillMaxWidth(),
-                enabled =
-                    !state.isSubmitting &&
-                        !isVoiceListening &&
-                        !isVoiceSpeaking &&
-                        !handsFreeEnabled,
-                label = {
-                    Text("Message")
-                },
-                placeholder = {
-                    Text("Type a message")
-                },
-                minLines = 1,
-                maxLines = 4,
+            ConversationStatusDeck(
+                handsFreeEnabled = handsFreeEnabled,
+                handsFreeMessage = handsFreeMessage,
+                isVoiceSpeaking = isVoiceSpeaking,
+                voiceOutputMessage = voiceOutputMessage,
+                voiceInputMessage = voiceInputMessage,
+                accessibilityDiagnosticMessage =
+                    accessibilityDiagnosticMessage,
+                submissionNotice =
+                    state.submissionNotice?.message,
             )
 
-            Button(
-                onClick = onSubmit,
-                modifier =
-                    Modifier.fillMaxWidth(),
-                enabled =
-                    !state.isSubmitting &&
-                        !isVoiceListening &&
-                        !isVoiceSpeaking &&
-                        !handsFreeEnabled &&
-                        state.draft.isNotBlank(),
-            ) {
-                Text(
-                    text =
-                        if (state.isSubmitting) {
-                            "Submitting"
-                        } else {
-                            "Send"
-                        },
-                )
-            }
-
-            Button(
-                onClick = onVoiceInput,
-                modifier =
-                    Modifier.fillMaxWidth(),
-                enabled =
-                    voiceInputEnabled &&
-                        !state.isSubmitting &&
-                        !isVoiceListening &&
-                        !isVoiceSpeaking &&
-                        !handsFreeEnabled,
-            ) {
-                Text(
-                    text =
-                        if (
-                            isVoiceListening &&
-                            !handsFreeEnabled
-                        ) {
-                            "Listening"
-                        } else {
-                            "Speak"
-                        },
-                )
-            }
-
-            Button(
-                onClick = onHandsFreeToggle,
-                modifier =
-                    Modifier.fillMaxWidth(),
-                enabled =
-                    !state.isSubmitting &&
-                        !isVoiceSpeaking &&
-                        (
-                            !isVoiceListening ||
-                                handsFreeEnabled
-                        ),
-            ) {
-                Text(
-                    text =
-                        if (handsFreeEnabled) {
-                            "Stop Hands-Free"
-                        } else {
-                            "Hands-Free"
-                        },
-                )
-            }
-
-            if (handsFreeEnabled) {
-                Text(
-                    text = "Hands-Free active",
-                    modifier =
-                        Modifier.politeAccessibilityStatus(),
-                    style =
-                        MaterialTheme.typography.bodySmall,
-                )
-            }
-
-            handsFreeMessage?.let { message ->
-                Text(
-                    text = message,
-                    modifier =
-                        Modifier.politeAccessibilityStatus(),
-                    style =
-                        MaterialTheme.typography.bodySmall,
-                )
-            }
-
-            if (isVoiceSpeaking) {
-                Text(
-                    text = "Speaking",
-                    modifier =
-                        Modifier.politeAccessibilityStatus(),
-                    style =
-                        MaterialTheme.typography.bodySmall,
-                )
-            }
-
-            voiceOutputMessage?.let { message ->
-                Text(
-                    text = message,
-                    modifier =
-                        Modifier.politeAccessibilityStatus(),
-                    style =
-                        MaterialTheme.typography.bodySmall,
-                )
-            }
-
-            voiceInputMessage?.let { message ->
-                Text(
-                    text = message,
-                    modifier =
-                        Modifier.politeAccessibilityStatus(),
-                    style =
-                        MaterialTheme.typography.bodySmall,
-                )
-            }
-
-              accessibilityDiagnosticMessage?.let { message ->
-                Text(
-                    text = message,
-                    modifier =
-                        Modifier.politeAccessibilityStatus(),
-                    style =
-                        MaterialTheme.typography.bodySmall,
-                )
-              }
-
-            state.submissionNotice?.let { notice ->
-                Text(
-                    text = notice.message,
-                    modifier =
-                        Modifier.politeAccessibilityStatus(),
-                    style =
-                        MaterialTheme.typography.bodySmall,
-                )
-            }
+            DevilConversationComposer(
+                draft = state.draft,
+                onDraftChange = onDraftChange,
+                onSubmit = onSubmit,
+                onVoiceInput = onVoiceInput,
+                onHandsFreeToggle = onHandsFreeToggle,
+                isSubmitting = state.isSubmitting,
+                isVoiceListening = isVoiceListening,
+                isVoiceSpeaking = isVoiceSpeaking,
+                voiceInputEnabled = voiceInputEnabled,
+                handsFreeEnabled = handsFreeEnabled,
+                devilRed = devilRed,
+            )
         }
     }
 }
 
 /**
- * Marks truthful changing presentation status as a polite accessibility live
- * region.
+ * Compact Devil identity treatment for the main conversation surface.
  *
- * This affects only Android accessibility presentation. It does not alter the
- * underlying Devil state or grant any authority.
+ * Logo presentation does not establish Devil identity authority or security
+ * state.
  */
-private fun Modifier.politeAccessibilityStatus(): Modifier {
-    return semantics {
-        liveRegion =
-            LiveRegionMode.Polite
+@Composable
+private fun DevilConversationHeader(
+    devilRed: Color,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(
+                    MaterialTheme.colorScheme.surface,
+                )
+                .border(
+                    width = 1.dp,
+                    color = devilRed.copy(alpha = 0.35f),
+                )
+                .padding(
+                    horizontal = 18.dp,
+                    vertical = 12.dp,
+                ),
+        verticalAlignment =
+            Alignment.CenterVertically,
+    ) {
+        Image(
+            painter =
+                painterResource(
+                    id = R.drawable.devil_primary_logo,
+                ),
+            contentDescription =
+                "Devil",
+            modifier =
+                Modifier.size(42.dp),
+        )
+
+        Spacer(
+            modifier =
+                Modifier.width(12.dp),
+        )
+
+        Column(
+            verticalArrangement =
+                Arrangement.spacedBy(1.dp),
+        ) {
+            Text(
+                text = "DEVIL",
+                modifier =
+                    Modifier.semantics {
+                        heading()
+                    },
+                style =
+                    MaterialTheme.typography.titleLarge,
+                color =
+                    MaterialTheme.colorScheme.onBackground,
+                fontWeight =
+                    FontWeight.Black,
+            )
+
+            Text(
+                text = "MAIN CONVERSATION",
+                style =
+                    MaterialTheme.typography.labelMedium,
+                color =
+                    devilRed,
+            )
+        }
     }
 }
 
 /**
- * Renders the current immutable conversation presentation timeline.
+ * Truthful conversation timeline presented as asymmetric Devil / owner cards.
  */
 @Composable
 private fun ConversationTimeline(
@@ -293,17 +240,17 @@ private fun ConversationTimeline(
                 contentDescription =
                     "Conversation timeline"
             },
+        contentPadding =
+            PaddingValues(
+                horizontal = 16.dp,
+                vertical = 18.dp,
+            ),
         verticalArrangement =
-            Arrangement.spacedBy(12.dp),
+            Arrangement.spacedBy(14.dp),
     ) {
         if (entries.isEmpty()) {
             item {
-                Text(
-                    text =
-                        "No conversation entries yet.",
-                    style =
-                        MaterialTheme.typography.bodyMedium,
-                )
+                EmptyConversationState()
             }
         } else {
             items(
@@ -320,41 +267,513 @@ private fun ConversationTimeline(
     }
 }
 
+@Composable
+private fun EmptyConversationState() {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 34.dp),
+        contentAlignment =
+            Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment =
+                Alignment.CenterHorizontally,
+            verticalArrangement =
+                Arrangement.spacedBy(8.dp),
+        ) {
+            Image(
+                painter =
+                    painterResource(
+                        id = R.drawable.devil_primary_logo,
+                    ),
+                contentDescription = null,
+                modifier =
+                    Modifier.size(58.dp),
+            )
+
+            Text(
+                text = "DEVIL IS LISTENING",
+                style =
+                    MaterialTheme.typography.titleMedium,
+                color =
+                    MaterialTheme.colorScheme.onBackground,
+            )
+
+            Text(
+                text = "Start a conversation.",
+                style =
+                    MaterialTheme.typography.bodyMedium,
+                color =
+                    MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
 /**
- * Renders one presentation entry without reinterpreting its meaning.
+ * Renders existing timeline truth without adding invented metadata.
  */
 @Composable
 private fun ConversationTimelineRow(
     entry: ConversationTimelineEntry,
 ) {
-    Column(
+    when (entry.role) {
+        ConversationEntryRole.USER ->
+            OwnerConversationCard(
+                entry = entry,
+            )
+
+        ConversationEntryRole.RUNTIME ->
+            DevilConversationCard(
+                entry = entry,
+            )
+    }
+}
+
+@Composable
+private fun OwnerConversationCard(
+    entry: ConversationTimelineEntry,
+) {
+    Row(
         modifier =
             Modifier.fillMaxWidth(),
+        horizontalArrangement =
+            Arrangement.End,
+    ) {
+        Column(
+            modifier =
+                Modifier
+                    .widthIn(
+                        max = 310.dp,
+                    )
+                    .clip(
+                        RoundedCornerShape(
+                            topStart = 18.dp,
+                            topEnd = 5.dp,
+                            bottomStart = 18.dp,
+                            bottomEnd = 18.dp,
+                        ),
+                    )
+                    .background(
+                        MaterialTheme.colorScheme.primary,
+                    )
+                    .padding(
+                        horizontal = 16.dp,
+                        vertical = 12.dp,
+                    ),
+            verticalArrangement =
+                Arrangement.spacedBy(5.dp),
+        ) {
+            Text(
+                text = "YOU",
+                style =
+                    MaterialTheme.typography.labelMedium,
+                color =
+                    MaterialTheme.colorScheme.onPrimary.copy(
+                        alpha = 0.76f,
+                    ),
+            )
+
+            Text(
+                text = entry.content,
+                style =
+                    MaterialTheme.typography.bodyLarge,
+                color =
+                    MaterialTheme.colorScheme.onPrimary,
+            )
+        }
+    }
+}
+
+@Composable
+private fun DevilConversationCard(
+    entry: ConversationTimelineEntry,
+) {
+    val devilRed =
+        MaterialTheme.colorScheme.primary
+
+    Row(
+        modifier =
+            Modifier.fillMaxWidth(),
+        horizontalArrangement =
+            Arrangement.Start,
+        verticalAlignment =
+            Alignment.Top,
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .size(34.dp)
+                    .clip(
+                        RoundedCornerShape(10.dp),
+                    )
+                    .background(
+                        devilRed.copy(alpha = 0.10f),
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = devilRed.copy(alpha = 0.48f),
+                        shape = RoundedCornerShape(10.dp),
+                    ),
+            contentAlignment =
+                Alignment.Center,
+        ) {
+            Image(
+                painter =
+                    painterResource(
+                        id = R.drawable.devil_primary_logo,
+                    ),
+                contentDescription = null,
+                modifier =
+                    Modifier.size(26.dp),
+            )
+        }
+
+        Spacer(
+            modifier =
+                Modifier.width(9.dp),
+        )
+
+        Column(
+            modifier =
+                Modifier
+                    .widthIn(
+                        max = 310.dp,
+                    )
+                    .clip(
+                        RoundedCornerShape(
+                            topStart = 5.dp,
+                            topEnd = 18.dp,
+                            bottomStart = 18.dp,
+                            bottomEnd = 18.dp,
+                        ),
+                    )
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant,
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = devilRed.copy(alpha = 0.22f),
+                        shape =
+                            RoundedCornerShape(
+                                topStart = 5.dp,
+                                topEnd = 18.dp,
+                                bottomStart = 18.dp,
+                                bottomEnd = 18.dp,
+                            ),
+                    )
+                    .padding(
+                        horizontal = 16.dp,
+                        vertical = 12.dp,
+                    ),
+            verticalArrangement =
+                Arrangement.spacedBy(5.dp),
+        ) {
+            Text(
+                text = "DEVIL",
+                style =
+                    MaterialTheme.typography.labelMedium,
+                color =
+                    devilRed,
+            )
+
+            Text(
+                text = entry.content,
+                style =
+                    MaterialTheme.typography.bodyLarge,
+                color =
+                    MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+}
+
+/**
+ * Compact truthful presentation deck for existing changing UI state.
+ */
+@Composable
+private fun ConversationStatusDeck(
+    handsFreeEnabled: Boolean,
+    handsFreeMessage: String?,
+    isVoiceSpeaking: Boolean,
+    voiceOutputMessage: String?,
+    voiceInputMessage: String?,
+    accessibilityDiagnosticMessage: String?,
+    submissionNotice: String?,
+) {
+    val messages =
+        buildList {
+            if (handsFreeEnabled) {
+                add("Hands-Free active")
+            }
+
+            handsFreeMessage?.let(::add)
+
+            if (isVoiceSpeaking) {
+                add("Speaking")
+            }
+
+            voiceOutputMessage?.let(::add)
+            voiceInputMessage?.let(::add)
+            accessibilityDiagnosticMessage?.let(::add)
+            submissionNotice?.let(::add)
+        }
+
+    if (messages.isEmpty()) {
+        return
+    }
+
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = 16.dp,
+                    vertical = 4.dp,
+                )
+                .clip(
+                    RoundedCornerShape(14.dp),
+                )
+                .background(
+                    MaterialTheme.colorScheme.surface,
+                )
+                .border(
+                    width = 1.dp,
+                    color =
+                        MaterialTheme.colorScheme.primary.copy(
+                            alpha = 0.22f,
+                        ),
+                    shape =
+                        RoundedCornerShape(14.dp),
+                )
+                .padding(
+                    horizontal = 12.dp,
+                    vertical = 8.dp,
+                ),
         verticalArrangement =
-            Arrangement.spacedBy(4.dp),
+            Arrangement.spacedBy(3.dp),
+    ) {
+        messages.forEach { message ->
+            Text(
+                text = message,
+                modifier =
+                    Modifier.politeAccessibilityStatus(),
+                style =
+                    MaterialTheme.typography.bodySmall,
+                color =
+                    MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/**
+ * Stage 253 unified bottom composer.
+ *
+ * Existing callback semantics and enable/disable rules remain authoritative.
+ */
+@Composable
+private fun DevilConversationComposer(
+    draft: String,
+    onDraftChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+    onVoiceInput: () -> Unit,
+    onHandsFreeToggle: () -> Unit,
+    isSubmitting: Boolean,
+    isVoiceListening: Boolean,
+    isVoiceSpeaking: Boolean,
+    voiceInputEnabled: Boolean,
+    handsFreeEnabled: Boolean,
+    devilRed: Color,
+) {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(
+                    MaterialTheme.colorScheme.surface,
+                )
+                .border(
+                    width = 1.dp,
+                    color = devilRed.copy(alpha = 0.30f),
+                )
+                .padding(12.dp),
+        verticalArrangement =
+            Arrangement.spacedBy(9.dp),
     ) {
         Row(
             modifier =
                 Modifier.fillMaxWidth(),
+            horizontalArrangement =
+                Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text =
-                    when (entry.role) {
-                        ConversationEntryRole.USER ->
-                            "You"
+            OutlinedButton(
+                onClick = onVoiceInput,
+                modifier =
+                    Modifier.weight(1f),
+                enabled =
+                    voiceInputEnabled &&
+                        !isSubmitting &&
+                        !isVoiceListening &&
+                        !isVoiceSpeaking &&
+                        !handsFreeEnabled,
+                border =
+                    BorderStroke(
+                        width = 1.dp,
+                        color =
+                            if (isVoiceListening) {
+                                devilRed
+                            } else {
+                                devilRed.copy(alpha = 0.48f)
+                            },
+                    ),
+                colors =
+                    ButtonDefaults.outlinedButtonColors(
+                        contentColor = devilRed,
+                    ),
+            ) {
+                Text(
+                    text =
+                        if (
+                            isVoiceListening &&
+                            !handsFreeEnabled
+                        ) {
+                            "LISTENING"
+                        } else {
+                            "VOICE"
+                        },
+                )
+            }
 
-                        ConversationEntryRole.RUNTIME ->
-                            "Runtime"
-                    },
-                style =
-                    MaterialTheme.typography.labelMedium,
-            )
+            OutlinedButton(
+                onClick = onHandsFreeToggle,
+                modifier =
+                    Modifier.weight(1f),
+                enabled =
+                    !isSubmitting &&
+                        !isVoiceSpeaking &&
+                        (
+                            !isVoiceListening ||
+                                handsFreeEnabled
+                        ),
+                border =
+                    BorderStroke(
+                        width = 1.dp,
+                        color =
+                            if (handsFreeEnabled) {
+                                devilRed
+                            } else {
+                                devilRed.copy(alpha = 0.48f)
+                            },
+                    ),
+                colors =
+                    ButtonDefaults.outlinedButtonColors(
+                        contentColor = devilRed,
+                    ),
+            ) {
+                Text(
+                    text =
+                        if (handsFreeEnabled) {
+                            "STOP HANDS-FREE"
+                        } else {
+                            "HANDS-FREE"
+                        },
+                )
+            }
         }
 
-        Text(
-            text = entry.content,
-            style =
-                MaterialTheme.typography.bodyLarge,
-        )
+        Row(
+            modifier =
+                Modifier.fillMaxWidth(),
+            horizontalArrangement =
+                Arrangement.spacedBy(9.dp),
+            verticalAlignment =
+                Alignment.Bottom,
+        ) {
+            OutlinedTextField(
+                value = draft,
+                onValueChange = onDraftChange,
+                modifier =
+                    Modifier.weight(1f),
+                enabled =
+                    !isSubmitting &&
+                        !isVoiceListening &&
+                        !isVoiceSpeaking &&
+                        !handsFreeEnabled,
+                placeholder = {
+                    Text(
+                        text = "Message Devil…",
+                    )
+                },
+                minLines = 1,
+                maxLines = 4,
+                shape =
+                    RoundedCornerShape(18.dp),
+                colors =
+                    OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = devilRed,
+                        unfocusedBorderColor =
+                            devilRed.copy(alpha = 0.36f),
+                        focusedTextColor =
+                            MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor =
+                            MaterialTheme.colorScheme.onSurface,
+                        cursorColor = devilRed,
+                        focusedPlaceholderColor =
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                        unfocusedPlaceholderColor =
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
+            )
+
+            Button(
+                onClick = onSubmit,
+                enabled =
+                    !isSubmitting &&
+                        !isVoiceListening &&
+                        !isVoiceSpeaking &&
+                        !handsFreeEnabled &&
+                        draft.isNotBlank(),
+                shape =
+                    RoundedCornerShape(18.dp),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = devilRed,
+                        contentColor =
+                            MaterialTheme.colorScheme.onPrimary,
+                    ),
+                contentPadding =
+                    PaddingValues(
+                        horizontal = 18.dp,
+                        vertical = 16.dp,
+                    ),
+            ) {
+                Text(
+                    text =
+                        if (isSubmitting) {
+                            "..."
+                        } else {
+                            "SEND"
+                        },
+                    fontWeight =
+                        FontWeight.Bold,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Marks truthful changing presentation status as a polite accessibility live
+ * region.
+ *
+ * Accessibility presentation does not alter Devil state or authority.
+ */
+private fun Modifier.politeAccessibilityStatus(): Modifier {
+    return semantics {
+        liveRegion =
+            LiveRegionMode.Polite
     }
 }
