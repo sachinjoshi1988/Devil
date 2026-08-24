@@ -18,6 +18,7 @@ import com.devil.app.conversation.ConversationScreen
 import com.devil.app.conversation.ConversationTimelineEntry
 import com.devil.app.conversation.ConversationUiState
 import com.devil.app.ui.education.DevilEducationInterface
+import com.devil.app.ui.education.DevilLanguageLearningInterface
 import com.devil.app.ui.launch.DevilAwakeningScreen
 import com.devil.app.ui.memory.DevilMemoryInterface
 import com.devil.app.ui.task.DevilTaskAutomationInterface
@@ -227,6 +228,11 @@ class DevilActivity : ComponentActivity() {
 
         setContent {
             DevilTheme {
+                /* Stage 258 presentation navigation only. */
+                var showLanguageLearningInterface by remember {
+                    mutableStateOf(false)
+                }
+
                 /* Stage 257 presentation navigation only. */
                 var showEducationInterface by remember {
                     mutableStateOf(false)
@@ -281,6 +287,31 @@ class DevilActivity : ComponentActivity() {
                             showTaskAutomationInterface = false
                         },
                     )
+                  } else if (showLanguageLearningInterface) {
+                      DevilLanguageLearningInterface(
+                          languageSessionId = null,
+                          targetLanguage = null,
+                          learningObjective = null,
+                          spokenEnglishStatus = null,
+                          pronunciationStatus = null,
+                          listeningStatus = null,
+                          grammarStatus = null,
+                          vocabularyStatus = null,
+                          writingStatus = null,
+                          confidenceStatus = null,
+                          academicEnglishStatus = null,
+                          professionalEnglishStatus = null,
+                          curriculumStatus = null,
+                          multilingualTeachingStatus = null,
+                          multilingualConversationStatus = null,
+                          crossLanguageAssistanceStatus = null,
+                          progressStatus = null,
+                          assessmentStatus = null,
+                          spokenEducationStatus = null,
+                          onBack = {
+                              showLanguageLearningInterface = false
+                          },
+                      )
                 } else if (showEducationInterface) {
                     DevilEducationInterface(
                         educationSessionId = null,
@@ -301,6 +332,10 @@ class DevilActivity : ComponentActivity() {
                         spokenEducationStatus = null,
                         educationalVisionStatus = null,
                         tabletEducationStatus = null,
+                          onLanguageLearningOpen = {
+                              showEducationInterface = false
+                              showLanguageLearningInterface = true
+                          },
                         onBack = {
                             showEducationInterface = false
                         },

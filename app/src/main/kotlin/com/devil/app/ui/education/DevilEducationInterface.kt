@@ -99,6 +99,7 @@ fun DevilEducationInterface(
     spokenEducationStatus: String?,
     educationalVisionStatus: String?,
     tabletEducationStatus: String?,
+    onLanguageLearningOpen: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -197,6 +198,26 @@ fun DevilEducationInterface(
                 educationalVisionStatus = educationalVisionStatus,
                 tabletEducationStatus = tabletEducationStatus,
             )
+
+            OutlinedButton(
+                onClick = onLanguageLearningOpen,
+                modifier = Modifier.fillMaxWidth(),
+                border =
+                    BorderStroke(
+                        width = 1.dp,
+                        color = devilRed.copy(alpha = 0.46f),
+                    ),
+                colors =
+                    ButtonDefaults.outlinedButtonColors(
+                        contentColor = devilRed,
+                    ),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Text(
+                    text = "LANGUAGE LEARNING",
+                    fontWeight = FontWeight.Bold,
+                )
+            }
 
             DevilEducationBoundaryFooter(
                 devilRed = devilRed,
