@@ -61,8 +61,8 @@ class Stage253MainConversationExperienceTest {
 
         assertTrue(source.contains("onDraftChange = onDraftChange"))
         assertTrue(source.contains("onClick = onSubmit"))
-        assertTrue(source.contains("onClick = onVoiceInput"))
-        assertTrue(source.contains("onClick = onHandsFreeToggle"))
+        assertTrue(source.contains("onVoiceInput = onVoiceInput"))
+        assertTrue(source.contains("onHandsFreeToggle = onHandsFreeToggle"))
     }
 
     @Test

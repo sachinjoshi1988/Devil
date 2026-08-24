@@ -1,6 +1,5 @@
 package com.devil.app.conversation
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -41,6 +39,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.devil.app.R
+import com.devil.app.ui.voice.DevilVoiceInterface
 
 /**
  * Stage 253 Main Conversation Experience.
@@ -136,16 +135,33 @@ fun ConversationScreen(
                     state.submissionNotice?.message,
             )
 
+            DevilVoiceInterface(
+                isVoiceListening = isVoiceListening,
+                isSubmitting = state.isSubmitting,
+                isVoiceSpeaking = isVoiceSpeaking,
+                voiceInputEnabled = voiceInputEnabled,
+                handsFreeEnabled = handsFreeEnabled,
+                onVoiceInput = onVoiceInput,
+                onHandsFreeToggle = onHandsFreeToggle,
+                voiceInputMessage = voiceInputMessage,
+                voiceOutputMessage = voiceOutputMessage,
+                handsFreeMessage = handsFreeMessage,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            horizontal = 12.dp,
+                            vertical = 6.dp,
+                        ),
+            )
+
             DevilConversationComposer(
                 draft = state.draft,
                 onDraftChange = onDraftChange,
                 onSubmit = onSubmit,
-                onVoiceInput = onVoiceInput,
-                onHandsFreeToggle = onHandsFreeToggle,
                 isSubmitting = state.isSubmitting,
                 isVoiceListening = isVoiceListening,
                 isVoiceSpeaking = isVoiceSpeaking,
-                voiceInputEnabled = voiceInputEnabled,
                 handsFreeEnabled = handsFreeEnabled,
                 devilRed = devilRed,
             )
@@ -579,16 +595,13 @@ private fun DevilConversationComposer(
     draft: String,
     onDraftChange: (String) -> Unit,
     onSubmit: () -> Unit,
-    onVoiceInput: () -> Unit,
-    onHandsFreeToggle: () -> Unit,
     isSubmitting: Boolean,
     isVoiceListening: Boolean,
     isVoiceSpeaking: Boolean,
-    voiceInputEnabled: Boolean,
     handsFreeEnabled: Boolean,
     devilRed: Color,
 ) {
-    Column(
+    Row(
         modifier =
             Modifier
                 .fillMaxWidth()
@@ -600,170 +613,83 @@ private fun DevilConversationComposer(
                     color = devilRed.copy(alpha = 0.30f),
                 )
                 .padding(12.dp),
-        verticalArrangement =
+        horizontalArrangement =
             Arrangement.spacedBy(9.dp),
+        verticalAlignment =
+            Alignment.Bottom,
     ) {
-        Row(
+        OutlinedTextField(
+            value = draft,
+            onValueChange = onDraftChange,
             modifier =
-                Modifier.fillMaxWidth(),
-            horizontalArrangement =
-                Arrangement.spacedBy(8.dp),
-        ) {
-            OutlinedButton(
-                onClick = onVoiceInput,
-                modifier =
-                    Modifier.weight(1f),
-                enabled =
-                    voiceInputEnabled &&
-                        !isSubmitting &&
-                        !isVoiceListening &&
-                        !isVoiceSpeaking &&
-                        !handsFreeEnabled,
-                border =
-                    BorderStroke(
-                        width = 1.dp,
-                        color =
-                            if (isVoiceListening) {
-                                devilRed
-                            } else {
-                                devilRed.copy(alpha = 0.48f)
-                            },
-                    ),
-                colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        contentColor = devilRed,
-                    ),
-            ) {
+                Modifier.weight(1f),
+            enabled =
+                !isSubmitting &&
+                    !isVoiceListening &&
+                    !isVoiceSpeaking &&
+                    !handsFreeEnabled,
+            placeholder = {
                 Text(
-                    text =
-                        if (
-                            isVoiceListening &&
-                            !handsFreeEnabled
-                        ) {
-                            "LISTENING"
-                        } else {
-                            "VOICE"
-                        },
+                    text = "Message Devil…",
                 )
-            }
+            },
+            minLines = 1,
+            maxLines = 4,
+            shape =
+                RoundedCornerShape(18.dp),
+            colors =
+                OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = devilRed,
+                    unfocusedBorderColor =
+                        devilRed.copy(alpha = 0.36f),
+                    focusedTextColor =
+                        MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor =
+                        MaterialTheme.colorScheme.onSurface,
+                    cursorColor = devilRed,
+                    focusedPlaceholderColor =
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+                    unfocusedPlaceholderColor =
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+        )
 
-            OutlinedButton(
-                onClick = onHandsFreeToggle,
-                modifier =
-                    Modifier.weight(1f),
-                enabled =
-                    !isSubmitting &&
-                        !isVoiceSpeaking &&
-                        (
-                            !isVoiceListening ||
-                                handsFreeEnabled
-                        ),
-                border =
-                    BorderStroke(
-                        width = 1.dp,
-                        color =
-                            if (handsFreeEnabled) {
-                                devilRed
-                            } else {
-                                devilRed.copy(alpha = 0.48f)
-                            },
-                    ),
-                colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        contentColor = devilRed,
-                    ),
-            ) {
-                Text(
-                    text =
-                        if (handsFreeEnabled) {
-                            "STOP HANDS-FREE"
-                        } else {
-                            "HANDS-FREE"
-                        },
-                )
-            }
-        }
-
-        Row(
-            modifier =
-                Modifier.fillMaxWidth(),
-            horizontalArrangement =
-                Arrangement.spacedBy(9.dp),
-            verticalAlignment =
-                Alignment.Bottom,
+        Button(
+            onClick = onSubmit,
+            enabled =
+                !isSubmitting &&
+                    !isVoiceListening &&
+                    !isVoiceSpeaking &&
+                    !handsFreeEnabled &&
+                    draft.isNotBlank(),
+            shape =
+                RoundedCornerShape(18.dp),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = devilRed,
+                    contentColor =
+                        MaterialTheme.colorScheme.onPrimary,
+                ),
+            contentPadding =
+                PaddingValues(
+                    horizontal = 18.dp,
+                    vertical = 16.dp,
+                ),
         ) {
-            OutlinedTextField(
-                value = draft,
-                onValueChange = onDraftChange,
-                modifier =
-                    Modifier.weight(1f),
-                enabled =
-                    !isSubmitting &&
-                        !isVoiceListening &&
-                        !isVoiceSpeaking &&
-                        !handsFreeEnabled,
-                placeholder = {
-                    Text(
-                        text = "Message Devil…",
-                    )
-                },
-                minLines = 1,
-                maxLines = 4,
-                shape =
-                    RoundedCornerShape(18.dp),
-                colors =
-                    OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = devilRed,
-                        unfocusedBorderColor =
-                            devilRed.copy(alpha = 0.36f),
-                        focusedTextColor =
-                            MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor =
-                            MaterialTheme.colorScheme.onSurface,
-                        cursorColor = devilRed,
-                        focusedPlaceholderColor =
-                            MaterialTheme.colorScheme.onSurfaceVariant,
-                        unfocusedPlaceholderColor =
-                            MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
+            Text(
+                text =
+                    if (isSubmitting) {
+                        "..."
+                    } else {
+                        "SEND"
+                    },
+                fontWeight =
+                    FontWeight.Bold,
             )
-
-            Button(
-                onClick = onSubmit,
-                enabled =
-                    !isSubmitting &&
-                        !isVoiceListening &&
-                        !isVoiceSpeaking &&
-                        !handsFreeEnabled &&
-                        draft.isNotBlank(),
-                shape =
-                    RoundedCornerShape(18.dp),
-                colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = devilRed,
-                        contentColor =
-                            MaterialTheme.colorScheme.onPrimary,
-                    ),
-                contentPadding =
-                    PaddingValues(
-                        horizontal = 18.dp,
-                        vertical = 16.dp,
-                    ),
-            ) {
-                Text(
-                    text =
-                        if (isSubmitting) {
-                            "..."
-                        } else {
-                            "SEND"
-                        },
-                    fontWeight =
-                        FontWeight.Bold,
-                )
-            }
         }
     }
 }
+
 
 /**
  * Marks truthful changing presentation status as a polite accessibility live
