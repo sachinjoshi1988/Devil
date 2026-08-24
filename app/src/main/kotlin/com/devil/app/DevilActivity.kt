@@ -17,6 +17,7 @@ import com.devil.app.conversation.ConversationEntryRole
 import com.devil.app.conversation.ConversationScreen
 import com.devil.app.conversation.ConversationTimelineEntry
 import com.devil.app.conversation.ConversationUiState
+import com.devil.app.ui.education.DevilEducationInterface
 import com.devil.app.ui.launch.DevilAwakeningScreen
 import com.devil.app.ui.memory.DevilMemoryInterface
 import com.devil.app.ui.task.DevilTaskAutomationInterface
@@ -226,6 +227,11 @@ class DevilActivity : ComponentActivity() {
 
         setContent {
             DevilTheme {
+                /* Stage 257 presentation navigation only. */
+                var showEducationInterface by remember {
+                    mutableStateOf(false)
+                }
+
                 /* Stage 256 presentation navigation only. */
                 var showTaskAutomationInterface by remember {
                     mutableStateOf(false)
@@ -275,6 +281,30 @@ class DevilActivity : ComponentActivity() {
                             showTaskAutomationInterface = false
                         },
                     )
+                } else if (showEducationInterface) {
+                    DevilEducationInterface(
+                        educationSessionId = null,
+                        subject = null,
+                        educationObjective = null,
+                        targetLanguage = null,
+                        studyFocus = null,
+                        studyApproach = null,
+                        learnerSupportObjective = null,
+                        progressFocus = null,
+                        learnerEvidence = null,
+                        progressInterpretation = null,
+                        childEducationStatus = null,
+                        teachingLevel = null,
+                        teachingApproach = null,
+                        guardianPolicyStatus = null,
+                        privacyBoundaryStatus = null,
+                        spokenEducationStatus = null,
+                        educationalVisionStatus = null,
+                        tabletEducationStatus = null,
+                        onBack = {
+                            showEducationInterface = false
+                        },
+                    )
                 } else {
                 ConversationScreen(
                     onMemoryOpen = {
@@ -282,6 +312,9 @@ class DevilActivity : ComponentActivity() {
                     },
                     onTaskOpen = {
                         showTaskAutomationInterface = true
+                    },
+                    onEducationOpen = {
+                        showEducationInterface = true
                     },
                     state =
                         conversationState,

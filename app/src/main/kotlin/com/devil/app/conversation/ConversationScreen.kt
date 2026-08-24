@@ -84,6 +84,7 @@ fun ConversationScreen(
     modifier: Modifier = Modifier,
     onMemoryOpen: () -> Unit = {},
     onTaskOpen: () -> Unit = {},
+    onEducationOpen: () -> Unit = {},
     onVoiceInput: () -> Unit = {},
     isVoiceListening: Boolean = false,
     voiceInputEnabled: Boolean = true,
@@ -117,12 +118,18 @@ fun ConversationScreen(
                 devilRed = devilRed,
                 onMemoryOpen = onMemoryOpen,
                 onTaskOpen = onTaskOpen,
+                onEducationOpen = onEducationOpen,
                 taskNavigationEnabled =
                     state.isSubmitting.not() &&
                         isVoiceListening.not() &&
                         isVoiceSpeaking.not() &&
                         handsFreeEnabled.not(),
                 memoryNavigationEnabled =
+                    state.isSubmitting.not() &&
+                        isVoiceListening.not() &&
+                        isVoiceSpeaking.not() &&
+                        handsFreeEnabled.not(),
+                educationNavigationEnabled =
                     state.isSubmitting.not() &&
                         isVoiceListening.not() &&
                         isVoiceSpeaking.not() &&
@@ -187,18 +194,30 @@ fun ConversationScreen(
  * Compact Devil identity treatment for the main conversation surface.
  *
  * Stage 255 adds presentation-only navigation to the Memory Interface.
+ * Stage 256 adds presentation-only navigation to the Task & Automation Interface.
+ * Stage 257 adds presentation-only navigation to the Education Interface.
  *
  * MEMORY_NAVIGATION != MEMORY_RECALL.
  * MEMORY_NAVIGATION != MEMORY_DISCLOSURE.
  * MEMORY_NAVIGATION != MEMORY_AUTHORITY.
+ *
+ * TASK_NAVIGATION != TASK_CREATION.
+ * TASK_NAVIGATION != EXECUTION.
+ *
+ * EDUCATION_NAVIGATION != EDUCATION_SESSION_CREATION.
+ * EDUCATION_NAVIGATION != EDUCATION_DELIVERY.
+ * EDUCATION_NAVIGATION != AUTHORIZATION.
+ * EDUCATION_NAVIGATION != CONSTITUTIONAL_LEARNING.
  */
 @Composable
 private fun DevilConversationHeader(
     devilRed: Color,
     onMemoryOpen: () -> Unit,
     onTaskOpen: () -> Unit,
+    onEducationOpen: () -> Unit,
     taskNavigationEnabled: Boolean,
     memoryNavigationEnabled: Boolean,
+    educationNavigationEnabled: Boolean,
 ) {
     Row(
         modifier =
@@ -277,7 +296,7 @@ private fun DevilConversationHeader(
                 ),
             contentPadding =
                 PaddingValues(
-                    horizontal = 14.dp,
+                    horizontal = 12.dp,
                     vertical = 9.dp,
                 ),
         ) {
@@ -289,6 +308,11 @@ private fun DevilConversationHeader(
                     FontWeight.Bold,
             )
         }
+
+        Spacer(
+            modifier =
+                Modifier.width(6.dp),
+        )
 
         Button(
             onClick = onTaskOpen,
@@ -304,12 +328,44 @@ private fun DevilConversationHeader(
                 ),
             contentPadding =
                 PaddingValues(
-                    horizontal = 14.dp,
+                    horizontal = 12.dp,
                     vertical = 9.dp,
                 ),
         ) {
             Text(
                 text = "TASKS",
+                style =
+                    MaterialTheme.typography.labelMedium,
+                fontWeight =
+                    FontWeight.Bold,
+            )
+        }
+
+        Spacer(
+            modifier =
+                Modifier.width(6.dp),
+        )
+
+        Button(
+            onClick = onEducationOpen,
+            enabled = educationNavigationEnabled,
+            shape =
+                RoundedCornerShape(16.dp),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor =
+                        devilRed.copy(alpha = 0.14f),
+                    contentColor =
+                        devilRed,
+                ),
+            contentPadding =
+                PaddingValues(
+                    horizontal = 12.dp,
+                    vertical = 9.dp,
+                ),
+        ) {
+            Text(
+                text = "LEARN",
                 style =
                     MaterialTheme.typography.labelMedium,
                 fontWeight =
