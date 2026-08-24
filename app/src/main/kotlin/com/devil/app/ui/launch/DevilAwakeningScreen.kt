@@ -388,9 +388,22 @@ fun DevilAwakeningScreen(
 }
 
 /**
- * Continuous full-screen vertical code rain.
+ * Stage 252 continuous full-screen vertical Devil code rain.
+ *
+ * Binary streams fall in fixed straight columns from top to bottom.
+ * Columns may vary in speed, phase, brightness, and trail intensity,
+ * but their horizontal position never changes.
+ *
+ * No rotation, radial travel, orbiting, diagonal motion, or sideways drift.
  *
  * Code is environmental presentation only.
+ *
+ * CODE_RAIN != DEVIL_IDENTITY.
+ * CODE_RAIN != RUNTIME_STATE.
+ * CODE_RAIN != AUTHENTICATION.
+ * CODE_RAIN != AUTHORIZATION.
+ * CODE_RAIN != EXECUTION.
+ * CODE_RAIN != VERIFICATION.
  */
 @Composable
 private fun DevilCodeRainLayer(
@@ -400,70 +413,52 @@ private fun DevilCodeRainLayer(
     paint: Paint,
     modifier: Modifier = Modifier,
 ) {
-    val glyphRows =
-        listOf(
-            "01010110100101100101",
-            "11001010100110100110",
-            "10110001100101110101",
-            "01101011011001010110",
-            "10010101100111001001",
-            "00111010011010100111",
-            "10100111000110110100",
-            "01011100101001100101",
-            "10011001010110101100",
-            "01100110111001010011",
-        )
-
     Canvas(
-        modifier =
-            modifier,
+        modifier = modifier,
     ) {
         if (alpha <= 0f) {
             return@Canvas
         }
 
-        paint.color =
-            color.toArgb()
+        paint.color = color.toArgb()
+        paint.textSize = 14.dp.toPx()
 
-        paint.textSize =
-            13.dp.toPx()
-
-        val columnCount =
-            24
-
+        val columnCount = 28
         val columnWidth =
             size.width /
                 columnCount.toFloat()
 
-        val rowSpacing =
-            22.dp.toPx()
+        val rowSpacing = 21.dp.toPx()
+        val streamLength = 22
+        val trailHeight =
+            streamLength *
+                rowSpacing
 
         val travelDistance =
             size.height +
-                440.dp.toPx()
+                trailHeight +
+                80.dp.toPx()
 
-        repeat(
-            columnCount,
-        ) { column ->
+        repeat(columnCount) { column ->
             val x =
                 columnWidth *
                     (
                         column.toFloat() +
-                            0.48f
+                            0.5f
                     )
 
             val speed =
-                0.84f +
+                0.78f +
                     (
                         column %
-                            7
+                            6
                     ) *
-                    0.045f
+                    0.055f
 
             val stagger =
                 (
                     column *
-                        0.083f
+                        0.137f
                 ) % 1f
 
             val normalizedTravel =
@@ -476,58 +471,47 @@ private fun DevilCodeRainLayer(
             val headY =
                 normalizedTravel *
                     travelDistance -
-                    220.dp.toPx()
+                    trailHeight
 
-            val glyphs =
-                glyphRows[
-                    column %
-                        glyphRows.size
-                ]
-
-            glyphs.forEachIndexed { row, glyph ->
+            repeat(streamLength) { row ->
                 val glyphY =
                     headY -
                         row *
                         rowSpacing
 
                 if (
-                    glyphY >=
-                    -40.dp.toPx() &&
-                    glyphY <=
-                    size.height +
-                        40.dp.toPx()
+                    glyphY >= -40.dp.toPx() &&
+                    glyphY <= size.height + 40.dp.toPx()
                 ) {
-                    val rowFade =
+                    val trailFade =
                         (
                             1f -
                                 row.toFloat() /
-                                glyphs.length.toFloat()
+                                streamLength.toFloat()
                         )
                             .coerceIn(
-                                0.10f,
+                                0.08f,
                                 1f,
                             )
 
-                    val columnPulse =
-                        if (
+                    val depthVariation =
+                        when (
                             (
                                 column +
                                     row
-                            ) %
-                            11 ==
-                            0
+                            ) % 9
                         ) {
-                            1f
-                        } else {
-                            0.62f
+                            0 -> 1f
+                            1, 2 -> 0.78f
+                            else -> 0.52f
                         }
 
                     paint.alpha =
                         (
                             255f *
                                 alpha *
-                                rowFade *
-                                columnPulse
+                                trailFade *
+                                depthVariation
                         )
                             .toInt()
                             .coerceIn(
@@ -535,11 +519,23 @@ private fun DevilCodeRainLayer(
                                 255,
                             )
 
+                    val glyph =
+                        if (
+                            (
+                                column * 17 +
+                                    row * 31
+                            ) % 2 == 0
+                        ) {
+                            "0"
+                        } else {
+                            "1"
+                        }
+
                     drawContext
                         .canvas
                         .nativeCanvas
                         .drawText(
-                            glyph.toString(),
+                            glyph,
                             x,
                             glyphY,
                             paint,
@@ -549,6 +545,7 @@ private fun DevilCodeRainLayer(
         }
     }
 }
+
 
 /**
  * Restrained circular energy treatment behind the approved Devil mark.
