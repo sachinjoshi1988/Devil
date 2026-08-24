@@ -18,6 +18,7 @@ import com.devil.app.conversation.ConversationScreen
 import com.devil.app.conversation.ConversationTimelineEntry
 import com.devil.app.conversation.ConversationUiState
 import com.devil.app.ui.launch.DevilAwakeningScreen
+import com.devil.app.ui.memory.DevilMemoryInterface
 import com.devil.app.ui.theme.DevilTheme
 import com.devil.app.voice.AndroidVoiceInputListener
 import com.devil.app.voice.AndroidVoiceInputResult
@@ -224,6 +225,11 @@ class DevilActivity : ComponentActivity() {
 
         setContent {
             DevilTheme {
+                /* Stage 255 presentation navigation only. */
+                var showMemoryInterface by remember {
+                    mutableStateOf(false)
+                }
+
                 var showAwakening by remember {
                     mutableStateOf(true)
                 }
@@ -234,8 +240,23 @@ class DevilActivity : ComponentActivity() {
                             showAwakening = false
                         },
                     )
+                } else if (showMemoryInterface) {
+                    DevilMemoryInterface(
+                        memoryClass = null,
+                        sensitivity = null,
+                        confidence = null,
+                        retention = null,
+                        source = null,
+                        ownerVisibleReason = null,
+                        onBack = {
+                            showMemoryInterface = false
+                        },
+                    )
                 } else {
                 ConversationScreen(
+                    onMemoryOpen = {
+                        showMemoryInterface = true
+                    },
                     state =
                         conversationState,
                     onDraftChange = {

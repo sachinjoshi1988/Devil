@@ -82,6 +82,7 @@ fun ConversationScreen(
     onDraftChange: (String) -> Unit,
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
+    onMemoryOpen: () -> Unit = {},
     onVoiceInput: () -> Unit = {},
     isVoiceListening: Boolean = false,
     voiceInputEnabled: Boolean = true,
@@ -113,6 +114,12 @@ fun ConversationScreen(
         ) {
             DevilConversationHeader(
                 devilRed = devilRed,
+                onMemoryOpen = onMemoryOpen,
+                memoryNavigationEnabled =
+                    state.isSubmitting.not() &&
+                        isVoiceListening.not() &&
+                        isVoiceSpeaking.not() &&
+                        handsFreeEnabled.not(),
             )
 
             ConversationTimeline(
@@ -172,12 +179,17 @@ fun ConversationScreen(
 /**
  * Compact Devil identity treatment for the main conversation surface.
  *
- * Logo presentation does not establish Devil identity authority or security
- * state.
+ * Stage 255 adds presentation-only navigation to the Memory Interface.
+ *
+ * MEMORY_NAVIGATION != MEMORY_RECALL.
+ * MEMORY_NAVIGATION != MEMORY_DISCLOSURE.
+ * MEMORY_NAVIGATION != MEMORY_AUTHORITY.
  */
 @Composable
 private fun DevilConversationHeader(
     devilRed: Color,
+    onMemoryOpen: () -> Unit,
+    memoryNavigationEnabled: Boolean,
 ) {
     Row(
         modifier =
@@ -214,6 +226,8 @@ private fun DevilConversationHeader(
         )
 
         Column(
+            modifier =
+                Modifier.weight(1f),
             verticalArrangement =
                 Arrangement.spacedBy(1.dp),
         ) {
@@ -239,9 +253,35 @@ private fun DevilConversationHeader(
                     devilRed,
             )
         }
+
+        Button(
+            onClick = onMemoryOpen,
+            enabled = memoryNavigationEnabled,
+            shape =
+                RoundedCornerShape(16.dp),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor =
+                        devilRed.copy(alpha = 0.14f),
+                    contentColor =
+                        devilRed,
+                ),
+            contentPadding =
+                PaddingValues(
+                    horizontal = 14.dp,
+                    vertical = 9.dp,
+                ),
+        ) {
+            Text(
+                text = "MEMORY",
+                style =
+                    MaterialTheme.typography.labelMedium,
+                fontWeight =
+                    FontWeight.Bold,
+            )
+        }
     }
 }
-
 /**
  * Truthful conversation timeline presented as asymmetric Devil / owner cards.
  */
