@@ -20,6 +20,7 @@ import com.devil.app.conversation.ConversationUiState
 import com.devil.app.ui.education.DevilEducationInterface
 import com.devil.app.ui.education.DevilLanguageLearningInterface
 import com.devil.app.ui.finance.DevilFinanceInterface
+import com.devil.app.ui.security.DevilSecurityInterface
 import com.devil.app.ui.research.DevilResearchInterface
 import com.devil.app.ui.launch.DevilAwakeningScreen
 import com.devil.app.ui.memory.DevilMemoryInterface
@@ -230,6 +231,11 @@ class DevilActivity : ComponentActivity() {
 
         setContent {
             DevilTheme {
+                /* Stage 261 presentation navigation only. */
+                var showSecurityInterface by remember {
+                    mutableStateOf(false)
+                }
+
                 /* Stage 260 presentation navigation only. */
                 var showFinanceInterface by remember {
                     mutableStateOf(false)
@@ -297,6 +303,32 @@ class DevilActivity : ComponentActivity() {
                         recoveryAttemptStatus = null,
                         onBack = {
                             showTaskAutomationInterface = false
+                        },
+                    )
+                } else if (showSecurityInterface) {
+                    DevilSecurityInterface(
+                        securityStage = null,
+                        securityState = null,
+                        surveillanceIntegrationStatus = null,
+                        cameraAdapterStatus = null,
+                        eventUnderstandingStatus = null,
+                        eventUnderstandingDescription = null,
+                        alertingStatus = null,
+                        alertDescription = null,
+                        responseGovernanceStatus = null,
+                        emergencyEscalationStatus = null,
+                        escalationDescription = null,
+                        ownerDashboardStatus = null,
+                        dashboardSummary = null,
+                        evidenceRetentionStatus = null,
+                        retentionDescription = null,
+                        privacyControlsStatus = null,
+                        privacyControlsDescription = null,
+                        productionValidationStatus = null,
+                        validationFocus = null,
+                        validationEvidenceDescription = null,
+                        onBack = {
+                            showSecurityInterface = false
                         },
                     )
                   } else if (showFinanceInterface) {
@@ -418,6 +450,9 @@ class DevilActivity : ComponentActivity() {
                     },
                     onTaskOpen = {
                         showTaskAutomationInterface = true
+                    },
+                    onSecurityOpen = {
+                        showSecurityInterface = true
                     },
                     onFinanceOpen = {
                         showFinanceInterface = true

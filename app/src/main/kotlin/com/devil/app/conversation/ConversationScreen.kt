@@ -87,6 +87,7 @@ fun ConversationScreen(
     onEducationOpen: () -> Unit = {},
     onResearchOpen: () -> Unit = {},
     onFinanceOpen: () -> Unit = {},
+    onSecurityOpen: () -> Unit = {},
     onVoiceInput: () -> Unit = {},
     isVoiceListening: Boolean = false,
     voiceInputEnabled: Boolean = true,
@@ -123,6 +124,7 @@ fun ConversationScreen(
                 onEducationOpen = onEducationOpen,
                   onResearchOpen = onResearchOpen,
                   onFinanceOpen = onFinanceOpen,
+                  onSecurityOpen = onSecurityOpen,
                 taskNavigationEnabled =
                     state.isSubmitting.not() &&
                         isVoiceListening.not() &&
@@ -133,6 +135,11 @@ fun ConversationScreen(
                         isVoiceListening.not() &&
                         isVoiceSpeaking.not() &&
                         handsFreeEnabled.not(),
+                  securityNavigationEnabled =
+                      state.isSubmitting.not() &&
+                          isVoiceListening.not() &&
+                          isVoiceSpeaking.not() &&
+                          handsFreeEnabled.not(),
                   financeNavigationEnabled =
                       state.isSubmitting.not() &&
                           isVoiceListening.not() &&
@@ -212,6 +219,7 @@ fun ConversationScreen(
  * Stage 257 adds presentation-only navigation to the Education Interface.
  * Stage 259 adds presentation-only navigation to the Research Interface.
  * Stage 260 adds presentation-only navigation to the Finance Interface.
+ * Stage 261 adds presentation-only navigation to the Security Interface.
  *
  * MEMORY_NAVIGATION != MEMORY_RECALL.
  * MEMORY_NAVIGATION != MEMORY_DISCLOSURE.
@@ -235,6 +243,12 @@ fun ConversationScreen(
  * FINANCE_NAVIGATION != TRANSACTION.
  * FINANCE_NAVIGATION != EXECUTION.
  * FINANCE_NAVIGATION != FINANCIAL_VERIFICATION.
+ *
+ * SECURITY_NAVIGATION != SECURITY_AUTHORITY.
+ * SECURITY_NAVIGATION != AUTHENTICATION.
+ * SECURITY_NAVIGATION != AUTHORIZATION.
+ * SECURITY_NAVIGATION != SECURITY_RESPONSE_EXECUTION.
+ * SECURITY_NAVIGATION != CONSTITUTIONAL_VERIFICATION.
  */
 @Composable
 private fun DevilConversationHeader(
@@ -244,9 +258,11 @@ private fun DevilConversationHeader(
     onEducationOpen: () -> Unit,
     onResearchOpen: () -> Unit,
     onFinanceOpen: () -> Unit,
+    onSecurityOpen: () -> Unit,
     taskNavigationEnabled: Boolean,
     memoryNavigationEnabled: Boolean,
     educationNavigationEnabled: Boolean,
+    securityNavigationEnabled: Boolean,
     financeNavigationEnabled: Boolean,
     researchNavigationEnabled: Boolean,
 ) {
@@ -461,6 +477,38 @@ private fun DevilConversationHeader(
         ) {
             Text(
                 text = "FINANCE",
+                style =
+                    MaterialTheme.typography.labelMedium,
+                fontWeight =
+                    FontWeight.Bold,
+            )
+        }
+
+        Spacer(
+            modifier =
+                Modifier.width(6.dp),
+        )
+
+        Button(
+            onClick = onSecurityOpen,
+            enabled = securityNavigationEnabled,
+            shape =
+                RoundedCornerShape(16.dp),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor =
+                        devilRed.copy(alpha = 0.14f),
+                    contentColor =
+                        devilRed,
+                ),
+            contentPadding =
+                PaddingValues(
+                    horizontal = 12.dp,
+                    vertical = 9.dp,
+                ),
+        ) {
+            Text(
+                text = "SECURITY",
                 style =
                     MaterialTheme.typography.labelMedium,
                 fontWeight =
