@@ -1,5 +1,8 @@
 package com.devil.app.conversation
 
+import com.devil.app.ui.adaptive.DevilAdaptiveContainer
+import com.devil.app.ui.adaptive.LocalDevilAdaptivePresentation
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -106,6 +109,7 @@ fun ConversationScreen(
     val devilRed =
         MaterialTheme.colorScheme.primary
 
+    DevilAdaptiveContainer {
     Surface(
         modifier =
             modifier.fillMaxSize(),
@@ -215,6 +219,7 @@ fun ConversationScreen(
                 devilRed = devilRed,
             )
         }
+    }
     }
 }
 
@@ -686,7 +691,7 @@ private fun OwnerConversationCard(
             modifier =
                 Modifier
                     .widthIn(
-                        max = 310.dp,
+                        max = LocalDevilAdaptivePresentation.current.conversationCardMaxWidth,
                     )
                     .clip(
                         RoundedCornerShape(
@@ -780,7 +785,7 @@ private fun DevilConversationCard(
             modifier =
                 Modifier
                     .widthIn(
-                        max = 310.dp,
+                        max = LocalDevilAdaptivePresentation.current.conversationCardMaxWidth,
                     )
                     .clip(
                         RoundedCornerShape(

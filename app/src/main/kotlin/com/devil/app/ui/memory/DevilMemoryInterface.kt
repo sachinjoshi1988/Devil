@@ -1,5 +1,7 @@
 package com.devil.app.ui.memory
 
+import com.devil.app.ui.adaptive.DevilAdaptiveContainer
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -82,6 +84,7 @@ fun DevilMemoryInterface(
     val muted =
         MaterialTheme.colorScheme.onSurfaceVariant
 
+    DevilAdaptiveContainer {
     Surface(
         modifier =
             modifier
@@ -148,6 +151,7 @@ fun DevilMemoryInterface(
                 )
             }
         }
+    }
     }
 }
 

@@ -1,5 +1,7 @@
 package com.devil.app.ui.research
 
+import com.devil.app.ui.adaptive.DevilAdaptiveContainer
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -75,6 +77,7 @@ fun DevilResearchInterface(
     val foreground = MaterialTheme.colorScheme.onSurface
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
 
+    DevilAdaptiveContainer {
     Surface(
         modifier =
             modifier
@@ -181,6 +184,7 @@ fun DevilResearchInterface(
                 )
             }
         }
+    }
     }
 }
 

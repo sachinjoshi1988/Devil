@@ -1,5 +1,7 @@
 package com.devil.app.ui.task
 
+import com.devil.app.ui.adaptive.DevilAdaptiveContainer
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -96,6 +98,7 @@ fun DevilTaskAutomationInterface(
     val muted =
         MaterialTheme.colorScheme.onSurfaceVariant
 
+    DevilAdaptiveContainer {
     Surface(
         modifier =
             modifier
@@ -183,6 +186,7 @@ fun DevilTaskAutomationInterface(
                 )
             }
         }
+    }
     }
 }
 

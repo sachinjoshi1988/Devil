@@ -1,5 +1,7 @@
 package com.devil.app.ui.education
 
+import com.devil.app.ui.adaptive.DevilAdaptiveContainer
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -118,6 +120,7 @@ fun DevilEducationInterface(
     val muted =
         MaterialTheme.colorScheme.onSurfaceVariant
 
+    DevilAdaptiveContainer {
     Surface(
         modifier =
             modifier
@@ -246,6 +249,7 @@ fun DevilEducationInterface(
                 )
             }
         }
+    }
     }
 }
 

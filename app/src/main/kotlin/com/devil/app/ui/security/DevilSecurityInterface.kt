@@ -1,5 +1,7 @@
 package com.devil.app.ui.security
 
+import com.devil.app.ui.adaptive.DevilAdaptiveContainer
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -86,6 +88,7 @@ fun DevilSecurityInterface(
     val foreground = MaterialTheme.colorScheme.onSurface
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
 
+    DevilAdaptiveContainer {
     Surface(
         modifier =
             modifier
@@ -219,6 +222,7 @@ fun DevilSecurityInterface(
                 )
             }
         }
+    }
     }
 }
 
