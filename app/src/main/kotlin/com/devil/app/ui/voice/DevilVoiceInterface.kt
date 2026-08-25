@@ -1,5 +1,8 @@
 package com.devil.app.ui.voice
 
+import com.devil.app.ui.accessibility.devilInclusiveHeading
+import com.devil.app.ui.accessibility.devilInclusiveInteractiveTarget
+
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -250,7 +253,7 @@ fun DevilVoiceInterface(
                         !isVoiceSpeaking &&
                         !handsFreeEnabled,
                 modifier =
-                    Modifier.weight(1f),
+                    Modifier.weight(1f).devilInclusiveInteractiveTarget(),
             ) {
                 Text(
                     text =
@@ -277,7 +280,7 @@ fun DevilVoiceInterface(
                                 handsFreeEnabled
                         ),
                 modifier =
-                    Modifier.weight(1f),
+                    Modifier.weight(1f).devilInclusiveInteractiveTarget(),
             ) {
                 Text(
                     text =

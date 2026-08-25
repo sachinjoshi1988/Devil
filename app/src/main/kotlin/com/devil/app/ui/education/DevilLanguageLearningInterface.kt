@@ -1,5 +1,8 @@
 package com.devil.app.ui.education
 
+import com.devil.app.ui.accessibility.devilInclusiveHeading
+import com.devil.app.ui.accessibility.devilInclusiveInteractiveTarget
+
 import com.devil.app.ui.adaptive.DevilAdaptiveContainer
 
 import androidx.compose.foundation.BorderStroke
@@ -170,7 +173,7 @@ fun DevilLanguageLearningInterface(
 
             OutlinedButton(
                 onClick = onBack,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().devilInclusiveInteractiveTarget(),
                 border =
                     BorderStroke(
                         width = 1.dp,
@@ -199,7 +202,7 @@ private fun DevilLanguageHeader(
     muted: Color,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().devilInclusiveInteractiveTarget(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -231,6 +234,7 @@ private fun DevilLanguageHeader(
         ) {
             Text(
                 text = "LANGUAGE LEARNING",
+                modifier = Modifier.devilInclusiveHeading(),
                 style = MaterialTheme.typography.titleLarge,
                 color = foreground,
                 fontWeight = FontWeight.Black,
@@ -422,7 +426,7 @@ private fun DevilLanguageRow(
     muted: Color,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().devilInclusiveInteractiveTarget(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {

@@ -1,5 +1,8 @@
 package com.devil.app.conversation
 
+import com.devil.app.ui.accessibility.devilInclusiveHeading
+import com.devil.app.ui.accessibility.devilInclusiveInteractiveTarget
+
 import com.devil.app.ui.adaptive.DevilAdaptiveContainer
 import com.devil.app.ui.adaptive.LocalDevilAdaptivePresentation
 
@@ -331,7 +334,7 @@ private fun DevilConversationHeader(
             Text(
                 text = "DEVIL",
                 modifier =
-                    Modifier.semantics {
+                    Modifier.devilInclusiveHeading().semantics {
                         heading()
                     },
                 style =
@@ -352,7 +355,8 @@ private fun DevilConversationHeader(
         }
 
         Button(
-            onClick = onMemoryOpen,
+            modifier = Modifier.devilInclusiveInteractiveTarget(),
+              onClick = onMemoryOpen,
             enabled = memoryNavigationEnabled,
             shape =
                 RoundedCornerShape(16.dp),
@@ -384,7 +388,8 @@ private fun DevilConversationHeader(
         )
 
         Button(
-            onClick = onTaskOpen,
+            modifier = Modifier.devilInclusiveInteractiveTarget(),
+              onClick = onTaskOpen,
             enabled = taskNavigationEnabled,
             shape =
                 RoundedCornerShape(16.dp),
@@ -416,7 +421,8 @@ private fun DevilConversationHeader(
         )
 
         Button(
-            onClick = onEducationOpen,
+            modifier = Modifier.devilInclusiveInteractiveTarget(),
+              onClick = onEducationOpen,
             enabled = educationNavigationEnabled,
             shape =
                 RoundedCornerShape(16.dp),
@@ -448,7 +454,8 @@ private fun DevilConversationHeader(
         )
 
         Button(
-            onClick = onResearchOpen,
+            modifier = Modifier.devilInclusiveInteractiveTarget(),
+              onClick = onResearchOpen,
             enabled = researchNavigationEnabled,
             shape =
                 RoundedCornerShape(16.dp),
@@ -480,7 +487,8 @@ private fun DevilConversationHeader(
         )
 
         Button(
-            onClick = onFinanceOpen,
+            modifier = Modifier.devilInclusiveInteractiveTarget(),
+              onClick = onFinanceOpen,
             enabled = financeNavigationEnabled,
             shape =
                 RoundedCornerShape(16.dp),
@@ -512,7 +520,8 @@ private fun DevilConversationHeader(
         )
 
         Button(
-            onClick = onSecurityOpen,
+            modifier = Modifier.devilInclusiveInteractiveTarget(),
+              onClick = onSecurityOpen,
             enabled = securityNavigationEnabled,
             shape =
                 RoundedCornerShape(16.dp),
@@ -544,7 +553,8 @@ private fun DevilConversationHeader(
         )
 
         Button(
-            onClick = onSettingsOpen,
+            modifier = Modifier.devilInclusiveInteractiveTarget(),
+              onClick = onSettingsOpen,
             enabled = settingsNavigationEnabled,
             shape =
                 RoundedCornerShape(16.dp),
@@ -984,7 +994,8 @@ private fun DevilConversationComposer(
         )
 
         Button(
-            onClick = onSubmit,
+            modifier = Modifier.devilInclusiveInteractiveTarget(),
+              onClick = onSubmit,
             enabled =
                 !isSubmitting &&
                     !isVoiceListening &&

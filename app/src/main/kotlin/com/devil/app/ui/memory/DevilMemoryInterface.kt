@@ -1,5 +1,8 @@
 package com.devil.app.ui.memory
 
+import com.devil.app.ui.accessibility.devilInclusiveHeading
+import com.devil.app.ui.accessibility.devilInclusiveInteractiveTarget
+
 import com.devil.app.ui.adaptive.DevilAdaptiveContainer
 
 import androidx.compose.foundation.Image
@@ -133,7 +136,7 @@ fun DevilMemoryInterface(
 
             androidx.compose.material3.OutlinedButton(
                 onClick = onBack,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().devilInclusiveInteractiveTarget(),
                 border =
                     androidx.compose.foundation.BorderStroke(
                         width = 1.dp,
@@ -207,6 +210,7 @@ private fun DevilMemoryHeader(
             Text(
                 text =
                     "MEMORY VAULT",
+                    modifier = Modifier.devilInclusiveHeading(),
                 style =
                     MaterialTheme.typography.titleLarge,
                 color =

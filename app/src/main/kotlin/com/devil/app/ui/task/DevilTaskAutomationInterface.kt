@@ -1,5 +1,8 @@
 package com.devil.app.ui.task
 
+import com.devil.app.ui.accessibility.devilInclusiveHeading
+import com.devil.app.ui.accessibility.devilInclusiveInteractiveTarget
+
 import com.devil.app.ui.adaptive.DevilAdaptiveContainer
 
 import androidx.compose.foundation.BorderStroke
@@ -167,7 +170,7 @@ fun DevilTaskAutomationInterface(
             OutlinedButton(
                 onClick = onBack,
                 modifier =
-                    Modifier.fillMaxWidth(),
+                    Modifier.fillMaxWidth().devilInclusiveInteractiveTarget(),
                 border =
                     BorderStroke(
                         width = 1.dp,
@@ -240,6 +243,7 @@ private fun DevilTaskAutomationHeader(
         ) {
             Text(
                 text = "TASK CONTROL",
+                modifier = Modifier.devilInclusiveHeading(),
                 style =
                     MaterialTheme.typography.titleLarge,
                 color =

@@ -1,5 +1,8 @@
 package com.devil.app.ui.research
 
+import com.devil.app.ui.accessibility.devilInclusiveHeading
+import com.devil.app.ui.accessibility.devilInclusiveInteractiveTarget
+
 import com.devil.app.ui.adaptive.DevilAdaptiveContainer
 
 import androidx.compose.foundation.BorderStroke
@@ -166,7 +169,7 @@ fun DevilResearchInterface(
 
             OutlinedButton(
                 onClick = onBack,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().devilInclusiveInteractiveTarget(),
                 border =
                     BorderStroke(
                         width = 1.dp,
@@ -195,7 +198,7 @@ private fun DevilResearchHeader(
     muted: Color,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().devilInclusiveInteractiveTarget(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -211,6 +214,7 @@ private fun DevilResearchHeader(
             Text(
                 text = "RESEARCH",
                 color = devilRed,
+                modifier = Modifier.devilInclusiveHeading(),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Black,
             )
@@ -444,7 +448,7 @@ private fun DevilResearchCard(
     content: @Composable () -> Unit,
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().devilInclusiveInteractiveTarget(),
         color = elevatedSurface,
         shape = RoundedCornerShape(20.dp),
         border =
@@ -480,7 +484,7 @@ private fun DevilResearchField(
     muted: Color,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().devilInclusiveInteractiveTarget(),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
@@ -504,7 +508,7 @@ private fun DevilResearchBoundaryFooter(
     muted: Color,
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().devilInclusiveInteractiveTarget(),
         color = devilRed.copy(alpha = 0.07f),
         shape = RoundedCornerShape(18.dp),
         border =
