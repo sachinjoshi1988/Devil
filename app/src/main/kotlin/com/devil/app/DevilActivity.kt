@@ -217,18 +217,6 @@ class DevilActivity : ComponentActivity() {
         val devilApplication =
             application as DevilApplication
 
-        voiceInputSource =
-            DefaultAndroidVoiceInputSource(
-                context =
-                    applicationContext,
-            )
-
-        accessibilityDiagnosticSource =
-            DefaultAndroidAccessibilityServiceDiagnosticSource(
-                context = applicationContext,
-            )
-
-        refreshAccessibilityDiagnostic()
 
         setContent {
             DevilTheme {
@@ -561,6 +549,18 @@ class DevilActivity : ComponentActivity() {
                 }
             }
         }
+        voiceInputSource =
+            DefaultAndroidVoiceInputSource(
+                context = applicationContext,
+            )
+
+        accessibilityDiagnosticSource =
+            DefaultAndroidAccessibilityServiceDiagnosticSource(
+                context = applicationContext,
+            )
+
+        refreshAccessibilityDiagnostic()
+
     }
 
     override fun onResume() {
