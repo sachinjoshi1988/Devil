@@ -88,6 +88,7 @@ fun ConversationScreen(
     onResearchOpen: () -> Unit = {},
     onFinanceOpen: () -> Unit = {},
     onSecurityOpen: () -> Unit = {},
+    onSettingsOpen: () -> Unit = {},
     onVoiceInput: () -> Unit = {},
     isVoiceListening: Boolean = false,
     voiceInputEnabled: Boolean = true,
@@ -125,6 +126,7 @@ fun ConversationScreen(
                   onResearchOpen = onResearchOpen,
                   onFinanceOpen = onFinanceOpen,
                   onSecurityOpen = onSecurityOpen,
+                  onSettingsOpen = onSettingsOpen,
                 taskNavigationEnabled =
                     state.isSubmitting.not() &&
                         isVoiceListening.not() &&
@@ -135,6 +137,11 @@ fun ConversationScreen(
                         isVoiceListening.not() &&
                         isVoiceSpeaking.not() &&
                         handsFreeEnabled.not(),
+                  settingsNavigationEnabled =
+                      state.isSubmitting.not() &&
+                          isVoiceListening.not() &&
+                          isVoiceSpeaking.not() &&
+                          handsFreeEnabled.not(),
                   securityNavigationEnabled =
                       state.isSubmitting.not() &&
                           isVoiceListening.not() &&
@@ -220,6 +227,7 @@ fun ConversationScreen(
  * Stage 259 adds presentation-only navigation to the Research Interface.
  * Stage 260 adds presentation-only navigation to the Finance Interface.
  * Stage 261 adds presentation-only navigation to the Security Interface.
+ * Stage 262 adds presentation-only navigation to the Settings / Privacy / Permissions Interface.
  *
  * MEMORY_NAVIGATION != MEMORY_RECALL.
  * MEMORY_NAVIGATION != MEMORY_DISCLOSURE.
@@ -249,6 +257,13 @@ fun ConversationScreen(
  * SECURITY_NAVIGATION != AUTHORIZATION.
  * SECURITY_NAVIGATION != SECURITY_RESPONSE_EXECUTION.
  * SECURITY_NAVIGATION != CONSTITUTIONAL_VERIFICATION.
+ *
+ * SETTINGS_NAVIGATION != SETTINGS_CHANGE.
+ * SETTINGS_NAVIGATION != ANDROID_PERMISSION_REQUEST.
+ * SETTINGS_NAVIGATION != ANDROID_PERMISSION_GRANT.
+ * SETTINGS_NAVIGATION != DEVIL_AUTHORIZATION.
+ * SETTINGS_NAVIGATION != PRIVACY_DISCLOSURE.
+ * SETTINGS_NAVIGATION != EXECUTION.
  */
 @Composable
 private fun DevilConversationHeader(
@@ -259,9 +274,11 @@ private fun DevilConversationHeader(
     onResearchOpen: () -> Unit,
     onFinanceOpen: () -> Unit,
     onSecurityOpen: () -> Unit,
+    onSettingsOpen: () -> Unit,
     taskNavigationEnabled: Boolean,
     memoryNavigationEnabled: Boolean,
     educationNavigationEnabled: Boolean,
+    settingsNavigationEnabled: Boolean,
     securityNavigationEnabled: Boolean,
     financeNavigationEnabled: Boolean,
     researchNavigationEnabled: Boolean,
@@ -509,6 +526,38 @@ private fun DevilConversationHeader(
         ) {
             Text(
                 text = "SECURITY",
+                style =
+                    MaterialTheme.typography.labelMedium,
+                fontWeight =
+                    FontWeight.Bold,
+            )
+        }
+
+        Spacer(
+            modifier =
+                Modifier.width(6.dp),
+        )
+
+        Button(
+            onClick = onSettingsOpen,
+            enabled = settingsNavigationEnabled,
+            shape =
+                RoundedCornerShape(16.dp),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor =
+                        devilRed.copy(alpha = 0.14f),
+                    contentColor =
+                        devilRed,
+                ),
+            contentPadding =
+                PaddingValues(
+                    horizontal = 12.dp,
+                    vertical = 9.dp,
+                ),
+        ) {
+            Text(
+                text = "SETTINGS",
                 style =
                     MaterialTheme.typography.labelMedium,
                 fontWeight =

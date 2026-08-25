@@ -21,6 +21,7 @@ import com.devil.app.ui.education.DevilEducationInterface
 import com.devil.app.ui.education.DevilLanguageLearningInterface
 import com.devil.app.ui.finance.DevilFinanceInterface
 import com.devil.app.ui.security.DevilSecurityInterface
+import com.devil.app.ui.settings.DevilSettingsPrivacyPermissionsInterface
 import com.devil.app.ui.research.DevilResearchInterface
 import com.devil.app.ui.launch.DevilAwakeningScreen
 import com.devil.app.ui.memory.DevilMemoryInterface
@@ -231,6 +232,11 @@ class DevilActivity : ComponentActivity() {
 
         setContent {
             DevilTheme {
+                /* Stage 262 presentation navigation only. */
+                var showSettingsInterface by remember {
+                    mutableStateOf(false)
+                }
+
                 /* Stage 261 presentation navigation only. */
                 var showSecurityInterface by remember {
                     mutableStateOf(false)
@@ -303,6 +309,24 @@ class DevilActivity : ComponentActivity() {
                         recoveryAttemptStatus = null,
                         onBack = {
                             showTaskAutomationInterface = false
+                        },
+                    )
+                } else if (showSettingsInterface) {
+                    DevilSettingsPrivacyPermissionsInterface(
+                        settingsCommand = null,
+                        settingsControlStatus = null,
+                        permissionCapability = null,
+                        permissionAssessmentStatus = null,
+                        requiredPermissions = null,
+                        privacyExposureStatus = null,
+                        privacyExposureRationale = null,
+                        privacyDisclosureStatus = null,
+                        privacyDisclosureTreatment = null,
+                        privacyDisclosureRationale = null,
+                        privacyRepresentationStatus = null,
+                        privacyDataClassification = null,
+                        onBack = {
+                            showSettingsInterface = false
                         },
                     )
                 } else if (showSecurityInterface) {
@@ -450,6 +474,9 @@ class DevilActivity : ComponentActivity() {
                     },
                     onTaskOpen = {
                         showTaskAutomationInterface = true
+                    },
+                    onSettingsOpen = {
+                        showSettingsInterface = true
                     },
                     onSecurityOpen = {
                         showSecurityInterface = true
