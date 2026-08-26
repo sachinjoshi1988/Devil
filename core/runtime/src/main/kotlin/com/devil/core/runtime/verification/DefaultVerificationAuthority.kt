@@ -91,12 +91,11 @@ class DefaultVerificationAuthority(
         }
 
         require(observation.traceId == context.traceId) {
+            "Context and observation result must use the same trace identity."
+        }
 
         require(verificationEvidence.traceId == context.traceId) {
             "Context and verification-evidence result must use the same trace identity."
-        }
-            "Context and observation result must use the same trace identity."
-
         }
 
 
