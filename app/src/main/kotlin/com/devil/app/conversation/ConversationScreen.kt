@@ -9,6 +9,8 @@ import com.devil.app.ui.adaptive.LocalDevilAdaptivePresentation
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -291,7 +293,7 @@ private fun DevilConversationHeader(
     financeNavigationEnabled: Boolean,
     researchNavigationEnabled: Boolean,
 ) {
-    Row(
+    Column(
         modifier =
             Modifier
                 .fillMaxWidth()
@@ -306,278 +308,271 @@ private fun DevilConversationHeader(
                     horizontal = 18.dp,
                     vertical = 12.dp,
                 ),
-        verticalAlignment =
-            Alignment.CenterVertically,
     ) {
-        Image(
-            painter =
-                painterResource(
-                    id = R.drawable.devil_primary_logo,
-                ),
-            contentDescription =
-                "Devil",
-            modifier =
-                Modifier.size(42.dp),
-        )
-
-        Spacer(
-            modifier =
-                Modifier.width(12.dp),
-        )
-
-        Column(
-            modifier =
-                Modifier.weight(1f),
-            verticalArrangement =
-                Arrangement.spacedBy(1.dp),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = "DEVIL",
+            Image(
+                painter =
+                    painterResource(
+                        id = R.drawable.devil_primary_logo,
+                    ),
+                contentDescription =
+                    "Devil",
                 modifier =
-                    Modifier.devilInclusiveHeading().semantics {
-                        heading()
-                    },
-                style =
-                    MaterialTheme.typography.titleLarge,
-                color =
-                    MaterialTheme.colorScheme.onBackground,
-                fontWeight =
-                    FontWeight.Black,
+                    Modifier.size(42.dp),
             )
 
-            Text(
-                text = "MAIN CONVERSATION",
-                style =
-                    MaterialTheme.typography.labelMedium,
-                color =
-                    devilRed,
+            Spacer(
+                modifier =
+                    Modifier.width(12.dp),
             )
-        }
 
-        Button(
-            modifier = Modifier.devilInclusiveInteractiveTarget(),
-              onClick = onMemoryOpen,
-            enabled = memoryNavigationEnabled,
-            shape =
-                RoundedCornerShape(16.dp),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor =
-                        devilRed.copy(alpha = 0.14f),
-                    contentColor =
+            Column(
+                modifier =
+                    Modifier.weight(1f),
+                verticalArrangement =
+                    Arrangement.spacedBy(1.dp),
+            ) {
+                Text(
+                    text = "DEVIL",
+                    modifier =
+                        Modifier.devilInclusiveHeading().semantics {
+                            heading()
+                        },
+                    style =
+                        MaterialTheme.typography.titleLarge,
+                    color =
+                        MaterialTheme.colorScheme.onBackground,
+                    fontWeight =
+                        FontWeight.Black,
+                )
+
+                Text(
+                    text = "MAIN CONVERSATION",
+                    style =
+                        MaterialTheme.typography.labelMedium,
+                    color =
                         devilRed,
-                ),
-            contentPadding =
-                PaddingValues(
-                    horizontal = 12.dp,
-                    vertical = 9.dp,
-                ),
-        ) {
-            Text(
-                text = "MEMORY",
-                style =
-                    MaterialTheme.typography.labelMedium,
-                fontWeight =
-                    FontWeight.Bold,
-            )
+                    maxLines = 1,
+                )
+            }
         }
 
-        Spacer(
+        Row(
             modifier =
-                Modifier.width(6.dp),
-        )
-
-        Button(
-            modifier = Modifier.devilInclusiveInteractiveTarget(),
-              onClick = onTaskOpen,
-            enabled = taskNavigationEnabled,
-            shape =
-                RoundedCornerShape(16.dp),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor =
-                        devilRed.copy(alpha = 0.14f),
-                    contentColor =
-                        devilRed,
-                ),
-            contentPadding =
-                PaddingValues(
-                    horizontal = 12.dp,
-                    vertical = 9.dp,
-                ),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp)
+                    .horizontalScroll(rememberScrollState()),
+            horizontalArrangement =
+                Arrangement.spacedBy(6.dp),
+            verticalAlignment =
+                Alignment.CenterVertically,
         ) {
-            Text(
-                text = "TASKS",
-                style =
-                    MaterialTheme.typography.labelMedium,
-                fontWeight =
-                    FontWeight.Bold,
-            )
-        }
+            Button(
+                modifier = Modifier.devilInclusiveInteractiveTarget(),
+                onClick = onMemoryOpen,
+                enabled = memoryNavigationEnabled,
+                shape =
+                    RoundedCornerShape(16.dp),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            devilRed.copy(alpha = 0.14f),
+                        contentColor =
+                            devilRed,
+                    ),
+                contentPadding =
+                    PaddingValues(
+                        horizontal = 12.dp,
+                        vertical = 9.dp,
+                    ),
+            ) {
+                Text(
+                    text = "MEMORY",
+                    style =
+                        MaterialTheme.typography.labelMedium,
+                    fontWeight =
+                        FontWeight.Bold,
+                    maxLines = 1,
+                )
+            }
 
-        Spacer(
-            modifier =
-                Modifier.width(6.dp),
-        )
+            Button(
+                modifier = Modifier.devilInclusiveInteractiveTarget(),
+                onClick = onTaskOpen,
+                enabled = taskNavigationEnabled,
+                shape =
+                    RoundedCornerShape(16.dp),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            devilRed.copy(alpha = 0.14f),
+                        contentColor =
+                            devilRed,
+                    ),
+                contentPadding =
+                    PaddingValues(
+                        horizontal = 12.dp,
+                        vertical = 9.dp,
+                    ),
+            ) {
+                Text(
+                    text = "TASKS",
+                    style =
+                        MaterialTheme.typography.labelMedium,
+                    fontWeight =
+                        FontWeight.Bold,
+                    maxLines = 1,
+                )
+            }
 
-        Button(
-            modifier = Modifier.devilInclusiveInteractiveTarget(),
-              onClick = onEducationOpen,
-            enabled = educationNavigationEnabled,
-            shape =
-                RoundedCornerShape(16.dp),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor =
-                        devilRed.copy(alpha = 0.14f),
-                    contentColor =
-                        devilRed,
-                ),
-            contentPadding =
-                PaddingValues(
-                    horizontal = 12.dp,
-                    vertical = 9.dp,
-                ),
-        ) {
-            Text(
-                text = "LEARN",
-                style =
-                    MaterialTheme.typography.labelMedium,
-                fontWeight =
-                    FontWeight.Bold,
-            )
-        }
+            Button(
+                modifier = Modifier.devilInclusiveInteractiveTarget(),
+                onClick = onEducationOpen,
+                enabled = educationNavigationEnabled,
+                shape =
+                    RoundedCornerShape(16.dp),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            devilRed.copy(alpha = 0.14f),
+                        contentColor =
+                            devilRed,
+                    ),
+                contentPadding =
+                    PaddingValues(
+                        horizontal = 12.dp,
+                        vertical = 9.dp,
+                    ),
+            ) {
+                Text(
+                    text = "LEARN",
+                    style =
+                        MaterialTheme.typography.labelMedium,
+                    fontWeight =
+                        FontWeight.Bold,
+                    maxLines = 1,
+                )
+            }
 
-        Spacer(
-            modifier =
-                Modifier.width(6.dp),
-        )
+            Button(
+                modifier = Modifier.devilInclusiveInteractiveTarget(),
+                onClick = onResearchOpen,
+                enabled = researchNavigationEnabled,
+                shape =
+                    RoundedCornerShape(16.dp),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            devilRed.copy(alpha = 0.14f),
+                        contentColor =
+                            devilRed,
+                    ),
+                contentPadding =
+                    PaddingValues(
+                        horizontal = 12.dp,
+                        vertical = 9.dp,
+                    ),
+            ) {
+                Text(
+                    text = "RESEARCH",
+                    style =
+                        MaterialTheme.typography.labelMedium,
+                    fontWeight =
+                        FontWeight.Bold,
+                    maxLines = 1,
+                )
+            }
 
-        Button(
-            modifier = Modifier.devilInclusiveInteractiveTarget(),
-              onClick = onResearchOpen,
-            enabled = researchNavigationEnabled,
-            shape =
-                RoundedCornerShape(16.dp),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor =
-                        devilRed.copy(alpha = 0.14f),
-                    contentColor =
-                        devilRed,
-                ),
-            contentPadding =
-                PaddingValues(
-                    horizontal = 12.dp,
-                    vertical = 9.dp,
-                ),
-        ) {
-            Text(
-                text = "RESEARCH",
-                style =
-                    MaterialTheme.typography.labelMedium,
-                fontWeight =
-                    FontWeight.Bold,
-            )
-        }
+            Button(
+                modifier = Modifier.devilInclusiveInteractiveTarget(),
+                onClick = onFinanceOpen,
+                enabled = financeNavigationEnabled,
+                shape =
+                    RoundedCornerShape(16.dp),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            devilRed.copy(alpha = 0.14f),
+                        contentColor =
+                            devilRed,
+                    ),
+                contentPadding =
+                    PaddingValues(
+                        horizontal = 12.dp,
+                        vertical = 9.dp,
+                    ),
+            ) {
+                Text(
+                    text = "FINANCE",
+                    style =
+                        MaterialTheme.typography.labelMedium,
+                    fontWeight =
+                        FontWeight.Bold,
+                    maxLines = 1,
+                )
+            }
 
-        Spacer(
-            modifier =
-                Modifier.width(6.dp),
-        )
+            Button(
+                modifier = Modifier.devilInclusiveInteractiveTarget(),
+                onClick = onSecurityOpen,
+                enabled = securityNavigationEnabled,
+                shape =
+                    RoundedCornerShape(16.dp),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            devilRed.copy(alpha = 0.14f),
+                        contentColor =
+                            devilRed,
+                    ),
+                contentPadding =
+                    PaddingValues(
+                        horizontal = 12.dp,
+                        vertical = 9.dp,
+                    ),
+            ) {
+                Text(
+                    text = "SECURITY",
+                    style =
+                        MaterialTheme.typography.labelMedium,
+                    fontWeight =
+                        FontWeight.Bold,
+                    maxLines = 1,
+                )
+            }
 
-        Button(
-            modifier = Modifier.devilInclusiveInteractiveTarget(),
-              onClick = onFinanceOpen,
-            enabled = financeNavigationEnabled,
-            shape =
-                RoundedCornerShape(16.dp),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor =
-                        devilRed.copy(alpha = 0.14f),
-                    contentColor =
-                        devilRed,
-                ),
-            contentPadding =
-                PaddingValues(
-                    horizontal = 12.dp,
-                    vertical = 9.dp,
-                ),
-        ) {
-            Text(
-                text = "FINANCE",
-                style =
-                    MaterialTheme.typography.labelMedium,
-                fontWeight =
-                    FontWeight.Bold,
-            )
-        }
-
-        Spacer(
-            modifier =
-                Modifier.width(6.dp),
-        )
-
-        Button(
-            modifier = Modifier.devilInclusiveInteractiveTarget(),
-              onClick = onSecurityOpen,
-            enabled = securityNavigationEnabled,
-            shape =
-                RoundedCornerShape(16.dp),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor =
-                        devilRed.copy(alpha = 0.14f),
-                    contentColor =
-                        devilRed,
-                ),
-            contentPadding =
-                PaddingValues(
-                    horizontal = 12.dp,
-                    vertical = 9.dp,
-                ),
-        ) {
-            Text(
-                text = "SECURITY",
-                style =
-                    MaterialTheme.typography.labelMedium,
-                fontWeight =
-                    FontWeight.Bold,
-            )
-        }
-
-        Spacer(
-            modifier =
-                Modifier.width(6.dp),
-        )
-
-        Button(
-            modifier = Modifier.devilInclusiveInteractiveTarget(),
-              onClick = onSettingsOpen,
-            enabled = settingsNavigationEnabled,
-            shape =
-                RoundedCornerShape(16.dp),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor =
-                        devilRed.copy(alpha = 0.14f),
-                    contentColor =
-                        devilRed,
-                ),
-            contentPadding =
-                PaddingValues(
-                    horizontal = 12.dp,
-                    vertical = 9.dp,
-                ),
-        ) {
-            Text(
-                text = "SETTINGS",
-                style =
-                    MaterialTheme.typography.labelMedium,
-                fontWeight =
-                    FontWeight.Bold,
-            )
+            Button(
+                modifier = Modifier.devilInclusiveInteractiveTarget(),
+                onClick = onSettingsOpen,
+                enabled = settingsNavigationEnabled,
+                shape =
+                    RoundedCornerShape(16.dp),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            devilRed.copy(alpha = 0.14f),
+                        contentColor =
+                            devilRed,
+                    ),
+                contentPadding =
+                    PaddingValues(
+                        horizontal = 12.dp,
+                        vertical = 9.dp,
+                    ),
+            ) {
+                Text(
+                    text = "SETTINGS",
+                    style =
+                        MaterialTheme.typography.labelMedium,
+                    fontWeight =
+                        FontWeight.Bold,
+                    maxLines = 1,
+                )
+            }
         }
     }
 }
