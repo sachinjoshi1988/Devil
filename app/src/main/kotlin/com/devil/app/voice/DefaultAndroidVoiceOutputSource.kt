@@ -33,6 +33,7 @@ import java.util.UUID
  */
 class DefaultAndroidVoiceOutputSource(
     context: Context,
+    private val voiceProfile: DevilVoiceProfile,
 ) : AndroidVoiceOutputSource {
 
     private val applicationContext =
@@ -204,7 +205,7 @@ class DefaultAndroidVoiceOutputSource(
 
         val languageResult =
             engine.setLanguage(
-                Locale.getDefault(),
+                Locale.forLanguageTag(voiceProfile.languageTag),
             )
 
         if (
@@ -212,6 +213,29 @@ class DefaultAndroidVoiceOutputSource(
                 TextToSpeech.LANG_MISSING_DATA ||
             languageResult ==
                 TextToSpeech.LANG_NOT_SUPPORTED
+        ) {
+            initializationFailed = true
+
+            finish(
+                AndroidVoiceOutputResult.unavailable(),
+            )
+
+            return
+        }
+
+        val speechRateResult =
+            engine.setSpeechRate(
+                voiceProfile.speechRate,
+            )
+
+        val pitchResult =
+            engine.setPitch(
+                voiceProfile.pitch,
+            )
+
+        if (
+            speechRateResult == TextToSpeech.ERROR ||
+            pitchResult == TextToSpeech.ERROR
         ) {
             initializationFailed = true
 

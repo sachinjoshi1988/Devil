@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.runtime.getValue
@@ -262,6 +263,44 @@ class DevilActivity : ComponentActivity() {
 
                 var showAwakening by remember {
                     mutableStateOf(true)
+                }
+
+                BackHandler(
+                    enabled =
+                        showMemoryInterface ||
+                            showTaskAutomationInterface ||
+                            showSettingsInterface ||
+                            showSecurityInterface ||
+                            showFinanceInterface ||
+                            showResearchInterface ||
+                            showLanguageLearningInterface ||
+                            showEducationInterface,
+                ) {
+                    when {
+                        showMemoryInterface ->
+                            showMemoryInterface = false
+
+                        showTaskAutomationInterface ->
+                            showTaskAutomationInterface = false
+
+                        showSettingsInterface ->
+                            showSettingsInterface = false
+
+                        showSecurityInterface ->
+                            showSecurityInterface = false
+
+                        showFinanceInterface ->
+                            showFinanceInterface = false
+
+                        showResearchInterface ->
+                            showResearchInterface = false
+
+                        showLanguageLearningInterface ->
+                            showLanguageLearningInterface = false
+
+                        showEducationInterface ->
+                            showEducationInterface = false
+                    }
                 }
 
                 if (showAwakening) {

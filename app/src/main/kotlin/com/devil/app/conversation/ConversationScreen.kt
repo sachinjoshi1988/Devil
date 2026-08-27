@@ -11,6 +11,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +47,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.devil.app.R
 import com.devil.app.ui.voice.DevilVoiceInterface
@@ -115,116 +118,132 @@ fun ConversationScreen(
         MaterialTheme.colorScheme.primary
 
     DevilAdaptiveContainer {
-    Surface(
-        modifier =
-            modifier.fillMaxSize(),
-        color =
-            background,
-    ) {
-        Column(
+        Surface(
             modifier =
-                Modifier
-                    .fillMaxSize()
-                    .background(background),
+                modifier.fillMaxSize(),
+            color =
+                background,
         ) {
-            DevilConversationHeader(
-                devilRed = devilRed,
-                onMemoryOpen = onMemoryOpen,
-                onTaskOpen = onTaskOpen,
-                onEducationOpen = onEducationOpen,
-                  onResearchOpen = onResearchOpen,
-                  onFinanceOpen = onFinanceOpen,
-                  onSecurityOpen = onSecurityOpen,
-                  onSettingsOpen = onSettingsOpen,
-                taskNavigationEnabled =
-                    state.isSubmitting.not() &&
-                        isVoiceListening.not() &&
-                        isVoiceSpeaking.not() &&
-                        handsFreeEnabled.not(),
-                memoryNavigationEnabled =
-                    state.isSubmitting.not() &&
-                        isVoiceListening.not() &&
-                        isVoiceSpeaking.not() &&
-                        handsFreeEnabled.not(),
-                  settingsNavigationEnabled =
-                      state.isSubmitting.not() &&
-                          isVoiceListening.not() &&
-                          isVoiceSpeaking.not() &&
-                          handsFreeEnabled.not(),
-                  securityNavigationEnabled =
-                      state.isSubmitting.not() &&
-                          isVoiceListening.not() &&
-                          isVoiceSpeaking.not() &&
-                          handsFreeEnabled.not(),
-                  financeNavigationEnabled =
-                      state.isSubmitting.not() &&
-                          isVoiceListening.not() &&
-                          isVoiceSpeaking.not() &&
-                          handsFreeEnabled.not(),
-                  researchNavigationEnabled =
-                      state.isSubmitting.not() &&
-                          isVoiceListening.not() &&
-                          isVoiceSpeaking.not() &&
-                          handsFreeEnabled.not(),
-                educationNavigationEnabled =
-                    state.isSubmitting.not() &&
-                        isVoiceListening.not() &&
-                        isVoiceSpeaking.not() &&
-                        handsFreeEnabled.not(),
-            )
-
-            ConversationTimeline(
-                entries = state.entries,
+            Column(
                 modifier =
                     Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-            )
+                        .fillMaxSize()
+                        .background(background),
+            ) {
+                DevilConversationHeader(
+                    devilRed = devilRed,
+                    onMemoryOpen = onMemoryOpen,
+                    onTaskOpen = onTaskOpen,
+                    onEducationOpen = onEducationOpen,
+                    onResearchOpen = onResearchOpen,
+                    onFinanceOpen = onFinanceOpen,
+                    onSecurityOpen = onSecurityOpen,
+                    onSettingsOpen = onSettingsOpen,
+                    taskNavigationEnabled =
+                        state.isSubmitting.not() &&
+                            isVoiceListening.not() &&
+                            isVoiceSpeaking.not() &&
+                            handsFreeEnabled.not(),
+                    memoryNavigationEnabled =
+                        state.isSubmitting.not() &&
+                            isVoiceListening.not() &&
+                            isVoiceSpeaking.not() &&
+                            handsFreeEnabled.not(),
+                    educationNavigationEnabled =
+                        state.isSubmitting.not() &&
+                            isVoiceListening.not() &&
+                            isVoiceSpeaking.not() &&
+                            handsFreeEnabled.not(),
+                    settingsNavigationEnabled =
+                        state.isSubmitting.not() &&
+                            isVoiceListening.not() &&
+                            isVoiceSpeaking.not() &&
+                            handsFreeEnabled.not(),
+                    securityNavigationEnabled =
+                        state.isSubmitting.not() &&
+                            isVoiceListening.not() &&
+                            isVoiceSpeaking.not() &&
+                            handsFreeEnabled.not(),
+                    financeNavigationEnabled =
+                        state.isSubmitting.not() &&
+                            isVoiceListening.not() &&
+                            isVoiceSpeaking.not() &&
+                            handsFreeEnabled.not(),
+                    researchNavigationEnabled =
+                        state.isSubmitting.not() &&
+                            isVoiceListening.not() &&
+                            isVoiceSpeaking.not() &&
+                            handsFreeEnabled.not(),
+                )
 
-            ConversationStatusDeck(
-                handsFreeEnabled = handsFreeEnabled,
-                handsFreeMessage = handsFreeMessage,
-                isVoiceSpeaking = isVoiceSpeaking,
-                voiceOutputMessage = voiceOutputMessage,
-                voiceInputMessage = voiceInputMessage,
-                accessibilityDiagnosticMessage =
-                    accessibilityDiagnosticMessage,
-                submissionNotice =
-                    state.submissionNotice?.message,
-            )
+                ConversationStatusDeck(
+                    handsFreeEnabled = handsFreeEnabled,
+                    handsFreeMessage = handsFreeMessage,
+                    isVoiceSpeaking = isVoiceSpeaking,
+                    voiceOutputMessage = voiceOutputMessage,
+                    voiceInputMessage = voiceInputMessage,
+                    accessibilityDiagnosticMessage =
+                        accessibilityDiagnosticMessage,
+                    submissionNotice =
+                        state.submissionNotice?.message,
+                )
 
-            DevilVoiceInterface(
-                isVoiceListening = isVoiceListening,
-                isSubmitting = state.isSubmitting,
-                isVoiceSpeaking = isVoiceSpeaking,
-                voiceInputEnabled = voiceInputEnabled,
-                handsFreeEnabled = handsFreeEnabled,
-                onVoiceInput = onVoiceInput,
-                onHandsFreeToggle = onHandsFreeToggle,
-                voiceInputMessage = voiceInputMessage,
-                voiceOutputMessage = voiceOutputMessage,
-                handsFreeMessage = handsFreeMessage,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            horizontal = 12.dp,
-                            vertical = 6.dp,
-                        ),
-            )
+                ConversationTimeline(
+                    entries = state.entries,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                )
 
-            DevilConversationComposer(
-                draft = state.draft,
-                onDraftChange = onDraftChange,
-                onSubmit = onSubmit,
-                isSubmitting = state.isSubmitting,
-                isVoiceListening = isVoiceListening,
-                isVoiceSpeaking = isVoiceSpeaking,
-                handsFreeEnabled = handsFreeEnabled,
-                devilRed = devilRed,
-            )
+                if (
+                    isVoiceListening ||
+                    isVoiceSpeaking ||
+                    handsFreeEnabled
+                ) {
+                    DevilVoiceInterface(
+                        isVoiceListening = isVoiceListening,
+                        isSubmitting = state.isSubmitting,
+                        isVoiceSpeaking = isVoiceSpeaking,
+                        voiceInputEnabled = voiceInputEnabled,
+                        handsFreeEnabled = handsFreeEnabled,
+                        onVoiceInput = onVoiceInput,
+                        onHandsFreeToggle = onHandsFreeToggle,
+                        voiceInputMessage = voiceInputMessage,
+                        voiceOutputMessage = voiceOutputMessage,
+                        handsFreeMessage = handsFreeMessage,
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = 12.dp,
+                                    vertical = 4.dp,
+                                ),
+                    )
+                }
+                CompactConversationVoiceControls(
+                    isVoiceListening = isVoiceListening,
+                    isSubmitting = state.isSubmitting,
+                    isVoiceSpeaking = isVoiceSpeaking,
+                    voiceInputEnabled = voiceInputEnabled,
+                    handsFreeEnabled = handsFreeEnabled,
+                    onVoiceInput = onVoiceInput,
+                    onHandsFreeToggle = onHandsFreeToggle,
+                    devilRed = devilRed,
+                )
+
+                DevilConversationComposer(
+                    draft = state.draft,
+                    onDraftChange = onDraftChange,
+                    onSubmit = onSubmit,
+                    isSubmitting = state.isSubmitting,
+                    isVoiceListening = isVoiceListening,
+                    isVoiceSpeaking = isVoiceSpeaking,
+                    handsFreeEnabled = handsFreeEnabled,
+                    devilRed = devilRed,
+                )
+            }
         }
-    }
     }
 }
 
@@ -679,6 +698,11 @@ private fun ConversationTimelineRow(
             DevilConversationCard(
                 entry = entry,
             )
+
+        ConversationEntryRole.ASSISTANT ->
+            DevilConversationCard(
+                entry = entry,
+            )
     }
 }
 
@@ -920,6 +944,106 @@ private fun ConversationStatusDeck(
 }
 
 /**
+ * Compact daily-use voice controls for the main conversation surface.
+ *
+ * These controls reuse the existing voice callbacks and state.
+ *
+ * VOICE_CONTROL != AUTHENTICATION.
+ * VOICE_CONTROL != AUTHORIZATION.
+ * VOICE_CONTROL != EXECUTION.
+ * VOICE_CONTROL != VERIFICATION.
+ */
+@Composable
+private fun CompactConversationVoiceControls(
+    isVoiceListening: Boolean,
+    isSubmitting: Boolean,
+    isVoiceSpeaking: Boolean,
+    voiceInputEnabled: Boolean,
+    handsFreeEnabled: Boolean,
+    onVoiceInput: () -> Unit,
+    onHandsFreeToggle: () -> Unit,
+    devilRed: Color,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = 12.dp,
+                    vertical = 4.dp,
+                ),
+        horizontalArrangement =
+            Arrangement.spacedBy(8.dp),
+    ) {
+        Button(
+            onClick = onVoiceInput,
+            enabled =
+                voiceInputEnabled &&
+                    !isSubmitting &&
+                    !isVoiceListening &&
+                    !isVoiceSpeaking &&
+                    !handsFreeEnabled,
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .devilInclusiveInteractiveTarget(),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor =
+                        devilRed.copy(alpha = 0.16f),
+                    contentColor =
+                        devilRed,
+                ),
+            shape =
+                RoundedCornerShape(16.dp),
+        ) {
+            Text(
+                text =
+                    if (isVoiceListening && !handsFreeEnabled) {
+                        "LISTENING"
+                    } else {
+                        "VOICE"
+                    },
+                fontWeight =
+                    FontWeight.Bold,
+            )
+        }
+
+        Button(
+            onClick = onHandsFreeToggle,
+            enabled =
+                !isSubmitting &&
+                    !isVoiceSpeaking &&
+                    (!isVoiceListening || handsFreeEnabled),
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .devilInclusiveInteractiveTarget(),
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor =
+                        devilRed.copy(alpha = 0.16f),
+                    contentColor =
+                        devilRed,
+                ),
+            shape =
+                RoundedCornerShape(16.dp),
+        ) {
+            Text(
+                text =
+                    if (handsFreeEnabled) {
+                        "STOP HANDS-FREE"
+                    } else {
+                        "HANDS-FREE"
+                    },
+                fontWeight =
+                    FontWeight.Bold,
+            )
+        }
+    }
+}
+
+/**
  * Stage 253 unified bottom composer.
  *
  * Existing callback semantics and enable/disable rules remain authoritative.
@@ -935,6 +1059,13 @@ private fun DevilConversationComposer(
     handsFreeEnabled: Boolean,
     devilRed: Color,
 ) {
+    val canSubmit =
+        !isSubmitting &&
+            !isVoiceListening &&
+            !isVoiceSpeaking &&
+            !handsFreeEnabled &&
+            draft.isNotBlank()
+
     Row(
         modifier =
             Modifier
@@ -969,6 +1100,18 @@ private fun DevilConversationComposer(
             },
             minLines = 1,
             maxLines = 4,
+            keyboardOptions =
+                KeyboardOptions(
+                    imeAction = ImeAction.Send,
+                ),
+            keyboardActions =
+                KeyboardActions(
+                    onSend = {
+                        if (canSubmit) {
+                            onSubmit()
+                        }
+                    },
+                ),
             shape =
                 RoundedCornerShape(18.dp),
             colors =
@@ -989,14 +1132,10 @@ private fun DevilConversationComposer(
         )
 
         Button(
-            modifier = Modifier.devilInclusiveInteractiveTarget(),
-              onClick = onSubmit,
-            enabled =
-                !isSubmitting &&
-                    !isVoiceListening &&
-                    !isVoiceSpeaking &&
-                    !handsFreeEnabled &&
-                    draft.isNotBlank(),
+            modifier =
+                Modifier.devilInclusiveInteractiveTarget(),
+            onClick = onSubmit,
+            enabled = canSubmit,
             shape =
                 RoundedCornerShape(18.dp),
             colors =

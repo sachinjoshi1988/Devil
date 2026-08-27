@@ -44,8 +44,16 @@ class DefaultTrustAuthorityTest {
         )
 
         assertEquals(context.traceId, result.traceId)
-        assertEquals(TrustStatus.DEFERRED, result.status)
+        assertEquals(TrustStatus.EVALUATED, result.status)
         assertNull(result.trustLevel)
+        assertEquals(
+            SubjectTrustLevel.UNESTABLISHED,
+            requireNotNull(result.assessment).level,
+        )
+        assertEquals(
+            identity.identityId,
+            result.assessment.subjectIdentityId,
+        )
         assertNull(result.error)
     }
 

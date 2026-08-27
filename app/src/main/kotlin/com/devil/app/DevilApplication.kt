@@ -23,6 +23,12 @@ import com.devil.app.execution.DefaultAndroidExecutionAdapter
 import com.devil.app.internet.AndroidInternetKnowledgeCoordinator
 import com.devil.app.internet.AndroidInternetKnowledgeSafetyCoordinator
 import com.devil.app.internet.DefaultAndroidInternetKnowledgeSource
+import com.devil.app.modelprovider.conversation.AndroidConversationIntakeEvidenceStore
+import com.devil.app.modelprovider.conversation.AndroidConversationalResponseCompositionCoordinator
+import com.devil.app.modelprovider.conversation.ConversationalResponseSubmissionFlowCoordinator
+import com.devil.app.modelprovider.conversation.DefaultAndroidConversationalModelInferencePort
+import com.devil.app.modelprovider.conversation.DefaultConversationalModelConfigurationSource
+import com.devil.app.modelprovider.conversation.DefaultHttpsConversationalModelTransport
 import com.devil.app.device.AndroidDeviceKnowledgeCoordinator
 import com.devil.app.device.AndroidDeviceKnowledgeQueryCoordinator
 import com.devil.app.vision.DefaultAndroidCameraInventorySource
@@ -48,6 +54,7 @@ import com.devil.app.verification.DefaultAndroidVerificationAdapter
 import com.devil.app.verification.DefaultAndroidVerificationEvidencePort
 import com.devil.app.voice.AndroidVoiceOutputSource
 import com.devil.app.voice.DefaultAndroidVoiceOutputSource
+import com.devil.app.voice.DevilVoiceCoordinator
 import com.devil.app.voice.HandsFreeProductionCoordinator
 import com.devil.app.voice.VoiceConversationOutputCoordinator
 import com.devil.app.voice.VoiceConversationResultCoordinator
@@ -63,11 +70,13 @@ import com.devil.core.model.privacy.PrivacyExposureCoordinator
 import com.devil.core.model.privacy.PrivacyRepresentationReducer
 import com.devil.core.runtime.privacy.PrivacyProtectedContextResolver
 import com.devil.core.runtime.DefaultUnifiedDevilRuntime
+import com.devil.core.runtime.modelprovider.conversation.ConversationalResponseCoordinator
 import com.devil.core.runtime.UnifiedDevilRuntime
 import com.devil.core.runtime.execution.ExecutionAttemptPort
 import com.devil.core.runtime.observation.ObservationEvidencePort
 import com.devil.core.runtime.outcome.OutcomeEvidencePort
 import com.devil.core.runtime.verification.VerificationEvidencePort
+import java.util.Locale
 
 /**
  * Android process bootstrap for Devil.
@@ -115,14 +124,44 @@ import com.devil.core.runtime.verification.VerificationEvidencePort
  */
 class DevilApplication : Application() {
 
+    /**
+     * Stage 313 process-scoped transient correlation store for the exact
+     * ConversationIntakeAuthorityResult produced by the single Unified Devil Runtime.
+     *
+     * This store is bounded, process-local, trace-correlated, and one-shot.
+     * It is not Devil Memory, persistence, authorization state, model state,
+     * Verification, or Outcome state.
+     *
+     * OBSERVED_INTAKE != AUTHORITY.
+     * GENERATED != VERIFIED.
+     */
+    private val conversationIntakeEvidenceStore:
+        AndroidConversationIntakeEvidenceStore by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        AndroidConversationIntakeEvidenceStore()
+    }
+
     val runtime: UnifiedDevilRuntime by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         DefaultUnifiedDevilRuntime(
+            identityAuthority =
+                com.devil.core.runtime.identity.DefaultIdentityAuthority(
+                    requestProvider =
+                        com.devil.core.runtime.identity.DefaultIdentityResolutionRequestProvider(
+                            configuredSubjectIdentityId =
+                                com.devil.core.model.identity.IdentityId.from(
+                                    "android-primary-local-subject",
+                                ),
+                        ),
+                ),
             executionAttemptPort = executionAttemptPort,
             observationEvidencePort = observationEvidencePort,
             verificationEvidencePort = verificationEvidencePort,
             outcomeEvidencePort = outcomeEvidencePort,
+            conversationIntakeEvidencePort =
+                conversationIntakeEvidenceStore,
         )
     }
 
@@ -284,7 +323,7 @@ class DevilApplication : Application() {
         )
     }
 
-    val conversationSubmissionFlowCoordinator:
+    private val baseConversationSubmissionFlowCoordinator:
         ConversationSubmissionFlowCoordinator by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
@@ -295,6 +334,89 @@ class DevilApplication : Application() {
                 conversationEntryIdProvider,
             runtimeSubmissionCoordinator =
                 conversationRuntimeSubmissionCoordinator,
+        )
+    }
+
+    /**
+     * Stage 313 bounded conversational-model configuration.
+     *
+     * Endpoint and model identifier may be supplied through generated build
+     * configuration. The credential deliberately remains unavailable because
+     * Devil currently has no approved secure runtime credential mechanism for
+     * conversational-model access.
+     *
+     * Missing credential therefore fails closed rather than embedding a secret
+     * in the APK.
+     *
+     * CONFIGURATION_AVAILABLE != AUTHORIZATION.
+     * GENERATED != VERIFIED.
+     * MODEL != DEVIL.
+     */
+    private val conversationalModelConfigurationSource:
+        DefaultConversationalModelConfigurationSource by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultConversationalModelConfigurationSource(
+            endpointProvider = {
+                BuildConfig
+                    .DEVIL_CONVERSATIONAL_MODEL_ENDPOINT
+                    .takeIf { value ->
+                        value.isNotBlank()
+                    }
+            },
+            modelIdProvider = {
+                BuildConfig
+                    .DEVIL_CONVERSATIONAL_MODEL_ID
+                    .takeIf { value ->
+                        value.isNotBlank()
+                    }
+            },
+            credentialProvider = {
+                null
+            },
+        )
+    }
+
+    private val conversationalModelInferencePort:
+        DefaultAndroidConversationalModelInferencePort by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultAndroidConversationalModelInferencePort(
+            configurationSource =
+                conversationalModelConfigurationSource,
+            transport =
+                DefaultHttpsConversationalModelTransport(),
+        )
+    }
+
+    private val conversationalResponseCompositionCoordinator:
+        AndroidConversationalResponseCompositionCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        AndroidConversationalResponseCompositionCoordinator(
+            intakeEvidenceStore =
+                conversationIntakeEvidenceStore,
+            responseCoordinator =
+                ConversationalResponseCoordinator(
+                    inferencePort =
+                        conversationalModelInferencePort,
+                ),
+            interactionCoordinator =
+                conversationInteractionCoordinator,
+            entryIdProvider =
+                conversationEntryIdProvider,
+        )
+    }
+
+    val conversationSubmissionFlowCoordinator:
+        ConversationSubmissionFlowCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        ConversationalResponseSubmissionFlowCoordinator(
+            submissionCoordinator =
+                baseConversationSubmissionFlowCoordinator,
+            responseCompositionCoordinator =
+                conversationalResponseCompositionCoordinator,
         )
     }
 
@@ -346,8 +468,19 @@ class DevilApplication : Application() {
     val voiceOutputSource: AndroidVoiceOutputSource by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
+        val devilVoiceProfile =
+            requireNotNull(
+                DevilVoiceCoordinator()
+                    .prepare(
+                        Locale.getDefault().toLanguageTag(),
+                    ),
+            ) {
+                "Default Devil Voice profile must be available for the current language."
+            }
+
         DefaultAndroidVoiceOutputSource(
             context = applicationContext,
+            voiceProfile = devilVoiceProfile,
         )
     }
 

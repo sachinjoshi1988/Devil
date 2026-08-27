@@ -1,10 +1,10 @@
 package com.devil.app.conversation
 
 import com.devil.core.model.common.TraceId
+import com.devil.core.runtime.modelprovider.conversation.GeneratedAssistantResponse
 
 /**
- * Represents one immutable presentation entry in the Stage 24 conversation
- * timeline.
+ * Represents one immutable presentation entry in the conversation timeline.
  *
  * A USER entry contains user-supplied text and has no runtime trace until work
  * is actually submitted.
@@ -12,8 +12,18 @@ import com.devil.core.model.common.TraceId
  * A RUNTIME entry represents one truth-preserving immediate runtime
  * presentation and therefore requires its matching TraceId.
  *
- * This contract does not represent persistence, logical memory, verified
- * execution success, or a generated Devil conversational response.
+ * An ASSISTANT entry represents generated assistant-facing conversational text
+ * and preserves the TraceId of the bounded generated response.
+ *
+ * ASSISTANT is deliberately distinct from RUNTIME. Generated conversational
+ * text does not become runtime acceptance, constitutional Verification,
+ * verified truth, verified Outcome, execution success, Learning, or Memory
+ * merely because it is presented in the conversation timeline.
+ *
+ * This contract does not represent persistence or logical Memory.
+ *
+ * ASSISTANT != RUNTIME.
+ * GENERATED != VERIFIED.
  */
 @ConsistentCopyVisibility
 data class ConversationTimelineEntry private constructor(
@@ -51,6 +61,18 @@ data class ConversationTimelineEntry private constructor(
                 role = ConversationEntryRole.RUNTIME,
                 content = presentation.message,
                 traceId = presentation.traceId,
+            )
+        }
+
+        fun assistant(
+            id: ConversationEntryId,
+            response: GeneratedAssistantResponse,
+        ): ConversationTimelineEntry {
+            return ConversationTimelineEntry(
+                id = id,
+                role = ConversationEntryRole.ASSISTANT,
+                content = response.content,
+                traceId = response.traceId,
             )
         }
     }

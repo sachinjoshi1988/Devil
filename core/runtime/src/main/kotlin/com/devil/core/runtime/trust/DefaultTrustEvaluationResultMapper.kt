@@ -6,13 +6,16 @@ import com.devil.core.model.trust.TrustAssessment
 /**
  * Default Stage 4 mapping from subject trust assessments to TrustResult.
  *
- * TrustResult currently exposes ContextTrustLevel, which describes context
- * provenance rather than subject trust. This mapper therefore returns DEFERRED
- * for every subject trust assessment instead of fabricating a context trust
- * level or weakening the trust boundary.
+ * The exact bounded TrustAssessment is preserved so downstream constitutional
+ * authorization can consume genuine subject-trust evidence without reconstructing
+ * it from ContextTrustLevel.
  *
- * It performs no trust evaluation, authorization, planning, execution,
- * observation, or verification.
+ * ContextTrustLevel remains context provenance and is not fabricated here.
+ *
+ * SUBJECT_TRUST != CONTEXT_TRUST.
+ * TRUST_ASSESSMENT != AUTHENTICATION.
+ * TRUST_ASSESSMENT != AUTHORIZATION.
+ * TRUST_ASSESSMENT != EXECUTION.
  */
 class DefaultTrustEvaluationResultMapper :
     TrustEvaluationResultMapper {
@@ -23,7 +26,8 @@ class DefaultTrustEvaluationResultMapper :
     ): TrustResult {
         return TrustResult.create(
             traceId = traceId,
-            status = TrustStatus.DEFERRED,
+            status = TrustStatus.EVALUATED,
+            assessment = assessment,
         )
     }
 }

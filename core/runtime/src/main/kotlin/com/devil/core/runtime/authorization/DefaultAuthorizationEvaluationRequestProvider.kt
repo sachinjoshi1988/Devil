@@ -1,5 +1,6 @@
 package com.devil.core.runtime.authorization
 
+import com.devil.core.model.authorization.AuthorizationEvaluationRequest
 import com.devil.core.model.context.ContextEnvelope
 import com.devil.core.runtime.identity.IdentityResult
 import com.devil.core.runtime.identity.IdentityStatus
@@ -9,14 +10,19 @@ import com.devil.core.runtime.trust.TrustStatus
 /**
  * Default Stage 4 authorization-evaluation request provider.
  *
- * The stable TrustResult contract does not yet expose the bounded
- * TrustAssessment required by AuthorizationEvaluationRequest. This provider
- * therefore returns UNAVAILABLE rather than reconstructing or fabricating
- * subject trust from ContextTrustLevel.
+ * A request becomes available only when:
  *
- * Identity or trust failures propagate their matching error. This provider
- * performs no authorization evaluation, capability authorization, Owner Mode
- * entry, execution, observation, or verification.
+ * - identity resolution produced one resolved subject identity; and
+ * - trust evaluation produced one genuine bounded TrustAssessment.
+ *
+ * Subject trust is consumed exactly as established upstream. ContextTrustLevel is
+ * not converted into subject trust and no trust or authorization conclusion is
+ * fabricated here.
+ *
+ * Identity or trust failures propagate their matching error.
+ *
+ * This provider performs no authorization evaluation, capability authorization,
+ * Owner Mode entry, execution, observation, or verification.
  */
 class DefaultAuthorizationEvaluationRequestProvider :
     AuthorizationEvaluationRequestProvider {
@@ -50,9 +56,35 @@ class DefaultAuthorizationEvaluationRequestProvider :
             )
         }
 
+        if (
+            identity.status != IdentityStatus.RESOLVED ||
+            trust.status != TrustStatus.EVALUATED ||
+            trust.assessment == null
+        ) {
+            return AuthorizationEvaluationRequestResult.create(
+                traceId = context.traceId,
+                status = AuthorizationEvaluationRequestStatus.UNAVAILABLE,
+            )
+        }
+
+        val identityId =
+            requireNotNull(identity.identityId)
+
+        require(
+            trust.assessment.subjectIdentityId == identityId,
+        ) {
+            "Resolved identity and trust assessment must use the same subject identity."
+        }
+
         return AuthorizationEvaluationRequestResult.create(
             traceId = context.traceId,
-            status = AuthorizationEvaluationRequestStatus.UNAVAILABLE,
+            status = AuthorizationEvaluationRequestStatus.AVAILABLE,
+            request =
+                AuthorizationEvaluationRequest.create(
+                    context = context,
+                    subjectIdentityId = identityId,
+                    trustAssessment = trust.assessment,
+                ),
         )
     }
 }

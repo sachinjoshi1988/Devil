@@ -3,18 +3,34 @@ package com.devil.core.runtime.trust
 import com.devil.core.model.common.TraceId
 import com.devil.core.model.context.ContextTrustLevel
 import com.devil.core.model.error.UniversalErrorRecord
+import com.devil.core.model.trust.TrustAssessment
 
 /**
  * Represents the structured result of trust evaluation.
  *
- * An evaluated result contains a trust level. A deferred result contains
- * neither trust level nor error. A failed result contains a matching error.
+ * An evaluated result may preserve:
+ *
+ * - one bounded subject TrustAssessment; and/or
+ * - one ContextTrustLevel when that context-provenance representation is
+ *   independently justified by an existing caller.
+ *
+ * Subject trust and context trust remain distinct.
+ *
+ * SUBJECT_TRUST != CONTEXT_TRUST.
+ * TRUST_ASSESSMENT != AUTHENTICATION.
+ * TRUST_ASSESSMENT != AUTHORIZATION.
+ * TRUST_ASSESSMENT != OWNER_MODE.
+ * TRUST_ASSESSMENT != EXECUTION.
+ *
+ * A deferred result contains no trust representation or error.
+ * A failed result contains one matching error.
  */
 @ConsistentCopyVisibility
 data class TrustResult private constructor(
     val traceId: TraceId,
     val status: TrustStatus,
     val trustLevel: ContextTrustLevel?,
+    val assessment: TrustAssessment?,
     val error: UniversalErrorRecord?,
 ) {
     companion object {
@@ -22,24 +38,36 @@ data class TrustResult private constructor(
             traceId: TraceId,
             status: TrustStatus,
             trustLevel: ContextTrustLevel? = null,
+            assessment: TrustAssessment? = null,
             error: UniversalErrorRecord? = null,
         ): TrustResult {
             when (status) {
                 TrustStatus.EVALUATED -> {
-                    require(trustLevel != null && error == null) {
-                        "Evaluated trust results require a trust level and must not contain an error."
+                    require(
+                        (trustLevel != null || assessment != null) &&
+                            error == null,
+                    ) {
+                        "Evaluated trust results require at least one bounded trust representation and must not contain an error."
                     }
                 }
 
                 TrustStatus.DEFERRED -> {
-                    require(trustLevel == null && error == null) {
-                        "Deferred trust results must not contain a trust level or error."
+                    require(
+                        trustLevel == null &&
+                            assessment == null &&
+                            error == null,
+                    ) {
+                        "Deferred trust results must not contain trust representations or error."
                     }
                 }
 
                 TrustStatus.FAILED -> {
-                    require(trustLevel == null && error != null) {
-                        "Failed trust results require an error and must not contain a trust level."
+                    require(
+                        trustLevel == null &&
+                            assessment == null &&
+                            error != null,
+                    ) {
+                        "Failed trust results require an error and must not contain trust representations."
                     }
                 }
             }
@@ -52,6 +80,7 @@ data class TrustResult private constructor(
                 traceId = traceId,
                 status = status,
                 trustLevel = trustLevel,
+                assessment = assessment,
                 error = error,
             )
         }

@@ -10,6 +10,8 @@ import com.devil.core.model.context.ContextTrustLevel
 import com.devil.core.model.error.ErrorCode
 import com.devil.core.model.error.UniversalErrorRecord
 import com.devil.core.model.identity.IdentityId
+import com.devil.core.model.trust.SubjectTrustLevel
+import com.devil.core.model.trust.TrustAssessment
 import com.devil.core.runtime.identity.IdentityResult
 import com.devil.core.runtime.identity.IdentityStatus
 import com.devil.core.runtime.trust.TrustResult
@@ -18,33 +20,133 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 
 class DefaultAuthorizationEvaluationRequestProviderTest {
 
     @Test
-    fun `provide returns unavailable when identity and trust do not expose a bounded authorization request`() {
-        val context = createContext(
-            "trace-authorization-provider-001",
-        )
-        val provider: AuthorizationEvaluationRequestProvider =
+    fun `provide returns available request from resolved identity and exact evaluated subject trust assessment`() {
+        val context =
+            createContext(
+                "trace-authorization-provider-001",
+            )
+        val identityId =
+            IdentityId.from(
+                "subject-authorization-provider-001",
+            )
+        val assessment =
+            TrustAssessment.create(
+                subjectIdentityId = identityId,
+                level = SubjectTrustLevel.UNESTABLISHED,
+                rationale =
+                    "No stronger subject trust conclusion is established.",
+            )
+
+        val result =
             DefaultAuthorizationEvaluationRequestProvider()
+                .provide(
+                    context = context,
+                    identity =
+                        IdentityResult.create(
+                            traceId = context.traceId,
+                            status = IdentityStatus.RESOLVED,
+                            identityId = identityId,
+                        ),
+                    trust =
+                        TrustResult.create(
+                            traceId = context.traceId,
+                            status = TrustStatus.EVALUATED,
+                            assessment = assessment,
+                        ),
+                )
 
-        val result = provider.provide(
-            context = context,
-            identity = IdentityResult.create(
-                traceId = context.traceId,
-                status = IdentityStatus.RESOLVED,
-                identityId = IdentityId.from(
-                    "subject-authorization-provider-001",
-                ),
-            ),
-            trust = TrustResult.create(
-                traceId = context.traceId,
-                status = TrustStatus.DEFERRED,
-            ),
+        assertEquals(
+            context.traceId,
+            result.traceId,
+        )
+        assertEquals(
+            AuthorizationEvaluationRequestStatus.AVAILABLE,
+            result.status,
         )
 
-        assertEquals(context.traceId, result.traceId)
+        val request = requireNotNull(result.request)
+
+        assertSame(context, request.context)
+        assertEquals(
+            identityId,
+            request.subjectIdentityId,
+        )
+        assertSame(
+            assessment,
+            request.trustAssessment,
+        )
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `provide remains unavailable without evaluated subject trust assessment`() {
+        val context =
+            createContext(
+                "trace-authorization-provider-002",
+            )
+
+        val result =
+            DefaultAuthorizationEvaluationRequestProvider()
+                .provide(
+                    context = context,
+                    identity =
+                        IdentityResult.create(
+                            traceId = context.traceId,
+                            status = IdentityStatus.RESOLVED,
+                            identityId =
+                                IdentityId.from(
+                                    "subject-authorization-provider-002",
+                                ),
+                        ),
+                    trust =
+                        TrustResult.create(
+                            traceId = context.traceId,
+                            status = TrustStatus.DEFERRED,
+                        ),
+                )
+
+        assertEquals(
+            AuthorizationEvaluationRequestStatus.UNAVAILABLE,
+            result.status,
+        )
+        assertNull(result.request)
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `context trust alone cannot become subject trust for authorization`() {
+        val context =
+            createContext(
+                "trace-authorization-provider-003",
+            )
+
+        val result =
+            DefaultAuthorizationEvaluationRequestProvider()
+                .provide(
+                    context = context,
+                    identity =
+                        IdentityResult.create(
+                            traceId = context.traceId,
+                            status = IdentityStatus.RESOLVED,
+                            identityId =
+                                IdentityId.from(
+                                    "subject-authorization-provider-003",
+                                ),
+                        ),
+                    trust =
+                        TrustResult.create(
+                            traceId = context.traceId,
+                            status = TrustStatus.EVALUATED,
+                            trustLevel =
+                                ContextTrustLevel.VERIFIED,
+                        ),
+                )
+
         assertEquals(
             AuthorizationEvaluationRequestStatus.UNAVAILABLE,
             result.status,
@@ -55,28 +157,32 @@ class DefaultAuthorizationEvaluationRequestProviderTest {
 
     @Test
     fun `provide preserves failed identity error`() {
-        val context = createContext(
-            "trace-authorization-provider-002",
-        )
-        val error = createError(
-            traceId = context.traceId,
-            code = "IDENTITY_RESOLUTION_FAILED",
-        )
-        val provider: AuthorizationEvaluationRequestProvider =
-            DefaultAuthorizationEvaluationRequestProvider()
+        val context =
+            createContext(
+                "trace-authorization-provider-004",
+            )
+        val error =
+            createError(
+                traceId = context.traceId,
+                code = "IDENTITY_RESOLUTION_FAILED",
+            )
 
-        val result = provider.provide(
-            context = context,
-            identity = IdentityResult.create(
-                traceId = context.traceId,
-                status = IdentityStatus.FAILED,
-                error = error,
-            ),
-            trust = TrustResult.create(
-                traceId = context.traceId,
-                status = TrustStatus.DEFERRED,
-            ),
-        )
+        val result =
+            DefaultAuthorizationEvaluationRequestProvider()
+                .provide(
+                    context = context,
+                    identity =
+                        IdentityResult.create(
+                            traceId = context.traceId,
+                            status = IdentityStatus.FAILED,
+                            error = error,
+                        ),
+                    trust =
+                        TrustResult.create(
+                            traceId = context.traceId,
+                            status = TrustStatus.DEFERRED,
+                        ),
+                )
 
         assertEquals(
             AuthorizationEvaluationRequestStatus.FAILED,
@@ -88,31 +194,36 @@ class DefaultAuthorizationEvaluationRequestProviderTest {
 
     @Test
     fun `provide preserves failed trust error`() {
-        val context = createContext(
-            "trace-authorization-provider-003",
-        )
-        val error = createError(
-            traceId = context.traceId,
-            code = "TRUST_EVALUATION_FAILED",
-        )
-        val provider: AuthorizationEvaluationRequestProvider =
-            DefaultAuthorizationEvaluationRequestProvider()
+        val context =
+            createContext(
+                "trace-authorization-provider-005",
+            )
+        val error =
+            createError(
+                traceId = context.traceId,
+                code = "TRUST_EVALUATION_FAILED",
+            )
 
-        val result = provider.provide(
-            context = context,
-            identity = IdentityResult.create(
-                traceId = context.traceId,
-                status = IdentityStatus.RESOLVED,
-                identityId = IdentityId.from(
-                    "subject-authorization-provider-003",
-                ),
-            ),
-            trust = TrustResult.create(
-                traceId = context.traceId,
-                status = TrustStatus.FAILED,
-                error = error,
-            ),
-        )
+        val result =
+            DefaultAuthorizationEvaluationRequestProvider()
+                .provide(
+                    context = context,
+                    identity =
+                        IdentityResult.create(
+                            traceId = context.traceId,
+                            status = IdentityStatus.RESOLVED,
+                            identityId =
+                                IdentityId.from(
+                                    "subject-authorization-provider-005",
+                                ),
+                        ),
+                    trust =
+                        TrustResult.create(
+                            traceId = context.traceId,
+                            status = TrustStatus.FAILED,
+                            error = error,
+                        ),
+                )
 
         assertEquals(
             AuthorizationEvaluationRequestStatus.FAILED,
@@ -123,52 +234,98 @@ class DefaultAuthorizationEvaluationRequestProviderTest {
     }
 
     @Test
-    fun `provide rejects identity result from a different trace`() {
-        val context = createContext(
-            "trace-authorization-provider-004",
-        )
-        val provider: AuthorizationEvaluationRequestProvider =
-            DefaultAuthorizationEvaluationRequestProvider()
+    fun `provide rejects resolved identity and trust assessment for different subjects`() {
+        val context =
+            createContext(
+                "trace-authorization-provider-006",
+            )
 
         assertFailsWith<IllegalArgumentException> {
-            provider.provide(
-                context = context,
-                identity = IdentityResult.create(
-                    traceId = TraceId.from(
-                        "trace-authorization-provider-identity-other",
-                    ),
-                    status = IdentityStatus.UNRESOLVED,
-                ),
-                trust = TrustResult.create(
-                    traceId = context.traceId,
-                    status = TrustStatus.DEFERRED,
-                ),
+            DefaultAuthorizationEvaluationRequestProvider()
+                .provide(
+                    context = context,
+                    identity =
+                        IdentityResult.create(
+                            traceId = context.traceId,
+                            status = IdentityStatus.RESOLVED,
+                            identityId =
+                                IdentityId.from(
+                                    "subject-authorization-provider-006",
+                                ),
+                        ),
+                    trust =
+                        TrustResult.create(
+                            traceId = context.traceId,
+                            status = TrustStatus.EVALUATED,
+                            assessment =
+                                TrustAssessment.create(
+                                    subjectIdentityId =
+                                        IdentityId.from(
+                                            "different-subject-authorization-provider-006",
+                                        ),
+                                    level =
+                                        SubjectTrustLevel.UNESTABLISHED,
+                                    rationale =
+                                        "Bounded subject trust assessment.",
+                                ),
+                        ),
+                )
+        }
+    }
+
+    @Test
+    fun `provide rejects identity result from a different trace`() {
+        val context =
+            createContext(
+                "trace-authorization-provider-007",
             )
+
+        assertFailsWith<IllegalArgumentException> {
+            DefaultAuthorizationEvaluationRequestProvider()
+                .provide(
+                    context = context,
+                    identity =
+                        IdentityResult.create(
+                            traceId =
+                                TraceId.from(
+                                    "trace-authorization-provider-identity-other",
+                                ),
+                            status = IdentityStatus.UNRESOLVED,
+                        ),
+                    trust =
+                        TrustResult.create(
+                            traceId = context.traceId,
+                            status = TrustStatus.DEFERRED,
+                        ),
+                )
         }
     }
 
     @Test
     fun `provide rejects trust result from a different trace`() {
-        val context = createContext(
-            "trace-authorization-provider-005",
-        )
-        val provider: AuthorizationEvaluationRequestProvider =
-            DefaultAuthorizationEvaluationRequestProvider()
+        val context =
+            createContext(
+                "trace-authorization-provider-008",
+            )
 
         assertFailsWith<IllegalArgumentException> {
-            provider.provide(
-                context = context,
-                identity = IdentityResult.create(
-                    traceId = context.traceId,
-                    status = IdentityStatus.UNRESOLVED,
-                ),
-                trust = TrustResult.create(
-                    traceId = TraceId.from(
-                        "trace-authorization-provider-trust-other",
-                    ),
-                    status = TrustStatus.DEFERRED,
-                ),
-            )
+            DefaultAuthorizationEvaluationRequestProvider()
+                .provide(
+                    context = context,
+                    identity =
+                        IdentityResult.create(
+                            traceId = context.traceId,
+                            status = IdentityStatus.UNRESOLVED,
+                        ),
+                    trust =
+                        TrustResult.create(
+                            traceId =
+                                TraceId.from(
+                                    "trace-authorization-provider-trust-other",
+                                ),
+                            status = TrustStatus.DEFERRED,
+                        ),
+                )
         }
     }
 
@@ -180,10 +337,12 @@ class DefaultAuthorizationEvaluationRequestProviderTest {
             schemaVersion = SchemaVersion.from(1),
             source = ContextSource.TEST,
             trustLevel = ContextTrustLevel.VERIFIED,
-            securityLevel = ContextSecurityLevel.RESTRICTED,
-            observedAt = DevilTimestamp.fromEpochMilliseconds(
-                1_754_000_055_000L,
-            ),
+            securityLevel =
+                ContextSecurityLevel.RESTRICTED,
+            observedAt =
+                DevilTimestamp.fromEpochMilliseconds(
+                    1_754_000_055_000L,
+                ),
         )
     }
 
@@ -194,10 +353,12 @@ class DefaultAuthorizationEvaluationRequestProviderTest {
         return UniversalErrorRecord.create(
             errorCode = ErrorCode.from(code),
             traceId = traceId,
-            occurredAt = DevilTimestamp.fromEpochMilliseconds(
-                1_754_000_055_500L,
-            ),
-            summary = "Authorization request dependency failed.",
+            occurredAt =
+                DevilTimestamp.fromEpochMilliseconds(
+                    1_754_000_055_500L,
+                ),
+            summary =
+                "Authorization request dependency failed.",
         )
     }
 }

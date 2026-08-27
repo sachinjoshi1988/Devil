@@ -106,6 +106,41 @@ class ConversationInteractionCoordinator {
         )
     }
 
+    /**
+     * Stage 313 presentation-only attachment of one already-generated assistant response.
+     *
+     * This method does not invoke a model, perform runtime submission, establish
+     * constitutional Verification, create an Outcome, execute capabilities, perform
+     * Learning, or create/persist Memory.
+     *
+     * GENERATED != VERIFIED.
+     * ASSISTANT != RUNTIME.
+     */
+    fun appendGeneratedAssistantResponse(
+        state: ConversationUiState,
+        assistantEntryId: ConversationEntryId,
+        response: com.devil.core.runtime.modelprovider.conversation.GeneratedAssistantResponse,
+    ): ConversationUiState {
+        require(!state.isSubmitting) {
+            "Generated assistant response may be appended only after runtime submission has completed."
+        }
+
+        val assistantEntry =
+            ConversationTimelineEntry.assistant(
+                id = assistantEntryId,
+                response = response,
+            )
+
+        return state.copy(
+            entries =
+                boundCompletedTimeline(
+                    entries = state.entries + assistantEntry,
+                ),
+            submissionNotice = null,
+        )
+    }
+
+
     fun completeMetadataUnavailable(
         state: ConversationUiState,
     ): ConversationUiState {

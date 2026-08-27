@@ -4,6 +4,23 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+val devilConversationalModelEndpoint =
+    System.getenv("DEVIL_CONVERSATIONAL_MODEL_ENDPOINT")
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+
+val devilConversationalModelId =
+    System.getenv("DEVIL_CONVERSATIONAL_MODEL_ID")
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+
+fun String.asDevilBuildConfigStringLiteral(): String {
+    return "\"" +
+        replace("\\", "\\\\")
+            .replace("\"", "\\\"") +
+        "\""
+}
+
 val devilReleaseKeystorePath =
     System.getenv("DEVIL_RELEASE_KEYSTORE_PATH")
         ?.trim()
@@ -43,6 +60,20 @@ android {
         targetSdk = 35
         versionCode = 3
         versionName = "1.0.0"
+
+        buildConfigField(
+            "String",
+            "DEVIL_CONVERSATIONAL_MODEL_ENDPOINT",
+            (devilConversationalModelEndpoint ?: "")
+                .asDevilBuildConfigStringLiteral(),
+        )
+
+        buildConfigField(
+            "String",
+            "DEVIL_CONVERSATIONAL_MODEL_ID",
+            (devilConversationalModelId ?: "")
+                .asDevilBuildConfigStringLiteral(),
+        )
     }
 
     signingConfigs {
@@ -80,6 +111,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 
@@ -106,7 +138,7 @@ gradle.taskGraph.whenReady {
                             "packageRelease",
                             ignoreCase = true,
                         )
-                )
+                    )
         }
 
     if (releaseBuildRequested) {
@@ -149,9 +181,10 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:runtime"))
 
-    val composeBom = platform(
-        "androidx.compose:compose-bom:2025.04.01",
-    )
+    val composeBom =
+        platform(
+            "androidx.compose:compose-bom:2025.04.01",
+        )
 
     implementation(composeBom)
 

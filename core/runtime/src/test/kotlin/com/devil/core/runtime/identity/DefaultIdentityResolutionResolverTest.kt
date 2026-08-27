@@ -15,87 +15,150 @@ import com.devil.core.model.identity.IdentityResolutionRequest
 import com.devil.core.model.identity.IdentityResolutionState
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import kotlin.test.assertNotNull
+import kotlin.test.assertSame
 
 class DefaultIdentityResolutionResolverTest {
 
     @Test
-    fun `resolve returns unresolved record without inventing a selection`() {
+    fun `resolve selects sole coherent logical subject identity represented by request`() {
         val request = createRequest()
         val resolver: IdentityResolutionResolver =
             DefaultIdentityResolutionResolver()
 
         val record = resolver.resolve(request)
 
-        assertEquals(IdentityResolutionState.UNRESOLVED, record.state)
-        assertNull(record.selection)
         assertEquals(
-            "No identity resolution policy is available.",
+            IdentityResolutionState.RESOLVED,
+            record.state,
+        )
+
+        val selection = assertNotNull(record.selection)
+
+        assertEquals(
+            request.evidenceSet.claimedIdentityId,
+            selection.candidate.identityId,
+        )
+        assertEquals(
+            100,
+            selection.confidence.value,
+        )
+        assertEquals(
+            "The request contains one coherent claimed subject identity and therefore one exact logical identity candidate.",
+            selection.rationale,
+        )
+        assertEquals(
+            "The sole coherent logical subject identity represented by the request was selected.",
             record.rationale,
         )
     }
 
     @Test
-    fun `resolve preserves claimed identity and evidence in one candidate`() {
+    fun `resolve preserves claimed identity and exact evidence set in one candidate`() {
         val request = createRequest()
         val resolver: IdentityResolutionResolver =
             DefaultIdentityResolutionResolver()
 
         val record = resolver.resolve(request)
 
-        assertEquals(1, record.candidateSet.candidates.size)
+        assertEquals(
+            1,
+            record.candidateSet.candidates.size,
+        )
 
-        val candidate = record.candidateSet.candidates.single()
+        val candidate =
+            record.candidateSet.candidates.single()
 
         assertEquals(
             request.evidenceSet.claimedIdentityId,
             candidate.identityId,
         )
-        assertEquals(
+        assertSame(
             request.evidenceSet,
             candidate.evidenceSet,
+        )
+
+        assertSame(
+            candidate,
+            requireNotNull(record.selection).candidate,
+        )
+    }
+
+    @Test
+    fun `resolved logical identity does not alter context trust classification`() {
+        val request = createRequest()
+        val record =
+            DefaultIdentityResolutionResolver()
+                .resolve(request)
+
+        assertEquals(
+            IdentityResolutionState.RESOLVED,
+            record.state,
+        )
+        assertEquals(
+            ContextTrustLevel.VERIFIED,
+            request.context.trustLevel,
+        )
+        assertEquals(
+            request.evidenceSet.claimedIdentityId,
+            requireNotNull(record.selection)
+                .candidate
+                .identityId,
         )
     }
 
     private fun createRequest(): IdentityResolutionRequest {
-        val identityId = IdentityId.from(
-            "subject-default-resolution-resolver-001",
-        )
+        val identityId =
+            IdentityId.from(
+                "subject-default-resolution-resolver-001",
+            )
 
         return IdentityResolutionRequest.create(
-            context = ContextEnvelope.create(
-                traceId = TraceId.from(
-                    "trace-default-resolution-resolver-001",
-                ),
-                schemaVersion = SchemaVersion.from(1),
-                source = ContextSource.TEST,
-                trustLevel = ContextTrustLevel.VERIFIED,
-                securityLevel = ContextSecurityLevel.RESTRICTED,
-                observedAt = DevilTimestamp.fromEpochMilliseconds(
-                    1_754_000_043_000L,
-                ),
-            ),
-            evidenceSet = IdentityEvidenceSet.create(
-                claimedIdentityId = identityId,
-                evidence = listOf(
-                    IdentityEvidence.create(
-                        claimedIdentityId = identityId,
-                        source = IdentityEvidenceSource.DECLARED,
-                        observedAt = DevilTimestamp.fromEpochMilliseconds(
-                            1_754_000_043_500L,
+            context =
+                ContextEnvelope.create(
+                    traceId =
+                        TraceId.from(
+                            "trace-default-resolution-resolver-001",
                         ),
-                        reference = "declared-resolution-evidence",
-                    ),
-                    IdentityEvidence.create(
-                        claimedIdentityId = identityId,
-                        source = IdentityEvidenceSource.DEVICE,
-                        observedAt = DevilTimestamp.fromEpochMilliseconds(
-                            1_754_000_044_000L,
+                    schemaVersion = SchemaVersion.from(1),
+                    source = ContextSource.TEST,
+                    trustLevel = ContextTrustLevel.VERIFIED,
+                    securityLevel =
+                        ContextSecurityLevel.RESTRICTED,
+                    observedAt =
+                        DevilTimestamp.fromEpochMilliseconds(
+                            1_754_000_043_000L,
                         ),
-                        reference = "device-resolution-evidence",
-                    ),
                 ),
-            ),
+            evidenceSet =
+                IdentityEvidenceSet.create(
+                    claimedIdentityId = identityId,
+                    evidence =
+                        listOf(
+                            IdentityEvidence.create(
+                                claimedIdentityId = identityId,
+                                source =
+                                    IdentityEvidenceSource.DECLARED,
+                                observedAt =
+                                    DevilTimestamp.fromEpochMilliseconds(
+                                        1_754_000_043_500L,
+                                    ),
+                                reference =
+                                    "declared-resolution-evidence",
+                            ),
+                            IdentityEvidence.create(
+                                claimedIdentityId = identityId,
+                                source =
+                                    IdentityEvidenceSource.DEVICE,
+                                observedAt =
+                                    DevilTimestamp.fromEpochMilliseconds(
+                                        1_754_000_044_000L,
+                                    ),
+                                reference =
+                                    "device-resolution-evidence",
+                            ),
+                        ),
+                ),
         )
     }
 }

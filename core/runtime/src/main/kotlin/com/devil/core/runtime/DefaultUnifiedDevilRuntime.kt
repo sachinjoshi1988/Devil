@@ -30,6 +30,8 @@ import com.devil.core.runtime.learning.LearningAuthority
 import com.devil.core.runtime.learning.LearningEvidencePort
 import com.devil.core.runtime.memory.DefaultMemoryAuthority
 import com.devil.core.runtime.memory.DefaultMemoryAuthorityEvidencePort
+import com.devil.core.runtime.modelprovider.conversation.ConversationIntakeEvidencePort
+import com.devil.core.runtime.modelprovider.conversation.DefaultConversationIntakeEvidencePort
 import com.devil.core.runtime.memory.DefaultMemoryCommitmentAuthority
 import com.devil.core.runtime.memory.DefaultMemoryPersistenceAuthority
 import com.devil.core.runtime.memory.DefaultMemoryProposalAuthority
@@ -98,6 +100,9 @@ class DefaultUnifiedDevilRuntime(
     private val conversationIntakeAuthority:
         ConversationIntakeAuthority =
         DefaultConversationIntakeAuthority(),
+    private val conversationIntakeEvidencePort:
+        ConversationIntakeEvidencePort =
+        DefaultConversationIntakeEvidencePort(),
     private val conversationRecordAuthority:
         ConversationRecordAuthority =
         DefaultConversationRecordAuthority(),
@@ -229,6 +234,10 @@ class DefaultUnifiedDevilRuntime(
         ) {
             "Context and conversation-intake result must use the same trace identity."
         }
+
+        conversationIntakeEvidencePort.observe(
+            conversationIntake = conversationIntake,
+        )
 
         val conversationRecord =
             conversationRecordAuthority.record(
