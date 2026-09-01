@@ -19,6 +19,7 @@ import com.devil.app.conversation.DefaultConversationRuntimeSubmissionCoordinato
 import com.devil.app.conversation.DefaultConversationSubmissionFlowCoordinator
 import com.devil.app.conversation.VoiceConversationRuntimeInputMetadataProvider
 import com.devil.app.education.Stage316EducationAlphaCoordinator
+import com.devil.app.education.Stage317SpokenEnglishAlphaCoordinator
 import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAttemptPort
 import com.devil.app.execution.DefaultAndroidExecutionAdapter
@@ -1023,6 +1024,19 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         Stage316EducationAlphaCoordinator()
+    }
+
+    /**
+     * Stage 317 process-scoped bounded Spoken English Alpha composition.
+     *
+     * Delegates strictly through the existing Stage 120 -> 121 -> 122 -> 123
+     * Education architecture. This is not another runtime or education authority.
+     */
+    val stage317SpokenEnglishAlphaCoordinator:
+        Stage317SpokenEnglishAlphaCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        Stage317SpokenEnglishAlphaCoordinator()
     }
 
     val handsFreeProductionCoordinator:

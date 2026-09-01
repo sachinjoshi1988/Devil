@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import com.devil.app.accessibility.AndroidAccessibilityServiceDiagnosticStatus
 import com.devil.app.authentication.Stage314AndroidOwnerAuthenticationCoordinator
 import com.devil.app.education.Stage316EducationAlphaResult
+import com.devil.app.education.Stage317SpokenEnglishAlphaResult
 import com.devil.core.model.common.TraceId
 import com.devil.core.model.education.EducationSessionId
 import com.devil.core.model.identity.IdentityId
@@ -293,6 +294,15 @@ class DevilActivity : FragmentActivity() {
                     mutableStateOf<Stage316EducationAlphaResult?>(null)
                 }
 
+                /* Stage 317 bounded Spoken English Alpha presentation state.
+                 * Prepared Education Domain context only; not teaching, completed
+                 * conversation, speech recognition, verified pronunciation,
+                 * verified proficiency, constitutional Learning, or persistence.
+                 */
+                var stage317SpokenEnglishAlphaResult by remember {
+                    mutableStateOf<Stage317SpokenEnglishAlphaResult?>(null)
+                }
+
                 /* Stage 256 presentation navigation only. */
                 var showTaskAutomationInterface by remember {
                     mutableStateOf(false)
@@ -485,11 +495,20 @@ class DevilActivity : FragmentActivity() {
                       )
                   } else if (showLanguageLearningInterface) {
                       DevilLanguageLearningInterface(
-                          languageSessionId = null,
-                          targetLanguage = null,
-                          learningObjective = null,
-                          spokenEnglishStatus = null,
-                          pronunciationStatus = null,
+                          languageSessionId =
+                              stage317SpokenEnglishAlphaResult?.languageSession?.educationSession?.sessionId?.value,
+                          targetLanguage =
+                              stage317SpokenEnglishAlphaResult?.languageSession?.targetLanguage,
+                          learningObjective =
+                              stage317SpokenEnglishAlphaResult?.languageSession?.educationSession?.objective?.objective,
+                          spokenEnglishStatus =
+                              stage317SpokenEnglishAlphaResult?.beginnerSession?.let {
+                                  "Beginner context prepared"
+                              },
+                          pronunciationStatus =
+                              stage317SpokenEnglishAlphaResult?.pronunciationPractice?.let {
+                                  "Practice context prepared"
+                              },
                           listeningStatus = null,
                           grammarStatus = null,
                           vocabularyStatus = null,
@@ -506,6 +525,7 @@ class DevilActivity : FragmentActivity() {
                           spokenEducationStatus = null,
                           onBack = {
                               showLanguageLearningInterface = false
+                                showEducationInterface = true
                           },
                       )
                 } else if (showEducationInterface) {
@@ -516,7 +536,8 @@ class DevilActivity : FragmentActivity() {
                             stage316EducationAlphaResult?.session?.objective?.subject,
                         educationObjective =
                             stage316EducationAlphaResult?.session?.objective?.objective,
-                        targetLanguage = null,
+                        targetLanguage =
+                            null,
                         studyFocus = null,
                         studyApproach = null,
                         learnerSupportObjective = null,
@@ -532,6 +553,25 @@ class DevilActivity : FragmentActivity() {
                         educationalVisionStatus = null,
                         tabletEducationStatus = null,
                           onLanguageLearningOpen = {
+                              stage317SpokenEnglishAlphaResult =
+                                  stage316EducationAlphaResult?.session?.let {
+                                      educationSession ->
+                                      devilApplication
+                                          .stage317SpokenEnglishAlphaCoordinator
+                                          .prepare(
+                                              traceId =
+                                                  TraceId.from(
+                                                      "stage317-spoken-english-alpha",
+                                                  ),
+                                              educationSession =
+                                                  educationSession,
+                                              targetLanguage = "English",
+                                              conversationTopic =
+                                                  "Daily conversation",
+                                              pronunciationTarget =
+                                                  "Good morning",
+                                          )
+                                  }
                               showEducationInterface = false
                               showLanguageLearningInterface = true
                           },

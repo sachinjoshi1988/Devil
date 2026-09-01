@@ -156,7 +156,28 @@ class Stage258LanguageLearningInterfaceTest {
     }
 
     @Test
-    fun `activity supplies no fabricated language learning state`() {
+    fun `language learning back returns to education`() {
+        val source = activitySource()
+        val languageLearningBranch =
+            source
+                .substringAfter("DevilLanguageLearningInterface(")
+                .substringBefore("} else if (showEducationInterface)")
+
+        assertTrue(
+            languageLearningBranch.contains(
+                "showLanguageLearningInterface = false",
+            ),
+        )
+        assertTrue(
+            languageLearningBranch.contains(
+                "showEducationInterface = true",
+            ),
+            "BACK TO EDUCATION must restore the Education interface.",
+        )
+    }
+
+    @Test
+    fun `activity supplies only bounded Stage 317 language learning state`() {
         val source = activitySource()
 
         assertTrue(
@@ -166,13 +187,24 @@ class Stage258LanguageLearningInterfaceTest {
         )
 
         for (
-            suppliedNull in
+            suppliedStage317State in
                 listOf(
-                    "languageSessionId = null",
-                    "targetLanguage = null",
-                    "learningObjective = null",
-                    "spokenEnglishStatus = null",
-                    "pronunciationStatus = null",
+                    "stage317SpokenEnglishAlphaResult?.languageSession?.educationSession?.sessionId?.value",
+                    "stage317SpokenEnglishAlphaResult?.languageSession?.targetLanguage",
+                    "stage317SpokenEnglishAlphaResult?.languageSession?.educationSession?.objective?.objective",
+                    "\"Beginner context prepared\"",
+                    "\"Practice context prepared\"",
+                )
+        ) {
+            assertTrue(
+                source.contains(suppliedStage317State),
+                "Activity must preserve bounded Stage 317 state: $suppliedStage317State",
+            )
+        }
+
+        for (
+            unavailableState in
+                listOf(
                     "listeningStatus = null",
                     "grammarStatus = null",
                     "vocabularyStatus = null",
@@ -190,8 +222,8 @@ class Stage258LanguageLearningInterfaceTest {
                 )
         ) {
             assertTrue(
-                source.contains(suppliedNull),
-                "Activity must not fabricate Stage 258 state: $suppliedNull",
+                source.contains(unavailableState),
+                "Activity must not fabricate unavailable language state: $unavailableState",
             )
         }
     }
