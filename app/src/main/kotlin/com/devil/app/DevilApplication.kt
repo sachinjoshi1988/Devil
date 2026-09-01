@@ -22,6 +22,7 @@ import com.devil.app.education.Stage316EducationAlphaCoordinator
 import com.devil.app.education.Stage317SpokenEnglishAlphaCoordinator
 import com.devil.app.education.Stage318ForeignLanguageAlphaCoordinator
 import com.devil.app.education.Stage319ChildGuardianAlphaCoordinator
+import com.devil.app.reliability.Stage320LongRunningAssistantAlphaCoordinator
 import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAttemptPort
 import com.devil.app.execution.DefaultAndroidExecutionAdapter
@@ -1067,6 +1068,20 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         Stage319ChildGuardianAlphaCoordinator()
+    }
+
+    /**
+     * Stage 320 process-scoped bounded Long-Running Assistant Alpha composition.
+     *
+     * Composes an already-governed long-running goal with explicit Stage 272
+     * stability evidence only. This does not establish background execution,
+     * automatic continuation, persistence, recovery, or new authority.
+     */
+    val stage320LongRunningAssistantAlphaCoordinator:
+        Stage320LongRunningAssistantAlphaCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        Stage320LongRunningAssistantAlphaCoordinator()
     }
 
     val handsFreeProductionCoordinator:
