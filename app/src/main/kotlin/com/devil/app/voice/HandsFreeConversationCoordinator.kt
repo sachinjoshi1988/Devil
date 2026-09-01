@@ -125,7 +125,7 @@ class HandsFreeConversationCoordinator(
                         HandsFreeConversationResultStatus
                             .WAKE_ESTABLISHED,
                     message =
-                        "I'm here. Say Code Red to request authentication.",
+                        "I'm here, sir. Authentication please.",
                     runtimeTranscript = null,
                 )
         }
@@ -149,7 +149,7 @@ class HandsFreeConversationCoordinator(
                         HandsFreeConversationResultStatus
                             .AUTHENTICATION_PHRASE_REQUIRED,
                     message =
-                        "Say Code Red to request authentication.",
+                        "Authentication please.",
                     runtimeTranscript = null,
                 )
 
@@ -162,7 +162,7 @@ class HandsFreeConversationCoordinator(
                         HandsFreeConversationResultStatus
                             .AUTHENTICATION_REQUESTED,
                     message =
-                        "Code Red recognized. Authentication is required.",
+                        "Authentication requested.",
                     runtimeTranscript = null,
                 )
         }

@@ -52,7 +52,7 @@ class HandsFreeConversationCoordinatorTest {
             result.status,
         )
         assertEquals(
-            "I'm here. Say Code Red to request authentication.",
+            "I'm here, sir. Authentication please.",
             result.message,
         )
         assertNull(result.runtimeTranscript)
@@ -98,7 +98,7 @@ class HandsFreeConversationCoordinatorTest {
             result.status,
         )
         assertEquals(
-            "Say Code Red to request authentication.",
+            "Authentication please.",
             result.message,
         )
         assertNull(result.runtimeTranscript)
@@ -126,7 +126,7 @@ class HandsFreeConversationCoordinatorTest {
             result.status,
         )
         assertEquals(
-            "Code Red recognized. Authentication is required.",
+            "Authentication requested.",
             result.message,
         )
         assertNull(result.runtimeTranscript)

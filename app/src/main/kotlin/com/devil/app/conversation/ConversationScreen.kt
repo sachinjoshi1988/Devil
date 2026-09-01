@@ -195,6 +195,17 @@ fun ConversationScreen(
                             .weight(1f),
                 )
 
+                CompactConversationVoiceControls(
+                    isVoiceListening = isVoiceListening,
+                    isSubmitting = state.isSubmitting,
+                    isVoiceSpeaking = isVoiceSpeaking,
+                    voiceInputEnabled = voiceInputEnabled,
+                    handsFreeEnabled = handsFreeEnabled,
+                    onVoiceInput = onVoiceInput,
+                    onHandsFreeToggle = onHandsFreeToggle,
+                    devilRed = devilRed,
+                )
+
                 if (
                     isVoiceListening ||
                     isVoiceSpeaking ||
@@ -220,16 +231,6 @@ fun ConversationScreen(
                                 ),
                     )
                 }
-                CompactConversationVoiceControls(
-                    isVoiceListening = isVoiceListening,
-                    isSubmitting = state.isSubmitting,
-                    isVoiceSpeaking = isVoiceSpeaking,
-                    voiceInputEnabled = voiceInputEnabled,
-                    handsFreeEnabled = handsFreeEnabled,
-                    onVoiceInput = onVoiceInput,
-                    onHandsFreeToggle = onHandsFreeToggle,
-                    devilRed = devilRed,
-                )
 
                 DevilConversationComposer(
                     draft = state.draft,

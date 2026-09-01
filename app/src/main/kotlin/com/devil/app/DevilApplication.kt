@@ -67,6 +67,8 @@ import com.devil.app.voice.AndroidVoiceOutputSource
 import com.devil.app.voice.DefaultAndroidVoiceOutputSource
 import com.devil.app.voice.DevilVoiceCoordinator
 import com.devil.app.voice.HandsFreeProductionCoordinator
+import com.devil.app.voice.HandsFreeAuthenticationCoordinator
+import com.devil.app.voice.Stage315AndroidHandsFreeAuthenticationHandoff
 import com.devil.app.voice.VoiceConversationOutputCoordinator
 import com.devil.app.voice.VoiceConversationResultCoordinator
 import com.devil.core.model.owner.OwnerProfileUpdateCoordinator
@@ -738,8 +740,8 @@ class DevilApplication : Application() {
     /**
      * Stage 37 process-scoped wake/hands-free orchestration.
      *
-     * The default authentication handoff remains fail-closed. Therefore this
-     * coordinator cannot produce ACTIVE_SESSION in current production.
+     * Stage 315 composes the approved Android authentication-required handoff. This
+     * coordinator still cannot itself authenticate or create ACTIVE_SESSION.
      */
 
     /**
@@ -1013,6 +1015,12 @@ class DevilApplication : Application() {
         HandsFreeProductionCoordinator by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
-        HandsFreeProductionCoordinator()
+        HandsFreeProductionCoordinator(
+            authenticationCoordinator =
+                HandsFreeAuthenticationCoordinator(
+                    authenticationHandoff =
+                        Stage315AndroidHandsFreeAuthenticationHandoff(),
+                ),
+        )
     }
 }

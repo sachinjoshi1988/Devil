@@ -26,7 +26,7 @@ class HandsFreeProductionCoordinatorTest {
             result.action,
         )
         assertEquals(
-            "I'm here. Say Code Red to request authentication.",
+            "I'm here, sir. Authentication please.",
             result.message,
         )
         assertNull(result.runtimeTranscript)

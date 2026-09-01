@@ -42,6 +42,7 @@ import com.devil.app.voice.AndroidVoiceOutputStatus
 import com.devil.app.voice.DefaultAndroidVoiceInputSource
 import com.devil.app.voice.HandsFreeConversationState
 import com.devil.app.voice.HandsFreeProductionAction
+import com.devil.app.voice.HandsFreeAuthenticationHandoffStatus
 import com.devil.app.voice.HandsFreeProductionResult
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -128,6 +129,8 @@ class DevilActivity : FragmentActivity() {
     }
 
     private var stage314OwnerAuthenticationInProgress = false
+
+    private var stage315HandsFreeOwnerAuthenticationInProgress = false
 
     /**
      * Stage 314 real-Android submission worker.
@@ -1128,22 +1131,171 @@ class DevilActivity : FragmentActivity() {
             }
 
             HandsFreeProductionAction.AUTHENTICATION_HANDOFF -> {
-                val message =
+                val authenticationResult =
                     requireNotNull(
-                        result.message,
+                        result.authenticationResult,
                     )
 
-                /*
-                 * Current production authentication handoff is fail-closed.
-                 *
-                 * No ACTIVE_SESSION is created from Code Red.
-                 */
-                handsFreeEnabled = false
+                when (authenticationResult.status) {
+                    HandsFreeAuthenticationHandoffStatus.UNAVAILABLE -> {
+                        handsFreeEnabled = false
+                        handsFreeState =
+                            HandsFreeConversationState.IDLE
 
-                speakHandsFreeMessage(
-                    message = message,
-                    resumeListening = false,
-                )
+                        speakHandsFreeMessage(
+                            message =
+                                authenticationResult.message,
+                            resumeListening = false,
+                        )
+                    }
+
+                    HandsFreeAuthenticationHandoffStatus.REQUIRED -> {
+                        if (stage315HandsFreeOwnerAuthenticationInProgress) {
+                            return
+                        }
+
+                        val devilApplication =
+                            application as DevilApplication
+
+                        val ownerIdentityId =
+                            IdentityId.from(
+                                "android-primary-local-subject",
+                            )
+
+                        val currentSession =
+                            devilApplication
+                                .stage314OwnerSessionStore
+                                .current()
+
+                        val observedAtMilliseconds =
+                            System.currentTimeMillis()
+
+                        val hasCurrentlyUsableOwnerSession =
+                            currentSession != null &&
+                                currentSession.subjectIdentityId ==
+                                    ownerIdentityId &&
+                                currentSession.state ==
+                                    SessionState.ACTIVE &&
+                                observedAtMilliseconds >=
+                                    currentSession
+                                        .establishedAt
+                                        .epochMilliseconds &&
+                                observedAtMilliseconds <
+                                    currentSession
+                                        .expiresAt
+                                        .epochMilliseconds
+
+                        /*
+                         * This local check decides only whether genuine Android
+                         * authentication must be requested again.
+                         *
+                         * It does not grant runtime authority. Ordinary Voice
+                         * conversation still passes through Devil's existing
+                         * Session Validity Authority and Authorization Authority.
+                         *
+                         * UI_SESSION_CHECK != SESSION_AUTHORITY.
+                         * SESSION_VALID != AUTHORIZATION.
+                         */
+                        if (hasCurrentlyUsableOwnerSession) {
+                            handsFreeState =
+                                HandsFreeConversationState.ACTIVE_SESSION
+
+                            speakHandsFreeMessage(
+                                message =
+                                    "Authenticated owner session active. Hands-Free active.",
+                                resumeListening = true,
+                            )
+
+                            return
+                        }
+
+                        /*
+                         * A missing, expired, wrong-subject, or otherwise
+                         * unusable process-local record must not survive into a
+                         * fresh authentication attempt.
+                         */
+                        devilApplication
+                            .stage314OwnerSessionStore
+                            .clear()
+
+                        /*
+                         * Stage 315 reaches this boundary only after the
+                         * hands-free state machine requested genuine
+                         * authentication.
+                         *
+                         * Code Red != authentication.
+                         * AUTHENTICATION_REQUIRED != AUTHENTICATED.
+                         * AUTHENTICATION_REQUESTED != ACTIVE_SESSION.
+                         */
+                        stage315HandsFreeOwnerAuthenticationInProgress =
+                            true
+
+                        stage314OwnerAuthenticationCoordinator.authenticate(
+                            onAuthenticated = {
+                                stage315HandsFreeOwnerAuthenticationInProgress =
+                                    false
+
+                                /*
+                                 * Genuine Android authentication success is
+                                 * evidence from the platform boundary. It may
+                                 * establish the same bounded process-local owner
+                                 * session already introduced in Stage 314.
+                                 *
+                                 * AUTHENTICATION_SUCCESS != SESSION_VALID.
+                                 * SESSION_ESTABLISHED != AUTHORIZATION.
+                                 */
+                                devilApplication
+                                    .stage314OwnerSessionEstablishmentCoordinator
+                                    .establish(
+                                        subjectIdentityId =
+                                            ownerIdentityId,
+                                        validityDurationMilliseconds =
+                                            30L * 60L * 1000L,
+                                    )
+
+                                /*
+                                 * ACTIVE_SESSION here represents the bounded
+                                 * authenticated hands-free conversation state.
+                                 * It does not itself grant runtime authority.
+                                 *
+                                 * ACTIVE_SESSION != AUTHORIZATION.
+                                 */
+                                handsFreeState =
+                                    HandsFreeConversationState.ACTIVE_SESSION
+
+                                speakHandsFreeMessage(
+                                    message =
+                                        "Owner authentication succeeded. Hands-Free active.",
+                                    resumeListening = true,
+                                )
+                            },
+                            onUnavailable = { message ->
+                                stage315HandsFreeOwnerAuthenticationInProgress =
+                                    false
+                                handsFreeEnabled = false
+                                handsFreeState =
+                                    HandsFreeConversationState.IDLE
+
+                                speakHandsFreeMessage(
+                                    message = message,
+                                    resumeListening = false,
+                                )
+                            },
+                            onCancelledOrFailed = { message ->
+                                stage315HandsFreeOwnerAuthenticationInProgress =
+                                    false
+                                handsFreeEnabled = false
+                                handsFreeState =
+                                    HandsFreeConversationState.IDLE
+
+                                speakHandsFreeMessage(
+                                    message = message,
+                                    resumeListening = false,
+                                )
+                            },
+                        )
+                    }
+                }
             }
 
             HandsFreeProductionAction.SUBMIT_CONVERSATION -> {
