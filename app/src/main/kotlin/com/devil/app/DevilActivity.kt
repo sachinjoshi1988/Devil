@@ -14,6 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.devil.app.accessibility.AndroidAccessibilityServiceDiagnosticStatus
 import com.devil.app.authentication.Stage314AndroidOwnerAuthenticationCoordinator
+import com.devil.app.education.Stage316EducationAlphaResult
+import com.devil.core.model.common.TraceId
+import com.devil.core.model.education.EducationSessionId
 import com.devil.core.model.identity.IdentityId
 import com.devil.core.model.security.SessionState
 import com.devil.app.accessibility.DefaultAndroidAccessibilityServiceDiagnosticSource
@@ -282,6 +285,14 @@ class DevilActivity : FragmentActivity() {
                     mutableStateOf(false)
                 }
 
+                /* Stage 316 bounded Education Alpha presentation state.
+                 * UI/process state only; not authentication, authorization,
+                 * verified mastery, constitutional Learning, Memory, or persistence.
+                 */
+                var stage316EducationAlphaResult by remember {
+                    mutableStateOf<Stage316EducationAlphaResult?>(null)
+                }
+
                 /* Stage 256 presentation navigation only. */
                 var showTaskAutomationInterface by remember {
                     mutableStateOf(false)
@@ -499,9 +510,12 @@ class DevilActivity : FragmentActivity() {
                       )
                 } else if (showEducationInterface) {
                     DevilEducationInterface(
-                        educationSessionId = null,
-                        subject = null,
-                        educationObjective = null,
+                        educationSessionId =
+                            stage316EducationAlphaResult?.session?.sessionId?.value,
+                        subject =
+                            stage316EducationAlphaResult?.session?.objective?.subject,
+                        educationObjective =
+                            stage316EducationAlphaResult?.session?.objective?.objective,
                         targetLanguage = null,
                         studyFocus = null,
                         studyApproach = null,
@@ -546,6 +560,14 @@ class DevilActivity : FragmentActivity() {
                         showResearchInterface = true
                     },
                     onEducationOpen = {
+                        stage316EducationAlphaResult =
+                            devilApplication.stage316EducationAlphaCoordinator.prepare(
+                                traceId = TraceId.from("stage316-education-alpha"),
+                                sessionId = EducationSessionId.from("stage316-owner-alpha-session"),
+                                subjectIdentityId = IdentityId.from("android-primary-local-subject"),
+                                subject = "General Education",
+                                objective = "Support bounded owner education alpha testing.",
+                            )
                         showEducationInterface = true
                     },
                     state =

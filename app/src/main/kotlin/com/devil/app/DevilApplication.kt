@@ -18,6 +18,7 @@ import com.devil.app.conversation.DefaultConversationRuntimeInputMetadataProvide
 import com.devil.app.conversation.DefaultConversationRuntimeSubmissionCoordinator
 import com.devil.app.conversation.DefaultConversationSubmissionFlowCoordinator
 import com.devil.app.conversation.VoiceConversationRuntimeInputMetadataProvider
+import com.devil.app.education.Stage316EducationAlphaCoordinator
 import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAttemptPort
 import com.devil.app.execution.DefaultAndroidExecutionAdapter
@@ -1009,6 +1010,19 @@ class DevilApplication : Application() {
             analysisCoordinator =
                 notificationAnalysisCoordinator,
         )
+    }
+
+    /**
+     * Stage 316 process-scoped bounded Education Alpha composition.
+     *
+     * Delegates education-session preparation to the existing Stage 85
+     * education domain. This is not another runtime or Education Authority.
+     */
+    val stage316EducationAlphaCoordinator:
+        Stage316EducationAlphaCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        Stage316EducationAlphaCoordinator()
     }
 
     val handsFreeProductionCoordinator:
