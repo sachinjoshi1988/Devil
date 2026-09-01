@@ -315,6 +315,130 @@ class ConversationalResponseSubmissionFlowCoordinatorTest {
         )
     }
 
+    @Test
+    fun `new runtime remains discoverable when established outcome follows it`() {
+        val traceId =
+            TraceId.from(
+                "trace-stage-314-stage313-outcome-compatibility",
+            )
+
+        val store =
+            AndroidConversationIntakeEvidenceStore()
+
+        store.observe(
+            producedAcceptedIntake(
+                traceId = traceId,
+                content = "Open Settings",
+            ),
+        )
+
+        var inferenceCalls = 0
+        var receivedTraceId: TraceId? = null
+
+        val coordinator =
+            wrapper(
+                store = store,
+                inferencePort =
+                    ConversationalModelInferencePort { request ->
+                        inferenceCalls += 1
+                        receivedTraceId = request.traceId
+
+                        ConversationalModelInferenceResult.available(
+                            traceId = request.traceId,
+                            generatedOutput =
+                                "Stage 313 compatibility response.",
+                        )
+                    },
+                submissionCoordinator =
+                    submissionFlow { state ->
+                        state.copy(
+                            entries =
+                                state.entries +
+                                    ConversationTimelineEntry.runtime(
+                                        id =
+                                            ConversationEntryId.from(
+                                                "entry-stage314-compatible-runtime",
+                                            ),
+                                        presentation =
+                                            ConversationRuntimePresentation(
+                                                traceId = traceId,
+                                                status =
+                                                    ConversationRuntimePresentationStatus.DEFERRED,
+                                                message =
+                                                    "Deferred by the Devil runtime.",
+                                            ),
+                                    ) +
+                                    ConversationTimelineEntry.outcome(
+                                        id =
+                                            ConversationEntryId.from(
+                                                "entry-stage314-compatible-outcome",
+                                            ),
+                                        traceId = traceId,
+                                        content =
+                                            "Android action verified.",
+                                    ),
+                            draft = "",
+                            isSubmitting = false,
+                        )
+                    },
+            )
+
+        val result =
+            coordinator.submit(
+                ConversationUiState(
+                    draft = "Open Settings",
+                ),
+            )
+
+        assertEquals(
+            1,
+            inferenceCalls,
+        )
+        assertEquals(
+            traceId,
+            receivedTraceId,
+        )
+
+        assertEquals(
+            3,
+            result.entries.size,
+        )
+
+        assertEquals(
+            ConversationEntryRole.RUNTIME,
+            result.entries[0].role,
+        )
+        assertEquals(
+            ConversationEntryRole.OUTCOME,
+            result.entries[1].role,
+        )
+        assertEquals(
+            ConversationEntryRole.ASSISTANT,
+            result.entries[2].role,
+        )
+
+        assertEquals(
+            traceId,
+            result.entries[0].traceId,
+        )
+        assertEquals(
+            traceId,
+            result.entries[1].traceId,
+        )
+        assertEquals(
+            traceId,
+            result.entries[2].traceId,
+        )
+
+        assertEquals(
+            "Android action verified.",
+            result.entries[1].content,
+        )
+        assertEquals(
+            "Stage 313 compatibility response.",
+            result.entries[2].content,
+        )
+    }
     private fun submissionFlow(
         submitBlock: (ConversationUiState) -> ConversationUiState,
     ): ConversationSubmissionFlowCoordinator {

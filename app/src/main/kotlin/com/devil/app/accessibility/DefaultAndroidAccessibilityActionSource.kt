@@ -16,6 +16,9 @@ import android.view.accessibility.AccessibilityNodeInfo
  * It reports ATTEMPTED only when AccessibilityNodeInfo.performAction returns
  * true.
  *
+ * Stage 314 adds debug-only-at-runtime diagnostic recording around the existing
+ * execution decisions. Diagnostic recording does not alter execution behavior.
+ *
  * ATTEMPTED does not mean the intended effect occurred.
  */
 class DefaultAndroidAccessibilityActionSource(
@@ -38,13 +41,22 @@ class DefaultAndroidAccessibilityActionSource(
 
         val root =
             service.rootInActiveWindow
-                ?: return AndroidAccessibilityActionResult
-                    .targetNotFound()
+                ?: run {
+                    Stage314AccessibilityExecutionDiagnosticRecorder.record(
+                        context = service,
+                        event = "ROOT_UNAVAILABLE",
+                        target = request.target,
+                    )
+
+                    return AndroidAccessibilityActionResult
+                        .targetNotFound()
+                }
 
         return try {
             when (request.actionType) {
                 AndroidAccessibilityActionType.CLICK_VISIBLE_TEXT ->
                     performClick(
+                        context = service,
                         root = root,
                         target = request.target,
                     )
@@ -52,6 +64,12 @@ class DefaultAndroidAccessibilityActionSource(
         } catch (
             throwable: RuntimeException,
         ) {
+            Stage314AccessibilityExecutionDiagnosticRecorder.record(
+                context = service,
+                event = "ACTION_FAILED",
+                target = request.target,
+            )
+
             AndroidAccessibilityActionResult.failed(
                 errorCode =
                     "ANDROID_ACCESSIBILITY_ACTION_FAILED",
@@ -60,6 +78,7 @@ class DefaultAndroidAccessibilityActionSource(
     }
 
     private fun performClick(
+        context: DevilAccessibilityService,
         root: AccessibilityNodeInfo,
         target: AndroidAccessibilityTarget,
     ): AndroidAccessibilityActionResult {
@@ -68,8 +87,20 @@ class DefaultAndroidAccessibilityActionSource(
                 root = root,
                 target = target,
             )
-                ?: return AndroidAccessibilityActionResult
-                    .targetNotFound()
+                ?: run {
+                    Stage314AccessibilityExecutionDiagnosticRecorder.record(
+                        context = context,
+                        screenUnderstanding =
+                            DefaultAndroidScreenUnderstandingSource(
+                                serviceProvider = { context },
+                            ).inspect(),
+                        event = "TARGET_NOT_FOUND",
+                        target = target,
+                    )
+
+                    return AndroidAccessibilityActionResult
+                        .targetNotFound()
+                }
 
         val attempted =
             node.performAction(
@@ -77,8 +108,20 @@ class DefaultAndroidAccessibilityActionSource(
             )
 
         return if (attempted) {
+            Stage314AccessibilityExecutionDiagnosticRecorder.record(
+                context = context,
+                event = "CLICK_ATTEMPTED",
+                target = target,
+            )
+
             AndroidAccessibilityActionResult.attempted()
         } else {
+            Stage314AccessibilityExecutionDiagnosticRecorder.record(
+                context = context,
+                event = "CLICK_REJECTED",
+                target = target,
+            )
+
             AndroidAccessibilityActionResult.failed(
                 errorCode =
                     "ANDROID_ACCESSIBILITY_CLICK_REJECTED",

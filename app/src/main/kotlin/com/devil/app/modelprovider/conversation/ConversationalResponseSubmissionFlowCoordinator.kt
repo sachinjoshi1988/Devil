@@ -70,8 +70,7 @@ class ConversationalResponseSubmissionFlowCoordinator(
 
         val newRuntimeEntry =
             submittedState.entries
-                .lastOrNull()
-                ?.takeIf { entry ->
+                .lastOrNull { entry ->
                     entry.role ==
                         ConversationEntryRole.RUNTIME &&
                         entry.id !in previousEntryIds

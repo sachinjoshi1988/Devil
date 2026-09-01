@@ -4,6 +4,8 @@ import com.devil.app.conversation.ConversationEntryIdProvider
 import com.devil.app.conversation.ConversationInteractionCoordinator
 import com.devil.app.conversation.ConversationUiState
 import com.devil.core.model.common.TraceId
+import com.devil.core.model.conversation.ConversationIntakeState
+import com.devil.core.runtime.conversation.ConversationIntakeAuthorityStatus
 import com.devil.core.runtime.modelprovider.conversation.ConversationalModelInferenceStatus
 import com.devil.core.runtime.modelprovider.conversation.ConversationalResponseCoordinator
 import com.devil.core.runtime.modelprovider.conversation.GeneratedAssistantResponse
@@ -22,12 +24,16 @@ import com.devil.core.runtime.modelprovider.conversation.GeneratedAssistantRespo
  * supplied to conversational model inference. No caller may substitute different
  * conversational text after constitutional intake.
  *
- * ConversationalResponseCoordinator remains responsible for requiring that the exact
- * intake result was PRODUCED and constitutionally ACCEPTED before model inference.
+ * ConversationalResponseCoordinator remains responsible for strictly requiring that
+ * any supplied intake result was PRODUCED and constitutionally ACCEPTED.
+ *
+ * This Android composition boundary fails closed before invoking that strict core
+ * coordinator when observed intake evidence is non-produced, missing its preserved
+ * intake, or not constitutionally ACCEPTED.
  *
  * RuntimeStatus is deliberately not treated as model-inference authority.
  *
- * Missing intake evidence, unavailable inference, or failed inference produces no
+ * Missing, ineligible, unavailable, or failed intake/model evidence produces no
  * assistant entry and does not fabricate output.
  *
  * This coordinator does not:
@@ -74,18 +80,28 @@ class AndroidConversationalResponseCompositionCoordinator(
                 traceId = runtimeTraceId,
             ) ?: return state
 
+        if (
+            conversationIntake.status !=
+            ConversationIntakeAuthorityStatus.PRODUCED
+        ) {
+            return state
+        }
+
         val intake =
-            requireNotNull(
-                conversationIntake.intake,
-            ) {
-                "Observed conversation-intake evidence must preserve its intake result."
-            }
+            conversationIntake.intake
+                ?: return state
+
+        if (
+            intake.record.state !=
+            ConversationIntakeState.ACCEPTED
+        ) {
+            return state
+        }
 
         val inference =
             responseCoordinator.generate(
                 conversationIntake = conversationIntake,
-                content =
-                    intake.record.input.content,
+                content = intake.record.input.content,
             )
 
         if (

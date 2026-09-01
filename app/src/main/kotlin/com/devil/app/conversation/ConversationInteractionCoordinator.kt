@@ -10,6 +10,8 @@ package com.devil.app.conversation
  * - duplicate-submission protection,
  * - attachment of a truthful runtime presentation after an external submission
  *   boundary has completed,
+ * - presentation-only attachment of one already-established trace-backed
+ *   Outcome,
  * - truthful completion of a submission attempt that never entered the runtime
  *   because required metadata was unavailable,
  * - and bounded retention of completed presentation timeline entries.
@@ -140,6 +142,42 @@ class ConversationInteractionCoordinator {
         )
     }
 
+    /**
+     * Stage 314 presentation-only attachment of one already-established
+     * trace-backed Android Outcome.
+     *
+     * This method does not perform Verification, establish Outcome, reinterpret
+     * RuntimeStatus, claim task completion, update the World Model, perform
+     * Learning, or create/persist Memory.
+     *
+     * OUTCOME != RUNTIME.
+     * OUTCOME_ESTABLISHED != TASK_COMPLETED.
+     */
+    fun appendEstablishedOutcome(
+        state: ConversationUiState,
+        outcomeEntryId: ConversationEntryId,
+        traceId: com.devil.core.model.common.TraceId,
+        message: String,
+    ): ConversationUiState {
+        require(!state.isSubmitting) {
+            "Established outcome may be appended only after runtime submission has completed."
+        }
+
+        val outcomeEntry =
+            ConversationTimelineEntry.outcome(
+                id = outcomeEntryId,
+                traceId = traceId,
+                content = message,
+            )
+
+        return state.copy(
+            entries =
+                boundCompletedTimeline(
+                    entries = state.entries + outcomeEntry,
+                ),
+            submissionNotice = null,
+        )
+    }
 
     fun completeMetadataUnavailable(
         state: ConversationUiState,

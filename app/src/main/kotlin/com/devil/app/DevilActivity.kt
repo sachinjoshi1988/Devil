@@ -3,7 +3,7 @@ package com.devil.app
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,6 +13,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.devil.app.accessibility.AndroidAccessibilityServiceDiagnosticStatus
+import com.devil.app.authentication.Stage314AndroidOwnerAuthenticationCoordinator
+import com.devil.core.model.identity.IdentityId
+import com.devil.core.model.security.SessionState
 import com.devil.app.accessibility.DefaultAndroidAccessibilityServiceDiagnosticSource
 import com.devil.app.conversation.ConversationEntryRole
 import com.devil.app.conversation.ConversationScreen
@@ -40,6 +43,8 @@ import com.devil.app.voice.DefaultAndroidVoiceInputSource
 import com.devil.app.voice.HandsFreeConversationState
 import com.devil.app.voice.HandsFreeProductionAction
 import com.devil.app.voice.HandsFreeProductionResult
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 /**
  * Android launcher surface for Devil.
@@ -70,7 +75,7 @@ import com.devil.app.voice.HandsFreeProductionResult
  * session, enter Owner Mode, bypass the constitutional runtime, execute a
  * capability, or fabricate success.
  */
-class DevilActivity : ComponentActivity() {
+class DevilActivity : FragmentActivity() {
 
     private var conversationState by
         mutableStateOf(
@@ -114,6 +119,29 @@ class DevilActivity : ComponentActivity() {
 
     private lateinit var accessibilityDiagnosticSource:
         DefaultAndroidAccessibilityServiceDiagnosticSource
+
+    private val stage314OwnerAuthenticationCoordinator:
+        Stage314AndroidOwnerAuthenticationCoordinator by lazy {
+        Stage314AndroidOwnerAuthenticationCoordinator(
+            activity = this,
+        )
+    }
+
+    private var stage314OwnerAuthenticationInProgress = false
+
+    /**
+     * Stage 314 real-Android submission worker.
+     *
+     * Only the already-recognized bounded owner-alpha real Android action path
+     * uses this worker. Ordinary conversation submission remains unchanged.
+     *
+     * WORKER_THREAD != AUTHORIZATION.
+     * BACKGROUND_SUBMISSION != EXECUTION_SUCCESS.
+     */
+    private val stage314RealAndroidSubmissionExecutor: ExecutorService =
+        Executors.newSingleThreadExecutor()
+
+    private var stage314RealAndroidSubmissionInProgress = false
 
     private lateinit var voiceInputSource:
         AndroidVoiceInputSource
@@ -536,27 +564,7 @@ class DevilActivity : ComponentActivity() {
                         voiceOutputMessage = null
                     },
                     onSubmit = {
-                        val previousEntryCount =
-                            conversationState
-                                .entries
-                                .size
-
-                        conversationState =
-                            devilApplication
-                                .conversationSubmissionFlowCoordinator
-                                .submit(
-                                    state =
-                                        conversationState,
-                                )
-
-                        voiceInputMessage = null
-                        voiceOutputMessage = null
-
-                        speakNewestRuntimeEntry(
-                            previousEntryCount =
-                                previousEntryCount,
-                            resumeHandsFree = false,
-                        )
+                        submitTypedConversationWithStage314OwnerAuthentication()
                     },
                     onVoiceInput = {
                         requestVoiceInput(
@@ -639,6 +647,8 @@ class DevilActivity : ComponentActivity() {
         devilApplication
             .voiceConversationOutputCoordinator
             .release()
+
+        stage314RealAndroidSubmissionExecutor.shutdown()
 
         super.onDestroy()
     }
@@ -910,6 +920,186 @@ class DevilActivity : ComponentActivity() {
                     "Hands-Free voice input failed."
             }
         }
+    }
+
+    private fun submitTypedConversationWithStage314OwnerAuthentication() {
+        val normalizedDraft =
+            conversationState
+                .draft
+                .trim()
+                .lowercase()
+
+        if (normalizedDraft != "open settings") {
+            submitTypedConversationNow()
+            return
+        }
+
+        if (stage314OwnerAuthenticationInProgress) {
+            return
+        }
+
+        val devilApplication =
+            application as DevilApplication
+
+        val ownerIdentityId =
+            IdentityId.from(
+                "android-primary-local-subject",
+            )
+
+        val currentSession =
+            devilApplication
+                .stage314OwnerSessionStore
+                .current()
+
+        val observedAtMilliseconds =
+            System.currentTimeMillis()
+
+        val hasCurrentlyUsableOwnerSession =
+            currentSession != null &&
+                currentSession.subjectIdentityId == ownerIdentityId &&
+                currentSession.state == SessionState.ACTIVE &&
+                observedAtMilliseconds >=
+                    currentSession.establishedAt.epochMilliseconds &&
+                observedAtMilliseconds <
+                    currentSession.expiresAt.epochMilliseconds
+
+        /*
+         * This local check decides only whether Android authentication must be
+         * requested again. It does not grant runtime authority.
+         *
+         * The submitted action still passes independently through Devil's
+         * Session Validity Authority and Authorization Authority.
+         *
+         * UI_SESSION_CHECK != SESSION_AUTHORITY.
+         * SESSION_VALID != AUTHORIZATION.
+         */
+        if (hasCurrentlyUsableOwnerSession) {
+            submitStage314RealAndroidConversationNow()
+            return
+        }
+
+        /*
+         * A missing, expired, revoked, wrong-subject, or otherwise unusable
+         * process-local record must not survive into a new authentication
+         * attempt.
+         */
+        devilApplication
+            .stage314OwnerSessionStore
+            .clear()
+
+        stage314OwnerAuthenticationInProgress = true
+
+        stage314OwnerAuthenticationCoordinator.authenticate(
+            onAuthenticated = {
+                stage314OwnerAuthenticationInProgress = false
+
+                /*
+                 * Stage 314 owner-alpha policy approved for real-device
+                 * testing: one successful Android authentication establishes
+                 * a bounded 30-minute process-local session.
+                 *
+                 * No renewal, persistence, Owner Mode, or blanket capability
+                 * authorization is established here.
+                 */
+                devilApplication
+                    .stage314OwnerSessionEstablishmentCoordinator
+                    .establish(
+                        subjectIdentityId =
+                            ownerIdentityId,
+                        validityDurationMilliseconds =
+                            30L * 60L * 1000L,
+                    )
+
+                submitStage314RealAndroidConversationNow()
+            },
+            onUnavailable = { message ->
+                stage314OwnerAuthenticationInProgress = false
+                voiceOutputMessage = message
+            },
+            onCancelledOrFailed = { message ->
+                stage314OwnerAuthenticationInProgress = false
+                voiceOutputMessage = message
+            },
+        )
+    }
+
+    /**
+     * Stage 314 bounded real-Android submission boundary.
+     *
+     * The existing conversation flow and single Unified Devil Runtime execute
+     * once on a worker so Android's main thread remains available for platform
+     * navigation and accessibility callbacks.
+     *
+     * The genuine returned ConversationUiState is installed only on the main
+     * thread. No TraceId, runtime result, Observation, Verification, or Outcome
+     * is created here.
+     */
+    private fun submitStage314RealAndroidConversationNow() {
+        if (stage314RealAndroidSubmissionInProgress) {
+            return
+        }
+
+        val devilApplication =
+            application as DevilApplication
+
+        val stateAtSubmission =
+            conversationState
+
+        val previousEntryCount =
+            stateAtSubmission.entries.size
+
+        stage314RealAndroidSubmissionInProgress = true
+
+        stage314RealAndroidSubmissionExecutor.execute {
+            val submittedState =
+                devilApplication
+                    .conversationSubmissionFlowCoordinator
+                    .submit(
+                        state = stateAtSubmission,
+                    )
+
+            runOnUiThread {
+                stage314RealAndroidSubmissionInProgress = false
+
+                if (isDestroyed) {
+                    return@runOnUiThread
+                }
+
+                conversationState =
+                    submittedState
+
+                voiceInputMessage = null
+                voiceOutputMessage = null
+
+                speakNewestRuntimeEntry(
+                    previousEntryCount = previousEntryCount,
+                    resumeHandsFree = false,
+                )
+            }
+        }
+    }
+
+    private fun submitTypedConversationNow() {
+        val devilApplication =
+            application as DevilApplication
+
+        val previousEntryCount =
+            conversationState.entries.size
+
+        conversationState =
+            devilApplication
+                .conversationSubmissionFlowCoordinator
+                .submit(
+                    state = conversationState,
+                )
+
+        voiceInputMessage = null
+        voiceOutputMessage = null
+
+        speakNewestRuntimeEntry(
+            previousEntryCount = previousEntryCount,
+            resumeHandsFree = false,
+        )
     }
 
     private fun handleHandsFreeProductionResult(

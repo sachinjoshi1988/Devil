@@ -6,6 +6,8 @@ import com.devil.app.accessibility.AndroidAccessibilityActionSource
 import com.devil.app.accessibility.AndroidAccessibilityActionType
 import com.devil.app.accessibility.AndroidAccessibilityCapability
 import com.devil.app.accessibility.AndroidAccessibilityTarget
+import com.devil.app.accessibility.AndroidScreenElementRecord
+import com.devil.app.accessibility.Stage314AndroidAccessibilityChangeReadinessStore
 import com.devil.core.model.common.DevilTimestamp
 import com.devil.core.model.common.SchemaVersion
 import com.devil.core.model.common.TraceId
@@ -105,6 +107,96 @@ class DefaultAndroidExecutionPerformerStage38Test {
             AndroidExecutionAttemptStatus.ATTEMPTED,
             result.status,
         )
+    }
+
+    @Test
+    fun `only attempted accessibility result marks Stage 314 execution boundary`() {
+        val cases =
+            listOf(
+                AndroidAccessibilityActionResult.attempted() to true,
+                AndroidAccessibilityActionResult.targetNotFound() to false,
+                AndroidAccessibilityActionResult.serviceUnavailable() to false,
+                AndroidAccessibilityActionResult.failed(
+                    errorCode = "stage-314-test-failure",
+                ) to false,
+            )
+
+        cases.forEachIndexed { index, (actionResult, expectedMarked) ->
+            val traceId =
+                TraceId.from(
+                    "trace-stage-314-attempt-boundary-$index",
+                )
+            val request =
+                createRequest(traceId)
+            val readinessStore =
+                Stage314AndroidAccessibilityChangeReadinessStore()
+
+            readinessStore.arm(
+                traceId = traceId,
+                capabilityId = request.capability.capabilityId,
+            )
+
+            val performer =
+                DefaultAndroidExecutionPerformer(
+                    directiveProvider =
+                        AndroidExecutionDirectiveProvider {
+                                providerTrace,
+                                providerRequest,
+                            ->
+                            AndroidExecutionDirective(
+                                traceId = providerTrace,
+                                capabilityId =
+                                    providerRequest.capability
+                                        .capabilityId,
+                                accessibilityRequest =
+                                    AndroidAccessibilityActionRequest(
+                                        actionType =
+                                            AndroidAccessibilityActionType
+                                                .CLICK_VISIBLE_TEXT,
+                                        target =
+                                            AndroidAccessibilityTarget
+                                                .fromText("Send"),
+                                    ),
+                            )
+                        },
+                    accessibilitySource =
+                        AndroidAccessibilityActionSource {
+                            actionResult
+                        },
+                    accessibilityChangeReadinessStore =
+                        readinessStore,
+                )
+
+            performer.perform(
+                traceId = traceId,
+                request = request,
+            )
+
+            val snapshot =
+                listOf(
+                    AndroidScreenElementRecord.create(
+                        position = 0,
+                        text = "DEVIL",
+                        contentDescription = null,
+                    ),
+                )
+
+            readinessStore.signalAccessibilitySnapshot(snapshot)
+            readinessStore.signalAccessibilitySnapshot(snapshot)
+
+            val captured =
+                readinessStore.awaitStableAccessibilitySnapshot(
+                    traceId = traceId,
+                    capabilityId = request.capability.capabilityId,
+                    timeoutMilliseconds = 10L,
+                )
+
+            assertEquals(
+                expectedMarked,
+                captured == snapshot,
+                "Unexpected Stage 314 readiness for accessibility result ${actionResult.status}",
+            )
+        }
     }
 
     private fun createRequest(

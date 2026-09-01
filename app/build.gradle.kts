@@ -187,6 +187,9 @@ dependencies {
         )
 
     implementation(composeBom)
+    implementation(
+        "androidx.biometric:biometric:1.1.0",
+    )
 
     implementation(
         "androidx.activity:activity-compose:1.10.1",

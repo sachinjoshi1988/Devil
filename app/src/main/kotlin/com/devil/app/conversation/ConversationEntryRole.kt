@@ -14,11 +14,18 @@ package com.devil.app.conversation
  * ASSISTANT does not represent RuntimeResult, constitutional Verification,
  * verified truth, verified Outcome, execution success, Learning, or Memory.
  *
+ * OUTCOME represents presentation of one already-established trace-backed
+ * outcome. It does not reinterpret RuntimeResult or claim task completion,
+ * World Model update, Learning, Memory, or persistence.
+ *
  * ASSISTANT != RUNTIME.
  * GENERATED != VERIFIED.
+ * OUTCOME != RUNTIME.
+ * OUTCOME_ESTABLISHED != TASK_COMPLETED.
  */
 enum class ConversationEntryRole {
     USER,
     RUNTIME,
     ASSISTANT,
+    OUTCOME,
 }

@@ -38,11 +38,11 @@ class AndroidConversationalResponseCompositionCoordinatorTest {
         val store =
             AndroidConversationIntakeEvidenceStore()
 
-
         val acceptedIntake =
-            producedAcceptedIntake(
+            producedIntake(
                 traceId = traceId,
                 content = "Hello Devil",
+                state = ConversationIntakeState.ACCEPTED,
             )
 
         store.observe(acceptedIntake)
@@ -99,7 +99,6 @@ class AndroidConversationalResponseCompositionCoordinatorTest {
             assistant.content,
         )
         assertEquals(traceId, assistant.traceId)
-
     }
 
     @Test
@@ -132,6 +131,111 @@ class AndroidConversationalResponseCompositionCoordinatorTest {
                     presentation(
                         "trace-stage-313-response-composition-missing",
                     ).traceId,
+            )
+
+        assertEquals(original, result)
+        assertEquals(0, inferenceCalls)
+    }
+
+    @Test
+    fun `rejected or deferred intake evidence fails closed without model invocation`() {
+        listOf(
+            ConversationIntakeState.REJECTED,
+            ConversationIntakeState.DEFERRED,
+        ).forEachIndexed { index, intakeState ->
+            val traceId =
+                TraceId.from(
+                    "trace-stage-314-response-composition-blocked-$index",
+                )
+
+            val store =
+                AndroidConversationIntakeEvidenceStore()
+
+            store.observe(
+                producedIntake(
+                    traceId = traceId,
+                    content = "Open Settings",
+                    state = intakeState,
+                ),
+            )
+
+            var inferenceCalls = 0
+
+            val coordinator =
+                coordinator(
+                    store = store,
+                    inferencePort =
+                        ConversationalModelInferencePort { request ->
+                            inferenceCalls += 1
+
+                            ConversationalModelInferenceResult.available(
+                                traceId = request.traceId,
+                                generatedOutput =
+                                    "Must not be generated.",
+                            )
+                        },
+                )
+
+            val original =
+                ConversationUiState()
+
+            val result =
+                coordinator.generateAndAppend(
+                    state = original,
+                    runtimeTraceId = traceId,
+                )
+
+            assertEquals(original, result)
+            assertEquals(
+                0,
+                inferenceCalls,
+                "Model inference must not run for intake state $intakeState.",
+            )
+        }
+    }
+
+    @Test
+    fun `non produced intake evidence fails closed without model invocation`() {
+        val traceId =
+            TraceId.from(
+                "trace-stage-314-response-composition-non-produced",
+            )
+
+        val store =
+            AndroidConversationIntakeEvidenceStore()
+
+        store.observe(
+            ConversationIntakeAuthorityResult.create(
+                traceId = traceId,
+                status =
+                    ConversationIntakeAuthorityStatus.DEFERRED,
+            ),
+        )
+
+        var inferenceCalls = 0
+
+        val coordinator =
+            coordinator(
+                store = store,
+                inferencePort =
+                    ConversationalModelInferencePort { request ->
+                        inferenceCalls += 1
+
+                        ConversationalModelInferenceResult.available(
+                            traceId = request.traceId,
+                            generatedOutput =
+                                "Must not be generated.",
+                        )
+                    },
+            )
+
+        val original =
+            ConversationUiState()
+
+        val result =
+            coordinator.generateAndAppend(
+                state = original,
+                runtimeTraceId = traceId,
             )
 
         assertEquals(original, result)
@@ -262,18 +366,20 @@ class AndroidConversationalResponseCompositionCoordinatorTest {
             AndroidConversationIntakeEvidenceStore()
 
         store.observe(
-            producedAcceptedIntake(
+            producedIntake(
                 traceId = traceId,
                 content = content,
+                state = ConversationIntakeState.ACCEPTED,
             ),
         )
 
         return store
     }
 
-    private fun producedAcceptedIntake(
+    private fun producedIntake(
         traceId: TraceId,
         content: String,
+        state: ConversationIntakeState,
     ): ConversationIntakeAuthorityResult {
         val input =
             input(
@@ -286,10 +392,9 @@ class AndroidConversationalResponseCompositionCoordinatorTest {
                 record =
                     ConversationIntakeRecord.create(
                         input = input,
-                        state =
-                            ConversationIntakeState.ACCEPTED,
+                        state = state,
                         rationale =
-                            "Stage 313 bounded accepted test intake.",
+                            "Stage 314 bounded conversation intake test.",
                     ),
             )
 
@@ -331,7 +436,7 @@ class AndroidConversationalResponseCompositionCoordinatorTest {
                         ContextSecurityLevel.RESTRICTED,
                     observedAt =
                         DevilTimestamp.fromEpochMilliseconds(
-                            1_754_000_313_000L,
+                            1_754_000_314_000L,
                         ),
                 ),
             content = content,
