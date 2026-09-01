@@ -16,6 +16,7 @@ import com.devil.app.accessibility.AndroidAccessibilityServiceDiagnosticStatus
 import com.devil.app.authentication.Stage314AndroidOwnerAuthenticationCoordinator
 import com.devil.app.education.Stage316EducationAlphaResult
 import com.devil.app.education.Stage317SpokenEnglishAlphaResult
+import com.devil.app.education.Stage318ForeignLanguageAlphaResult
 import com.devil.core.model.common.TraceId
 import com.devil.core.model.education.EducationSessionId
 import com.devil.core.model.identity.IdentityId
@@ -303,6 +304,15 @@ class DevilActivity : FragmentActivity() {
                     mutableStateOf<Stage317SpokenEnglishAlphaResult?>(null)
                 }
 
+                /* Stage 318 bounded Foreign Language Alpha presentation state.
+                 * Prepared Education Domain context only; not teaching, translation,
+                 * completed conversation, verified proficiency, constitutional Learning,
+                 * Memory, or persistence.
+                 */
+                var stage318ForeignLanguageAlphaResult by remember {
+                    mutableStateOf<Stage318ForeignLanguageAlphaResult?>(null)
+                }
+
                 /* Stage 256 presentation navigation only. */
                 var showTaskAutomationInterface by remember {
                     mutableStateOf(false)
@@ -496,19 +506,13 @@ class DevilActivity : FragmentActivity() {
                   } else if (showLanguageLearningInterface) {
                       DevilLanguageLearningInterface(
                           languageSessionId =
-                              stage317SpokenEnglishAlphaResult?.languageSession?.educationSession?.sessionId?.value,
+                              stage318ForeignLanguageAlphaResult?.languageSession?.educationSession?.sessionId?.value,
                           targetLanguage =
-                              stage317SpokenEnglishAlphaResult?.languageSession?.targetLanguage,
+                              stage318ForeignLanguageAlphaResult?.languageSession?.targetLanguage,
                           learningObjective =
-                              stage317SpokenEnglishAlphaResult?.languageSession?.educationSession?.objective?.objective,
-                          spokenEnglishStatus =
-                              stage317SpokenEnglishAlphaResult?.beginnerSession?.let {
-                                  "Beginner context prepared"
-                              },
-                          pronunciationStatus =
-                              stage317SpokenEnglishAlphaResult?.pronunciationPractice?.let {
-                                  "Practice context prepared"
-                              },
+                              stage318ForeignLanguageAlphaResult?.languageSession?.educationSession?.objective?.objective,
+                          spokenEnglishStatus = null,
+                          pronunciationStatus = null,
                           listeningStatus = null,
                           grammarStatus = null,
                           vocabularyStatus = null,
@@ -517,7 +521,10 @@ class DevilActivity : FragmentActivity() {
                           academicEnglishStatus = null,
                           professionalEnglishStatus = null,
                           curriculumStatus = null,
-                          multilingualTeachingStatus = null,
+                          multilingualTeachingStatus =
+                              stage318ForeignLanguageAlphaResult?.multilingualTeaching?.let {
+                                  "Teaching context prepared"
+                              },
                           multilingualConversationStatus = null,
                           crossLanguageAssistanceStatus = null,
                           progressStatus = null,
@@ -572,6 +579,29 @@ class DevilActivity : FragmentActivity() {
                                                   "Good morning",
                                           )
                                   }
+                                stage318ForeignLanguageAlphaResult =
+                                    stage316EducationAlphaResult?.session?.let {
+                                        educationSession ->
+                                        devilApplication
+                                            .stage318ForeignLanguageAlphaCoordinator
+                                            .prepare(
+                                                traceId =
+                                                    TraceId.from(
+                                                        "stage318-foreign-language-alpha",
+                                                    ),
+                                                educationSession =
+                                                    educationSession,
+                                                targetLanguage = "French",
+                                                teachingFocus = "Everyday French",
+                                                teachingObjective =
+                                                    "Prepare bounded French learning context.",
+                                                frenchLearningFocus =
+                                                    "Daily expressions",
+                                                frenchLearningObjective =
+                                                    "Prepare bounded French Alpha specialization.",
+                                            )
+                                    }
+
                               showEducationInterface = false
                               showLanguageLearningInterface = true
                           },

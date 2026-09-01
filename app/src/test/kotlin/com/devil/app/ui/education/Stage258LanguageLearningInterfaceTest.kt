@@ -177,34 +177,39 @@ class Stage258LanguageLearningInterfaceTest {
     }
 
     @Test
-    fun `activity supplies only bounded Stage 317 language learning state`() {
+    fun `activity supplies only bounded Stage 318 foreign language state`() {
         val source = activitySource()
+        val languageLearningBranch =
+            source
+                .substringAfter("DevilLanguageLearningInterface(")
+                .substringBefore("} else if (showEducationInterface)")
 
         assertTrue(
-            source.contains(
-                "DevilLanguageLearningInterface(",
+            languageLearningBranch.contains(
+                "stage318ForeignLanguageAlphaResult?.languageSession?.educationSession?.sessionId?.value",
+            ),
+        )
+        assertTrue(
+            languageLearningBranch.contains(
+                "stage318ForeignLanguageAlphaResult?.languageSession?.targetLanguage",
+            ),
+        )
+        assertTrue(
+            languageLearningBranch.contains(
+                "stage318ForeignLanguageAlphaResult?.languageSession?.educationSession?.objective?.objective",
+            ),
+        )
+        assertTrue(
+            languageLearningBranch.contains(
+                "\"Teaching context prepared\"",
             ),
         )
 
         for (
-            suppliedStage317State in
-                listOf(
-                    "stage317SpokenEnglishAlphaResult?.languageSession?.educationSession?.sessionId?.value",
-                    "stage317SpokenEnglishAlphaResult?.languageSession?.targetLanguage",
-                    "stage317SpokenEnglishAlphaResult?.languageSession?.educationSession?.objective?.objective",
-                    "\"Beginner context prepared\"",
-                    "\"Practice context prepared\"",
-                )
-        ) {
-            assertTrue(
-                source.contains(suppliedStage317State),
-                "Activity must preserve bounded Stage 317 state: $suppliedStage317State",
-            )
-        }
-
-        for (
             unavailableState in
                 listOf(
+                    "spokenEnglishStatus = null",
+                    "pronunciationStatus = null",
                     "listeningStatus = null",
                     "grammarStatus = null",
                     "vocabularyStatus = null",
@@ -213,7 +218,6 @@ class Stage258LanguageLearningInterfaceTest {
                     "academicEnglishStatus = null",
                     "professionalEnglishStatus = null",
                     "curriculumStatus = null",
-                    "multilingualTeachingStatus = null",
                     "multilingualConversationStatus = null",
                     "crossLanguageAssistanceStatus = null",
                     "progressStatus = null",
@@ -222,8 +226,8 @@ class Stage258LanguageLearningInterfaceTest {
                 )
         ) {
             assertTrue(
-                source.contains(unavailableState),
-                "Activity must not fabricate unavailable language state: $unavailableState",
+                languageLearningBranch.contains(unavailableState),
+                "Activity must not fabricate unavailable Stage 318 language state: $unavailableState",
             )
         }
     }
