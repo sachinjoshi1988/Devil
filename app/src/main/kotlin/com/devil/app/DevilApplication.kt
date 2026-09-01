@@ -21,6 +21,7 @@ import com.devil.app.conversation.VoiceConversationRuntimeInputMetadataProvider
 import com.devil.app.education.Stage316EducationAlphaCoordinator
 import com.devil.app.education.Stage317SpokenEnglishAlphaCoordinator
 import com.devil.app.education.Stage318ForeignLanguageAlphaCoordinator
+import com.devil.app.education.Stage319ChildGuardianAlphaCoordinator
 import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAttemptPort
 import com.devil.app.execution.DefaultAndroidExecutionAdapter
@@ -1051,6 +1052,21 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         Stage318ForeignLanguageAlphaCoordinator()
+    }
+
+    /**
+     * Stage 319 process-scoped bounded Child/Guardian Alpha composition.
+     *
+     * Delegates strictly through the existing Stage 143 -> 144 -> 145 -> 146
+     * Child/Guardian Education architecture. This coordinator does not fabricate
+     * child classification, guardian authority/approval, Stage 44 policy evidence,
+     * or Stage 46 privacy evidence.
+     */
+    val stage319ChildGuardianAlphaCoordinator:
+        Stage319ChildGuardianAlphaCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        Stage319ChildGuardianAlphaCoordinator()
     }
 
     val handsFreeProductionCoordinator:
