@@ -363,6 +363,99 @@ class Stage314AndroidAccessibilityChangeReadinessStoreTest {
         }
     }
 
+
+    @Test
+    fun `fresh store does not request accessibility snapshot capture`() {
+        val store =
+            Stage314AndroidAccessibilityChangeReadinessStore()
+
+        assertFalse(
+            store.isAccessibilitySnapshotCapturePending(),
+        )
+    }
+
+    @Test
+    fun `armed readiness requests capture before execution attempt`() {
+        val traceId =
+            TraceId.from("trace-stage-324-capture-armed")
+        val capabilityId =
+            CapabilityId.from("stage-314-capability")
+        val store =
+            Stage314AndroidAccessibilityChangeReadinessStore()
+
+        store.arm(
+            traceId = traceId,
+            capabilityId = capabilityId,
+        )
+
+        assertTrue(
+            store.isAccessibilitySnapshotCapturePending(),
+        )
+    }
+
+    @Test
+    fun `stable ready snapshot closes accessibility capture window`() {
+        val traceId =
+            TraceId.from("trace-stage-324-capture-ready")
+        val capabilityId =
+            CapabilityId.from("stage-314-capability")
+        val store =
+            Stage314AndroidAccessibilityChangeReadinessStore()
+
+        store.arm(
+            traceId = traceId,
+            capabilityId = capabilityId,
+        )
+
+        assertTrue(
+            store.markExecutionAttempted(
+                traceId = traceId,
+                capabilityId = capabilityId,
+            ),
+        )
+
+        val snapshot =
+            snapshot(
+                "DEVIL",
+                "SETTINGS",
+            )
+
+        store.signalAccessibilitySnapshot(snapshot)
+        store.signalAccessibilitySnapshot(snapshot)
+
+        assertFalse(
+            store.isAccessibilitySnapshotCapturePending(),
+        )
+    }
+
+    @Test
+    fun `matching clear closes accessibility capture window`() {
+        val traceId =
+            TraceId.from("trace-stage-324-capture-clear")
+        val capabilityId =
+            CapabilityId.from("stage-314-capability")
+        val store =
+            Stage314AndroidAccessibilityChangeReadinessStore()
+
+        store.arm(
+            traceId = traceId,
+            capabilityId = capabilityId,
+        )
+
+        assertTrue(
+            store.isAccessibilitySnapshotCapturePending(),
+        )
+
+        store.clear(
+            traceId = traceId,
+            capabilityId = capabilityId,
+        )
+
+        assertFalse(
+            store.isAccessibilitySnapshotCapturePending(),
+        )
+    }
+
     private fun snapshot(
         vararg texts: String,
     ): List<AndroidScreenElementRecord> {

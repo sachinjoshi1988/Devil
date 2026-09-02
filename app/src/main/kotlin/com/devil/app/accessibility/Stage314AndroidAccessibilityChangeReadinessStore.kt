@@ -77,6 +77,26 @@ class Stage314AndroidAccessibilityChangeReadinessStore {
         }
     }
 
+    /**
+     * Returns whether one bounded Stage 314 readiness record still needs
+     * accessibility-derived snapshot capture.
+     *
+     * This is a read-only workload gate only.
+     * It does not establish execution, Observation, Verification, Outcome,
+     * authorization, or success.
+     *
+     * PENDING != AUTHORIZED.
+     * SNAPSHOT_NEEDED != OBSERVED.
+     */
+    fun isAccessibilitySnapshotCapturePending(): Boolean =
+        synchronized(monitor) {
+            val current =
+                pending
+                    ?: return@synchronized false
+
+            current.readyElements == null
+        }
+
     fun signalAccessibilitySnapshot(
         elements: List<AndroidScreenElementRecord>,
     ) {
