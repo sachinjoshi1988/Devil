@@ -1,0 +1,93 @@
+name: Devil Beta APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Release Beta APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Devil
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Prepare Gradle wrapper
+        run: chmod +x ./gradlew
+
+      - name: Remove Termux-only AAPT2 override
+        run: |
+          sed -i \
+            '/^android\.aapt2FromMavenOverride=/d' \
+            gradle.properties
+
+      - name: Verify Gradle environment
+        run: ./gradlew --no-daemon --version
+
+      - name: Run core model tests
+        run: ./gradlew --no-daemon :core:model:test
+
+      - name: Run core runtime tests
+        run: ./gradlew --no-daemon :core:runtime:test
+
+      - name: Run complete app unit tests
+        run: ./gradlew --no-daemon :app:testDebugUnitTest
+
+      - name: Build Beta APK
+        run: ./gradlew --no-daemon :app:assembleDebug
+
+      - name: Prepare Beta release files
+        run: |
+          mkdir -p release
+          cp \
+            app/build/outputs/apk/debug/app-debug.apk \
+            release/devil-beta.apk
+
+          (
+            cd release
+            sha256sum devil-beta.apk \
+              > devil-beta.apk.sha256
+          )
+
+      - name: Verify Beta release files
+        run: |
+          ls -lh release
+          (
+            cd release
+            sha256sum --check devil-beta.apk.sha256
+          )
+
+      - name: Create GitHub Beta prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: devil-beta-${{ github.run_number }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            release/devil-beta.apk \
+            release/devil-beta.apk.sha256 \
+            --target "$GITHUB_SHA" \
+            --title "Devil Beta ${{ github.run_number }}" \
+            --prerelease \
+            --notes "Beta APK for controlled Devil testing.
+
+          Source commit: $GITHUB_SHA
+
+          This is a controlled debug-signed Beta test build. It is not a Release Candidate or production release.
+
+          APK_BUILT != APK_INSTALLED.
+          APK_PUBLISHED != DEVICE_VALIDATED.
+          APK_CHECKSUM_VERIFIED != FUNCTIONALLY_VALIDATED.
+
+          Extended physical-device testing belongs to Stage 324.
+
+          Verify devil-beta.apk against the attached SHA-256 checksum before using the artifact."
