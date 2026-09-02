@@ -17,6 +17,7 @@ import com.devil.app.authentication.Stage314AndroidOwnerAuthenticationCoordinato
 import com.devil.app.education.Stage316EducationAlphaResult
 import com.devil.app.education.Stage317SpokenEnglishAlphaResult
 import com.devil.app.education.Stage318ForeignLanguageAlphaResult
+import com.devil.app.education.Stage325ExtendedEducationTestingResult
 import com.devil.core.model.common.TraceId
 import com.devil.core.model.education.EducationSessionId
 import com.devil.core.model.identity.IdentityId
@@ -313,6 +314,15 @@ class DevilActivity : FragmentActivity() {
                     mutableStateOf<Stage318ForeignLanguageAlphaResult?>(null)
                 }
 
+                /* Stage 325 bounded Extended Education Testing presentation state.
+                 * Preserves the existing Stage 316 result only; not education
+                 * delivery, verified mastery, constitutional Learning, curriculum
+                 * execution, Memory commitment, or persistence.
+                 */
+                var stage325ExtendedEducationTestingResult by remember {
+                    mutableStateOf<Stage325ExtendedEducationTestingResult?>(null)
+                }
+
                 /* Stage 256 presentation navigation only. */
                 var showTaskAutomationInterface by remember {
                     mutableStateOf(false)
@@ -538,11 +548,11 @@ class DevilActivity : FragmentActivity() {
                 } else if (showEducationInterface) {
                     DevilEducationInterface(
                         educationSessionId =
-                            stage316EducationAlphaResult?.session?.sessionId?.value,
+                            stage325ExtendedEducationTestingResult?.educationAlphaResult?.session?.sessionId?.value,
                         subject =
-                            stage316EducationAlphaResult?.session?.objective?.subject,
+                            stage325ExtendedEducationTestingResult?.educationAlphaResult?.session?.objective?.subject,
                         educationObjective =
-                            stage316EducationAlphaResult?.session?.objective?.objective,
+                            stage325ExtendedEducationTestingResult?.educationAlphaResult?.session?.objective?.objective,
                         targetLanguage =
                             null,
                         studyFocus = null,
@@ -638,6 +648,14 @@ class DevilActivity : FragmentActivity() {
                                 subject = "General Education",
                                 objective = "Support bounded owner education alpha testing.",
                             )
+                        stage325ExtendedEducationTestingResult =
+                            devilApplication
+                                .stage325ExtendedEducationTestingCoordinator
+                                .validate(
+                                    educationAlphaResult =
+                                        requireNotNull(stage316EducationAlphaResult),
+                                )
+
                         showEducationInterface = true
                     },
                     state =

@@ -22,6 +22,7 @@ import com.devil.app.education.Stage316EducationAlphaCoordinator
 import com.devil.app.education.Stage317SpokenEnglishAlphaCoordinator
 import com.devil.app.education.Stage318ForeignLanguageAlphaCoordinator
 import com.devil.app.education.Stage319ChildGuardianAlphaCoordinator
+import com.devil.app.education.Stage325ExtendedEducationTestingCoordinator
 import com.devil.app.reliability.Stage320LongRunningAssistantAlphaCoordinator
 import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAttemptPort
@@ -1068,6 +1069,20 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         Stage319ChildGuardianAlphaCoordinator()
+    }
+
+    /**
+     * Stage 325 process-scoped bounded Extended Education Testing composition.
+     *
+     * Validates an existing Stage 316 Education Alpha result without creating
+     * another education runtime, curriculum authority, Learning authority,
+     * execution authority, or persistence authority.
+     */
+    val stage325ExtendedEducationTestingCoordinator:
+        Stage325ExtendedEducationTestingCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        Stage325ExtendedEducationTestingCoordinator()
     }
 
     /**
