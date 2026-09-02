@@ -18,6 +18,7 @@ import com.devil.app.education.Stage316EducationAlphaResult
 import com.devil.app.education.Stage317SpokenEnglishAlphaResult
 import com.devil.app.education.Stage318ForeignLanguageAlphaResult
 import com.devil.app.education.Stage325ExtendedEducationTestingResult
+import com.devil.app.education.Stage326LanguageCurriculumValidationResult
 import com.devil.core.model.common.TraceId
 import com.devil.core.model.education.EducationSessionId
 import com.devil.core.model.identity.IdentityId
@@ -323,6 +324,15 @@ class DevilActivity : FragmentActivity() {
                     mutableStateOf<Stage325ExtendedEducationTestingResult?>(null)
                 }
 
+                /* Stage 326 bounded Language Curriculum Validation presentation state.
+                 * Preserves existing Stage 318, Stage 131, and Stage 142 contexts only;
+                 * not curriculum execution, lesson generation, verified proficiency,
+                 * verified mastery, constitutional Learning, Memory, or persistence.
+                 */
+                var stage326LanguageCurriculumValidationResult by remember {
+                    mutableStateOf<Stage326LanguageCurriculumValidationResult?>(null)
+                }
+
                 /* Stage 256 presentation navigation only. */
                 var showTaskAutomationInterface by remember {
                     mutableStateOf(false)
@@ -530,7 +540,13 @@ class DevilActivity : FragmentActivity() {
                           confidenceStatus = null,
                           academicEnglishStatus = null,
                           professionalEnglishStatus = null,
-                          curriculumStatus = null,
+                          curriculumStatus =
+                              stage326LanguageCurriculumValidationResult
+                                  ?.curriculumPreparation
+                                  ?.curriculum
+                                  ?.let {
+                                      "Curriculum context prepared"
+                                  },
                           multilingualTeachingStatus =
                               stage318ForeignLanguageAlphaResult?.multilingualTeaching?.let {
                                   "Teaching context prepared"
@@ -609,6 +625,29 @@ class DevilActivity : FragmentActivity() {
                                                     "Daily expressions",
                                                 frenchLearningObjective =
                                                     "Prepare bounded French Alpha specialization.",
+                                            )
+                                    }
+
+                                stage326LanguageCurriculumValidationResult =
+                                    stage318ForeignLanguageAlphaResult?.let {
+                                        foreignLanguageAlphaResult ->
+                                        devilApplication
+                                            .stage326LanguageCurriculumValidationCoordinator
+                                            .validate(
+                                                traceId =
+                                                    TraceId.from(
+                                                        "stage326-language-curriculum-validation",
+                                                    ),
+                                                foreignLanguageAlphaResult =
+                                                    foreignLanguageAlphaResult,
+                                                curriculumFocus =
+                                                    "Everyday French conversation and daily expressions",
+                                                adaptationRationale =
+                                                    "Owner explicitly selected practical French practice.",
+                                                validationFocus =
+                                                    "Bounded French curriculum architecture",
+                                                validationEvidenceDescription =
+                                                    "Existing Stage 318 language and multilingual contexts are preserved.",
                                             )
                                     }
 

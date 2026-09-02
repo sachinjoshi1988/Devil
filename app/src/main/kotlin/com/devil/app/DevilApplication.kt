@@ -23,6 +23,7 @@ import com.devil.app.education.Stage317SpokenEnglishAlphaCoordinator
 import com.devil.app.education.Stage318ForeignLanguageAlphaCoordinator
 import com.devil.app.education.Stage319ChildGuardianAlphaCoordinator
 import com.devil.app.education.Stage325ExtendedEducationTestingCoordinator
+import com.devil.app.education.Stage326LanguageCurriculumValidationCoordinator
 import com.devil.app.reliability.Stage320LongRunningAssistantAlphaCoordinator
 import com.devil.app.execution.AndroidExecutionAdapter
 import com.devil.app.execution.DefaultAndroidExecutionAttemptPort
@@ -1083,6 +1084,22 @@ class DevilApplication : Application() {
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         Stage325ExtendedEducationTestingCoordinator()
+    }
+
+    /**
+     * Stage 326 process-scoped bounded Language Curriculum Validation composition.
+     *
+     * Composes an existing Stage 318 Foreign Language Alpha result through the
+     * existing Stage 131 curriculum-preparation and Stage 142 structural
+     * language-validation boundaries. This creates no curriculum execution,
+     * lesson generation, verified proficiency/mastery, constitutional Learning,
+     * Memory commitment, persistence, or new education authority.
+     */
+    val stage326LanguageCurriculumValidationCoordinator:
+        Stage326LanguageCurriculumValidationCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        Stage326LanguageCurriculumValidationCoordinator()
     }
 
     /**

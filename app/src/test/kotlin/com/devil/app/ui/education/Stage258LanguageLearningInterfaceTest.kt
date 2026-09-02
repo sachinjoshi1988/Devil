@@ -177,7 +177,7 @@ class Stage258LanguageLearningInterfaceTest {
     }
 
     @Test
-    fun `activity supplies only bounded Stage 318 foreign language state`() {
+    fun `activity supplies bounded Stage 318 and Stage 326 language state`() {
         val source = activitySource()
         val languageLearningBranch =
             source
@@ -205,6 +205,29 @@ class Stage258LanguageLearningInterfaceTest {
             ),
         )
 
+        assertTrue(
+            languageLearningBranch.contains(
+                "stage326LanguageCurriculumValidationResult",
+            ),
+            "Activity must expose only the bounded Stage 326 curriculum-validation result.",
+        )
+        assertTrue(
+            languageLearningBranch.contains("?.curriculumPreparation"),
+        )
+        assertTrue(
+            languageLearningBranch.contains("?.curriculum"),
+        )
+        assertTrue(
+            languageLearningBranch.contains(
+                "\"Curriculum context prepared\"",
+            ),
+            "Stage 326 may present prepared curriculum context only.",
+        )
+        assertFalse(
+            languageLearningBranch.contains("curriculumStatus = null"),
+            "Stage 326 replaces the former unavailable curriculum presentation.",
+        )
+
         for (
             unavailableState in
                 listOf(
@@ -217,7 +240,6 @@ class Stage258LanguageLearningInterfaceTest {
                     "confidenceStatus = null",
                     "academicEnglishStatus = null",
                     "professionalEnglishStatus = null",
-                    "curriculumStatus = null",
                     "multilingualConversationStatus = null",
                     "crossLanguageAssistanceStatus = null",
                     "progressStatus = null",
@@ -227,7 +249,7 @@ class Stage258LanguageLearningInterfaceTest {
         ) {
             assertTrue(
                 languageLearningBranch.contains(unavailableState),
-                "Activity must not fabricate unavailable Stage 318 language state: $unavailableState",
+                "Activity must not fabricate unavailable language state: $unavailableState",
             )
         }
     }
