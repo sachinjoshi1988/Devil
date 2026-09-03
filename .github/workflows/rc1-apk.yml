@@ -87,7 +87,7 @@ jobs:
 
           cp \
             app/build/outputs/apk/release/app-release.apk \
-            release/devil-v1-rc1.apk
+            release/devil-v1.1.0-rc1.apk
 
       - name: Verify RC1 APK signer
         env:
@@ -112,13 +112,13 @@ jobs:
           "$APKSIGNER" verify \
             --verbose \
             --print-certs \
-            release/devil-v1-rc1.apk \
-            | tee release/devil-v1-rc1.signer.txt
+            release/devil-v1.1.0-rc1.apk \
+            | tee release/devil-v1.1.0-rc1.signer.txt
 
           ACTUAL_CERT_SHA256="$(
             grep \
               'certificate SHA-256 digest:' \
-              release/devil-v1-rc1.signer.txt \
+              release/devil-v1.1.0-rc1.signer.txt \
               | head -n 1 \
               | sed 's/.*digest:[[:space:]]*//' \
               | tr 'A-F' 'a-f' \
@@ -141,36 +141,36 @@ jobs:
           (
             cd release
 
-            sha256sum devil-v1-rc1.apk \
-              > devil-v1-rc1.apk.sha256
+            sha256sum devil-v1.1.0-rc1.apk \
+              > devil-v1.1.0-rc1.apk.sha256
 
-            sha256sum --check devil-v1-rc1.apk.sha256
+            sha256sum --check devil-v1.1.0-rc1.apk.sha256
           )
 
       - name: Verify RC1 release files
         run: |
           ls -lh release
-          cat release/devil-v1-rc1.apk.sha256
-          cat release/devil-v1-rc1.signer.txt
+          cat release/devil-v1.1.0-rc1.apk.sha256
+          cat release/devil-v1.1.0-rc1.signer.txt
 
       - name: Create GitHub RC1 Release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: devil-v1.0.0-rc1
+          RELEASE_TAG: devil-v1.1.0-rc1
         run: |
           gh release create "$RELEASE_TAG" \
-            release/devil-v1-rc1.apk \
-            release/devil-v1-rc1.apk.sha256 \
-            release/devil-v1-rc1.signer.txt \
+            release/devil-v1.1.0-rc1.apk \
+            release/devil-v1.1.0-rc1.apk.sha256 \
+            release/devil-v1.1.0-rc1.signer.txt \
             --target "$GITHUB_SHA" \
-            --title "Devil V1.0.0 RC1" \
+            --title "Devil V1.1.0 RC1" \
             --prerelease \
-            --notes "Devil V1.0.0 Release Candidate 1.
+            --notes "Devil V1.1.0 Release Candidate 1.
 
           Source commit: $GITHUB_SHA
 
-          Version name: 1.0.0-rc1
-          Version code: 2
+          Version name: 1.1.0-rc1
+          Version code: 4
 
           This is a signed release-variant candidate using the Devil V1 release signing identity.
 
