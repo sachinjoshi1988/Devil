@@ -720,7 +720,7 @@ class DevilApplication : Application() {
         )
     }
 
-    val voiceConversationSubmissionFlowCoordinator:
+    private val baseVoiceConversationSubmissionFlowCoordinator:
         ConversationSubmissionFlowCoordinator by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
@@ -731,6 +731,18 @@ class DevilApplication : Application() {
                 conversationEntryIdProvider,
             runtimeSubmissionCoordinator =
                 voiceConversationRuntimeSubmissionCoordinator,
+        )
+    }
+
+    val voiceConversationSubmissionFlowCoordinator:
+        ConversationSubmissionFlowCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        ConversationalResponseSubmissionFlowCoordinator(
+            submissionCoordinator =
+                baseVoiceConversationSubmissionFlowCoordinator,
+            responseCompositionCoordinator =
+                conversationalResponseCompositionCoordinator,
         )
     }
 
