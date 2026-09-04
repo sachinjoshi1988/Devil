@@ -32,6 +32,8 @@ class Stage314AndroidOwnerAuthenticationCoordinator(
 ) {
 
     fun authenticate(
+        promptSubtitle: String =
+            "Confirm your identity to authorize this Devil action.",
         onAuthenticated: () -> Unit,
         onUnavailable: (String) -> Unit,
         onCancelledOrFailed: (String) -> Unit,
@@ -132,9 +134,7 @@ class Stage314AndroidOwnerAuthenticationCoordinator(
         val promptInfo =
             BiometricPrompt.PromptInfo.Builder()
                 .setTitle("Authenticate Devil owner")
-                .setSubtitle(
-                    "Confirm your identity to authorize this Devil action.",
-                )
+            .setSubtitle(promptSubtitle)
                 .setAllowedAuthenticators(
                     authenticators,
                 )

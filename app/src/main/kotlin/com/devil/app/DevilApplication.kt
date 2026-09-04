@@ -36,10 +36,13 @@ import com.devil.app.internet.AndroidInternetKnowledgeCoordinator
 import com.devil.app.internet.AndroidInternetKnowledgeSafetyCoordinator
 import com.devil.app.internet.DefaultAndroidInternetKnowledgeSource
 import com.devil.app.modelprovider.conversation.AndroidConversationIntakeEvidenceStore
+import com.devil.app.modelprovider.conversation.AndroidKeystoreConversationalModelCredentialStore
 import com.devil.app.modelprovider.conversation.AndroidConversationalResponseCompositionCoordinator
 import com.devil.app.modelprovider.conversation.ConversationalResponseSubmissionFlowCoordinator
 import com.devil.app.modelprovider.conversation.DefaultAndroidConversationalModelInferencePort
 import com.devil.app.modelprovider.conversation.DefaultConversationalModelConfigurationSource
+import com.devil.app.modelprovider.conversation.DefaultConversationalModelRuntimeCredentialProvider
+import com.devil.app.modelprovider.conversation.DefaultConversationalModelCredentialProvisioningCoordinator
 import com.devil.app.modelprovider.conversation.DefaultHttpsConversationalModelTransport
 import com.devil.app.diagnostic.Stage314AndroidPostActionDiagnosticRecorder
 import com.devil.app.device.AndroidDeviceKnowledgeCoordinator
@@ -587,20 +590,49 @@ class DevilApplication : Application() {
     }
 
     /**
-     * Stage 313 bounded conversational-model configuration.
+     * Stage 337B bounded conversational-model configuration.
      *
      * Endpoint and model identifier may be supplied through generated build
-     * configuration. The credential deliberately remains unavailable because
-     * Devil currently has no approved secure runtime credential mechanism for
-     * conversational-model access.
+     * configuration. The credential is recovered only through the approved
+     * Android-private runtime credential boundary.
      *
-     * Missing credential therefore fails closed rather than embedding a secret
-     * in the APK.
+     * Missing endpoint, model identifier, or credential still fails closed.
      *
+     * CONFIGURATION_AVAILABLE != PROVIDER_AVAILABLE.
+     * CREDENTIAL_AVAILABLE != CREDENTIAL_VALID.
      * CONFIGURATION_AVAILABLE != AUTHORIZATION.
      * GENERATED != VERIFIED.
      * MODEL != DEVIL.
+     * MODEL != BRAIN.
+     * MODEL != AUTHORITY.
      */
+    private val conversationalModelCredentialStore:
+        AndroidKeystoreConversationalModelCredentialStore by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        AndroidKeystoreConversationalModelCredentialStore(
+            context = applicationContext,
+        )
+    }
+
+    val conversationalModelCredentialProvisioningCoordinator:
+        DefaultConversationalModelCredentialProvisioningCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultConversationalModelCredentialProvisioningCoordinator(
+            credentialStore = conversationalModelCredentialStore,
+        )
+    }
+
+    private val conversationalModelRuntimeCredentialProvider:
+        DefaultConversationalModelRuntimeCredentialProvider by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        DefaultConversationalModelRuntimeCredentialProvider(
+            credentialStore = conversationalModelCredentialStore,
+        )
+    }
+
     private val conversationalModelConfigurationSource:
         DefaultConversationalModelConfigurationSource by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
@@ -621,7 +653,7 @@ class DevilApplication : Application() {
                     }
             },
             credentialProvider = {
-                null
+                conversationalModelRuntimeCredentialProvider.credential()
             },
         )
     }

@@ -139,6 +139,11 @@ class DevilActivity : FragmentActivity() {
 
     private var stage315HandsFreeOwnerAuthenticationInProgress = false
 
+    private var stage337bModelCredentialAuthenticationInProgress = false
+
+    private var stage337bModelCredentialStatus by
+        mutableStateOf<String?>(null)
+
     /**
      * Stage 314 real-Android submission worker.
      *
@@ -434,6 +439,18 @@ class DevilActivity : FragmentActivity() {
                         privacyDisclosureRationale = null,
                         privacyRepresentationStatus = null,
                         privacyDataClassification = null,
+                        modelCredentialStatus =
+                            stage337bModelCredentialStatus,
+                        modelCredentialAuthenticationInProgress =
+                            stage337bModelCredentialAuthenticationInProgress,
+                        onModelCredentialProvisionRequested = { credential ->
+                            requestStage337bModelCredentialProvisioning(
+                                credential = credential,
+                            )
+                        },
+                        onModelCredentialRemovalRequested = {
+                            requestStage337bModelCredentialRemoval()
+                        },
                         onBack = {
                             showSettingsInterface = false
                         },
@@ -1072,6 +1089,114 @@ class DevilActivity : FragmentActivity() {
                     "Hands-Free voice input failed."
             }
         }
+    }
+
+    /**
+     * Stage 337B owner-authenticated local model-credential provisioning.
+     *
+     * Android authentication permits only this bounded local storage
+     * operation. It does not establish Devil authorization or a Devil
+     * session.
+     */
+    private fun requestStage337bModelCredentialProvisioning(
+        credential: String,
+    ) {
+        if (stage337bModelCredentialAuthenticationInProgress) {
+            return
+        }
+
+        if (credential.isBlank()) {
+            stage337bModelCredentialStatus =
+                "Model credential was not stored because it was blank."
+            return
+        }
+
+        val devilApplication =
+            application as DevilApplication
+
+        stage337bModelCredentialAuthenticationInProgress = true
+        stage337bModelCredentialStatus =
+            "Android owner authentication is required to store the model credential."
+
+        stage314OwnerAuthenticationCoordinator.authenticate(
+            promptSubtitle =
+                "Confirm Android owner authentication to manage the model credential.",
+            onAuthenticated = {
+                stage337bModelCredentialAuthenticationInProgress = false
+
+                val stored =
+                    devilApplication
+                        .conversationalModelCredentialProvisioningCoordinator
+                        .provision(
+                            credential = credential,
+                        )
+
+                stage337bModelCredentialStatus =
+                    if (stored) {
+                        "Model credential stored in Android-protected local storage."
+                    } else {
+                        "Model credential could not be stored."
+                    }
+            },
+            onUnavailable = { message ->
+                stage337bModelCredentialAuthenticationInProgress = false
+                stage337bModelCredentialStatus =
+                    "Model credential unchanged: $message"
+            },
+            onCancelledOrFailed = { message ->
+                stage337bModelCredentialAuthenticationInProgress = false
+                stage337bModelCredentialStatus =
+                    "Model credential unchanged: $message"
+            },
+        )
+    }
+
+    /**
+     * Stage 337B owner-authenticated local model-credential removal.
+     *
+     * Local removal does not revoke a credential at the remote provider.
+     */
+    private fun requestStage337bModelCredentialRemoval() {
+        if (stage337bModelCredentialAuthenticationInProgress) {
+            return
+        }
+
+        val devilApplication =
+            application as DevilApplication
+
+        stage337bModelCredentialAuthenticationInProgress = true
+        stage337bModelCredentialStatus =
+            "Android owner authentication is required to remove the local model credential."
+
+        stage314OwnerAuthenticationCoordinator.authenticate(
+            promptSubtitle =
+                "Confirm Android owner authentication to remove the local model credential.",
+            onAuthenticated = {
+                stage337bModelCredentialAuthenticationInProgress = false
+
+                val cleared =
+                    devilApplication
+                        .conversationalModelCredentialProvisioningCoordinator
+                        .remove()
+
+                stage337bModelCredentialStatus =
+                    if (cleared) {
+                        "Local model credential storage cleared."
+                    } else {
+                        "Local model credential storage could not be cleared."
+                    }
+            },
+            onUnavailable = { message ->
+                stage337bModelCredentialAuthenticationInProgress = false
+                stage337bModelCredentialStatus =
+                    "Local model credential unchanged: $message"
+            },
+            onCancelledOrFailed = { message ->
+                stage337bModelCredentialAuthenticationInProgress = false
+                stage337bModelCredentialStatus =
+                    "Local model credential unchanged: $message"
+            },
+        )
     }
 
     private fun submitTypedConversationWithStage314OwnerAuthentication() {

@@ -19,24 +19,35 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.devil.app.R
 
 /**
  * Stage 262 Settings / Privacy / Permissions Interface.
  *
- * Presentation-only surface for already-established bounded settings-control,
+ * Stage 262 remains a presentation surface for already-established bounded settings-control,
  * Android-permission, and privacy-governance information supplied by an upstream
- * caller.
+ * caller. Stage 337B additionally provides an interactive presentation boundary for
+ * entering a new conversational-model credential or requesting local credential
+ * removal. Those callbacks request upstream handling only; this composable does not
+ * authenticate an owner or mutate credential storage itself.
+
  *
  * This interface does not open Android settings, mutate Android settings, request
  * or grant Android permission, grant Devil authorization, evaluate privacy
@@ -82,6 +93,10 @@ fun DevilSettingsPrivacyPermissionsInterface(
     privacyRepresentationStatus: String?,
     privacyDataClassification: String?,
     onBack: () -> Unit,
+    modelCredentialStatus: String? = null,
+    modelCredentialAuthenticationInProgress: Boolean = false,
+    onModelCredentialProvisionRequested: (String) -> Unit = {},
+    onModelCredentialRemovalRequested: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val devilRed = MaterialTheme.colorScheme.primary
@@ -162,6 +177,20 @@ fun DevilSettingsPrivacyPermissionsInterface(
                 elevatedSurface = elevatedSurface,
                 privacyRepresentationStatus = privacyRepresentationStatus,
                 privacyDataClassification = privacyDataClassification,
+            )
+
+            DevilModelCredentialManagementCard(
+                devilRed = devilRed,
+                foreground = foreground,
+                muted = muted,
+                elevatedSurface = elevatedSurface,
+                credentialStatus = modelCredentialStatus,
+                authenticationInProgress =
+                    modelCredentialAuthenticationInProgress,
+                onProvisionRequested =
+                    onModelCredentialProvisionRequested,
+                onRemovalRequested =
+                    onModelCredentialRemovalRequested,
             )
 
             DevilSettingsPrivacyPermissionsBoundaryFooter(
@@ -520,3 +549,181 @@ private fun String?.truthfulStage262Value(): String =
         ?.trim()
         ?.takeIf(String::isNotEmpty)
         ?: "Unavailable"
+
+/**
+ * Stage 337B presentation-only conversational-model credential management.
+ *
+ * The credential draft exists only as ephemeral Compose state. It is masked,
+ * is never populated from persistent storage, and is cleared from visible UI
+ * before the provisioning callback is emitted.
+ *
+ * This composable does not authenticate an owner, access Android Keystore,
+ * mutate credential storage, validate a provider credential, grant Devil
+ * authorization, invoke a model, execute a capability, or establish verified
+ * truth.
+ *
+ * CREDENTIAL_ENTRY != CREDENTIAL_STORED.
+ * ANDROID_AUTHENTICATION_SUCCESS != DEVIL_AUTHORIZATION.
+ * CREDENTIAL_PROVISIONED != CREDENTIAL_VALID.
+ * CREDENTIAL_REMOVED != PROVIDER_REVOKED.
+ */
+@Composable
+private fun DevilModelCredentialManagementCard(
+    devilRed: Color,
+    foreground: Color,
+    muted: Color,
+    elevatedSurface: Color,
+    credentialStatus: String?,
+    authenticationInProgress: Boolean,
+    onProvisionRequested: (String) -> Unit,
+    onRemovalRequested: () -> Unit,
+) {
+    var credentialDraft by remember {
+        mutableStateOf("")
+    }
+
+    val canProvision =
+        !authenticationInProgress &&
+            credentialDraft.isNotBlank()
+
+    val canRemove =
+        !authenticationInProgress
+
+    DevilStage262Card(
+        title = "MODEL ACCESS",
+        devilRed = devilRed,
+        elevatedSurface = elevatedSurface,
+    ) {
+        Text(
+            text =
+                "Provision or remove the local conversational-model credential.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = foreground,
+        )
+
+        Text(
+            text =
+                "The stored credential is never displayed. Android owner authentication is required before local credential storage is changed.",
+            style = MaterialTheme.typography.bodySmall,
+            color = muted,
+        )
+
+        OutlinedTextField(
+            value = credentialDraft,
+            onValueChange = { value ->
+                credentialDraft = value
+            },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .devilInclusiveInteractiveTarget(),
+            enabled = !authenticationInProgress,
+            singleLine = true,
+            label = {
+                Text(
+                    text = "MODEL CREDENTIAL",
+                )
+            },
+            placeholder = {
+                Text(
+                    text = "Enter new credential",
+                )
+            },
+            visualTransformation =
+                PasswordVisualTransformation(),
+            colors =
+                OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = devilRed,
+                    unfocusedBorderColor =
+                        devilRed.copy(alpha = 0.36f),
+                    focusedTextColor = foreground,
+                    unfocusedTextColor = foreground,
+                    cursorColor = devilRed,
+                ),
+            shape = RoundedCornerShape(16.dp),
+        )
+
+        OutlinedButton(
+            onClick = {
+                /*
+                 * Clear visible secret state before authentication begins.
+                 *
+                 * The immutable String passed to the callback may still exist
+                 * transiently in JVM memory and cannot be reliably zeroized.
+                 */
+                val credentialToProvision =
+                    credentialDraft
+
+                credentialDraft = ""
+
+                onProvisionRequested(
+                    credentialToProvision,
+                )
+            },
+            enabled = canProvision,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .devilInclusiveInteractiveTarget(),
+            border =
+                BorderStroke(
+                    width = 1.dp,
+                    color = devilRed.copy(alpha = 0.46f),
+                ),
+            colors =
+                ButtonDefaults.outlinedButtonColors(
+                    contentColor = devilRed,
+                ),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Text(
+                text =
+                    if (authenticationInProgress) {
+                        "AUTHENTICATION IN PROGRESS"
+                    } else {
+                        "SAVE CREDENTIAL"
+                    },
+                fontWeight = FontWeight.Bold,
+            )
+        }
+
+        OutlinedButton(
+            onClick = onRemovalRequested,
+            enabled = canRemove,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .devilInclusiveInteractiveTarget(),
+            border =
+                BorderStroke(
+                    width = 1.dp,
+                    color = devilRed.copy(alpha = 0.46f),
+                ),
+            colors =
+                ButtonDefaults.outlinedButtonColors(
+                    contentColor = devilRed,
+                ),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Text(
+                text = "REMOVE LOCAL CREDENTIAL",
+                fontWeight = FontWeight.Bold,
+            )
+        }
+
+        Text(
+            text =
+                credentialStatus
+                    ?: "No credential-management operation has been performed in this screen session.",
+            style = MaterialTheme.typography.bodySmall,
+            color = muted,
+        )
+
+        Text(
+            text =
+                "Local removal does not revoke a credential at the remote provider.",
+            style = MaterialTheme.typography.bodySmall,
+            color = muted,
+        )
+    }
+}
