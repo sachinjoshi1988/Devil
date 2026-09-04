@@ -31,7 +31,10 @@ import java.util.Locale
  * SEMANTIC_CANDIDATE != VERIFIED_USER_INTENT.
  * MODEL != UNDERSTANDING_AUTHORITY.
  */
-class DefaultUnderstandingEvaluationResolver :
+class DefaultUnderstandingEvaluationResolver(
+    private val languageEvidenceResolver: UnderstandingLanguageEvidenceResolver =
+        DefaultUnderstandingLanguageEvidenceResolver(),
+) :
     UnderstandingEvaluationResolver {
 
     override fun evaluate(
@@ -94,6 +97,10 @@ class DefaultUnderstandingEvaluationResolver :
             state = UnderstandingState.UNSUPPORTED,
             summary =
                 "No bounded language-understanding policy matched the supplied input.",
+            languageEvidence =
+                languageEvidenceResolver.resolve(
+                    content = content,
+                ),
         )
     }
 
@@ -111,6 +118,15 @@ class DefaultUnderstandingEvaluationResolver :
             state = UnderstandingState.COMPLETE,
             summary = summary,
             semantics = semantics,
+            languageEvidence =
+                languageEvidenceResolver.resolve(
+                    content =
+                        request.conversationIntake
+                            .record
+                            .input
+                            .content,
+                    boundedLanguageTag = "en",
+                ),
         )
     }
 

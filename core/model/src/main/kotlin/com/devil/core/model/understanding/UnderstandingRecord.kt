@@ -11,6 +11,10 @@ import com.devil.core.model.context.ContextEnvelope
  * Structured semantics may be present when a bounded understanding policy
  * established meaning. Their presence does not grant authorization or imply
  * that any action should or can be executed.
+ *
+ * Stage 337E additionally preserves provider-neutral language/script evidence.
+ * Language evidence does not become Understanding Authority and does not
+ * reinterpret the original ConversationInput.
  */
 @ConsistentCopyVisibility
 data class UnderstandingRecord private constructor(
@@ -18,6 +22,7 @@ data class UnderstandingRecord private constructor(
     val state: UnderstandingState,
     val summary: String,
     val semantics: UnderstandingSemantics?,
+    val languageEvidence: UnderstandingLanguageEvidence,
 ) {
 
     companion object {
@@ -27,6 +32,12 @@ data class UnderstandingRecord private constructor(
             state: UnderstandingState,
             summary: String,
             semantics: UnderstandingSemantics? = null,
+            languageEvidence: UnderstandingLanguageEvidence =
+                UnderstandingLanguageEvidence.create(
+                    status =
+                        UnderstandingLanguageEvidenceStatus.UNKNOWN,
+                    script = UnderstandingScript.UNKNOWN,
+                ),
         ): UnderstandingRecord {
             val normalizedSummary = summary.trim()
 
@@ -39,6 +50,7 @@ data class UnderstandingRecord private constructor(
                 state = state,
                 summary = normalizedSummary,
                 semantics = semantics,
+                languageEvidence = languageEvidence,
             )
         }
     }
