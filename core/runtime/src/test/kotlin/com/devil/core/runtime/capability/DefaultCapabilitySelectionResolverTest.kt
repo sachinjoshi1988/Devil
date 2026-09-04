@@ -159,6 +159,72 @@ class DefaultCapabilitySelectionResolverTest {
         assertNull(result.capability)
     }
 
+
+    @Test
+    fun `resolve does not select camera for understood action request`() {
+        val traceId =
+            TraceId.from(
+                "trace-stage337c-generic-action-request",
+            )
+
+        val result =
+            DefaultCapabilitySelectionResolver().resolve(
+                traceId = traceId,
+                request =
+                    createRequest(
+                        traceId = traceId,
+                        intent = UnderstandingIntent.ACTION_REQUEST,
+                        actionability =
+                            UnderstandingActionability.ACTIONABLE,
+                        target = "camera",
+                        predicate = "capture",
+                    ),
+                registry =
+                    availableRegistry(
+                        traceId = traceId,
+                        capability = createCameraCapability(),
+                    ),
+            )
+
+        assertEquals(
+            CapabilitySelectionResolutionStatus.UNAVAILABLE,
+            result.status,
+        )
+        assertNull(result.capability)
+    }
+
+    @Test
+    fun `resolve does not select camera for understood information query`() {
+        val traceId =
+            TraceId.from(
+                "trace-stage337c-generic-information-query",
+            )
+
+        val result =
+            DefaultCapabilitySelectionResolver().resolve(
+                traceId = traceId,
+                request =
+                    createRequest(
+                        traceId = traceId,
+                        intent = UnderstandingIntent.INFORMATION_QUERY,
+                        actionability =
+                            UnderstandingActionability.ACTIONABLE,
+                        target = "camera",
+                        predicate = "query",
+                    ),
+                registry =
+                    availableRegistry(
+                        traceId = traceId,
+                        capability = createCameraCapability(),
+                    ),
+            )
+
+        assertEquals(
+            CapabilitySelectionResolutionStatus.UNAVAILABLE,
+            result.status,
+        )
+        assertNull(result.capability)
+    }
     @Test
     fun `resolve defers when complete understanding lacks structured semantics`() {
         val traceId = TraceId.from(
@@ -337,6 +403,7 @@ class DefaultCapabilitySelectionResolverTest {
         intent: UnderstandingIntent,
         actionability: UnderstandingActionability,
         target: String? = null,
+        predicate: String? = null,
     ): CapabilitySelectionRequest {
         return createPlanRequest(
             traceId = traceId,
@@ -352,10 +419,17 @@ class DefaultCapabilitySelectionResolverTest {
                             UnderstandingIntent.OPEN_TARGET ->
                                 "open target"
 
+                            UnderstandingIntent.ACTION_REQUEST ->
+                                "action request"
+
+                            UnderstandingIntent.INFORMATION_QUERY ->
+                                "information query"
+
                             UnderstandingIntent.INFORMATIONAL ->
                                 "informational statement"
                         },
                     target = target,
+                    predicate = predicate,
                 ),
         )
     }

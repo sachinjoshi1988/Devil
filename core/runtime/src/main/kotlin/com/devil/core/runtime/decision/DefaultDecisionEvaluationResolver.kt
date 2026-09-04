@@ -114,6 +114,26 @@ class DefaultDecisionEvaluationResolver :
                 }
             }
 
+
+            UnderstandingIntent.ACTION_REQUEST,
+            UnderstandingIntent.INFORMATION_QUERY,
+            -> {
+                if (
+                    semantics.actionability !=
+                    UnderstandingActionability.ACTIONABLE ||
+                    semantics.target == null ||
+                    semantics.predicate == null
+                ) {
+                    deferredSemanticMismatch(request)
+                } else {
+                    DecisionRecord.create(
+                        understanding = understanding,
+                        state = DecisionState.DEFERRED,
+                        summary =
+                            "Decision deferred because the understood request has no operational decision policy.",
+                    )
+                }
+            }
             UnderstandingIntent.INFORMATIONAL -> {
                 if (
                     semantics.actionability !=

@@ -71,6 +71,72 @@ class DefaultPlanningStrategyProviderTest {
         )
     }
 
+
+    @Test
+    fun `provide returns unavailable for understood action request`() {
+        val traceId =
+            TraceId.from(
+                "trace-default-planning-strategy-provider-stage337c-action",
+            )
+
+        val result =
+            DefaultPlanningStrategyProvider().provide(
+                traceId = traceId,
+                request =
+                    createRequest(
+                        traceId = traceId,
+                        semantics =
+                            UnderstandingSemantics.create(
+                                intent = UnderstandingIntent.ACTION_REQUEST,
+                                actionability =
+                                    UnderstandingActionability.ACTIONABLE,
+                                meaning = "decrease volume",
+                                target = "volume",
+                                predicate = "decrease",
+                            ),
+                    ),
+            )
+
+        assertEquals(
+            PlanningStrategyProvisionStatus.UNAVAILABLE,
+            result.status,
+        )
+        assertNull(result.strategy)
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `provide returns unavailable for understood information query`() {
+        val traceId =
+            TraceId.from(
+                "trace-default-planning-strategy-provider-stage337c-query",
+            )
+
+        val result =
+            DefaultPlanningStrategyProvider().provide(
+                traceId = traceId,
+                request =
+                    createRequest(
+                        traceId = traceId,
+                        semantics =
+                            UnderstandingSemantics.create(
+                                intent = UnderstandingIntent.INFORMATION_QUERY,
+                                actionability =
+                                    UnderstandingActionability.ACTIONABLE,
+                                meaning = "query battery level",
+                                target = "battery level",
+                                predicate = "query",
+                            ),
+                    ),
+            )
+
+        assertEquals(
+            PlanningStrategyProvisionStatus.UNAVAILABLE,
+            result.status,
+        )
+        assertNull(result.strategy)
+        assertNull(result.error)
+    }
     @Test
     fun `provide returns unavailable when complete understanding lacks semantics`() {
         val traceId = TraceId.from(

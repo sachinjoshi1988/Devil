@@ -90,6 +90,70 @@ class DefaultDecisionEvaluationResolverTest {
         )
     }
 
+
+    @Test
+    fun `evaluate defers understood action request without operational decision policy`() {
+        val decision =
+            DefaultDecisionEvaluationResolver().evaluate(
+                createSemanticRequest(
+                    intent = UnderstandingIntent.ACTION_REQUEST,
+                    actionability =
+                        UnderstandingActionability.ACTIONABLE,
+                    meaning = "decrease volume",
+                    target = "volume",
+                    predicate = "decrease",
+                ),
+            )
+
+        assertEquals(
+            DecisionState.DEFERRED,
+            decision.state,
+        )
+        assertEquals(
+            "Decision deferred because the understood request has no operational decision policy.",
+            decision.summary,
+        )
+        assertEquals(
+            UnderstandingIntent.ACTION_REQUEST,
+            decision.understanding.semantics?.intent,
+        )
+        assertEquals(
+            "decrease",
+            decision.understanding.semantics?.predicate,
+        )
+    }
+
+    @Test
+    fun `evaluate defers understood information query without operational decision policy`() {
+        val decision =
+            DefaultDecisionEvaluationResolver().evaluate(
+                createSemanticRequest(
+                    intent = UnderstandingIntent.INFORMATION_QUERY,
+                    actionability =
+                        UnderstandingActionability.ACTIONABLE,
+                    meaning = "query battery level",
+                    target = "battery level",
+                    predicate = "query",
+                ),
+            )
+
+        assertEquals(
+            DecisionState.DEFERRED,
+            decision.state,
+        )
+        assertEquals(
+            "Decision deferred because the understood request has no operational decision policy.",
+            decision.summary,
+        )
+        assertEquals(
+            UnderstandingIntent.INFORMATION_QUERY,
+            decision.understanding.semantics?.intent,
+        )
+        assertEquals(
+            "query",
+            decision.understanding.semantics?.predicate,
+        )
+    }
     @Test
     fun `evaluate requires clarification for ambiguous understanding`() {
         val decision =
@@ -158,11 +222,13 @@ class DefaultDecisionEvaluationResolverTest {
         )
     }
 
+
     private fun createSemanticRequest(
         intent: UnderstandingIntent,
         actionability: UnderstandingActionability,
         meaning: String,
         target: String? = null,
+        predicate: String? = null,
     ): DecisionEvaluationRequest {
         return DecisionEvaluationRequest.create(
             understanding =
@@ -176,6 +242,7 @@ class DefaultDecisionEvaluationResolverTest {
                             actionability = actionability,
                             meaning = meaning,
                             target = target,
+                            predicate = predicate,
                         ),
                 ),
         )

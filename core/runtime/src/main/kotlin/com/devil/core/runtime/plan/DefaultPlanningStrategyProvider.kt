@@ -76,6 +76,10 @@ class DefaultPlanningStrategyProvider : PlanningStrategyProvider {
                     }
                 }
 
+
+                UnderstandingIntent.ACTION_REQUEST,
+                UnderstandingIntent.INFORMATION_QUERY,
+                -> null
                 UnderstandingIntent.INFORMATIONAL -> {
                     if (
                         semantics.actionability ==

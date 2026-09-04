@@ -101,6 +101,78 @@ class Stage314AndroidCapabilitySelectionResolverTest {
         )
     }
 
+
+    @Test
+    fun `understood action request cannot select Stage314 settings capability`() {
+        val traceId =
+            TraceId.from(
+                "trace-stage337c-android-action-request",
+            )
+
+        val result =
+            DefaultAndroidCapabilitySelectionResolver()
+                .resolve(
+                    traceId = traceId,
+                    request =
+                        request(
+                            traceId = traceId,
+                            target = "settings",
+                            intent =
+                                UnderstandingIntent.ACTION_REQUEST,
+                            actionability =
+                                UnderstandingActionability.ACTIONABLE,
+                            meaning = "change settings",
+                            predicate = "change",
+                            understandingSummary =
+                                "Understood action-request semantics were supplied.",
+                        ),
+                    registry =
+                        availableRegistry(traceId),
+                )
+
+        assertEquals(
+            CapabilitySelectionResolutionStatus.UNAVAILABLE,
+            result.status,
+        )
+        assertNull(result.capability)
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `understood information query cannot select Stage314 settings capability`() {
+        val traceId =
+            TraceId.from(
+                "trace-stage337c-android-information-query",
+            )
+
+        val result =
+            DefaultAndroidCapabilitySelectionResolver()
+                .resolve(
+                    traceId = traceId,
+                    request =
+                        request(
+                            traceId = traceId,
+                            target = "settings",
+                            intent =
+                                UnderstandingIntent.INFORMATION_QUERY,
+                            actionability =
+                                UnderstandingActionability.ACTIONABLE,
+                            meaning = "query settings",
+                            predicate = "query",
+                            understandingSummary =
+                                "Understood information-query semantics were supplied.",
+                        ),
+                    registry =
+                        availableRegistry(traceId),
+                )
+
+        assertEquals(
+            CapabilitySelectionResolutionStatus.UNAVAILABLE,
+            result.status,
+        )
+        assertNull(result.capability)
+        assertNull(result.error)
+    }
     @Test
     fun `unsupported Android open target remains unavailable`() {
         val traceId =
@@ -179,6 +251,14 @@ class Stage314AndroidCapabilitySelectionResolverTest {
     private fun request(
         traceId: TraceId,
         target: String,
+        intent: UnderstandingIntent =
+            UnderstandingIntent.OPEN_TARGET,
+        actionability: UnderstandingActionability =
+            UnderstandingActionability.ACTIONABLE,
+        meaning: String = "open target",
+        predicate: String? = null,
+        understandingSummary: String =
+            "User requested opening the target: $target.",
     ): CapabilitySelectionRequest {
         val context =
             ContextEnvelope.create(
@@ -203,17 +283,14 @@ class Stage314AndroidCapabilitySelectionResolverTest {
                 state =
                     UnderstandingState.COMPLETE,
                 summary =
-                    "User requested opening the target: $target.",
+                    understandingSummary,
                 semantics =
                     UnderstandingSemantics.create(
-                        intent =
-                            UnderstandingIntent.OPEN_TARGET,
-                        actionability =
-                            UnderstandingActionability.ACTIONABLE,
-                        meaning =
-                            "open target",
-                        target =
-                            target,
+                        intent = intent,
+                        actionability = actionability,
+                        meaning = meaning,
+                        target = target,
+                        predicate = predicate,
                     ),
             )
 
