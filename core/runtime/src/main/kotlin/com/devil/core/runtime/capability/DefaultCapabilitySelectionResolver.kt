@@ -3,17 +3,16 @@ package com.devil.core.runtime.capability
 import com.devil.core.model.capability.CapabilityContract
 import com.devil.core.model.capability.CapabilitySelectionRequest
 import com.devil.core.model.common.TraceId
-import com.devil.core.model.understanding.UnderstandingActionability
-import com.devil.core.model.understanding.UnderstandingIntent
 
 /**
  * Default bounded constitutional capability-selection resolver.
  *
- * Stage 60 introduces a deliberately small deterministic selection policy over
- * registered capability contracts.
+ * Stage 337J delegates semantic-domain classification to the shared General
+ * Intent & Capability Router while preserving the existing constitutional
+ * Capability Selection Authority.
  *
- * Selection is based only on structured semantic meaning already established by
- * Understanding and preserved through Decision, Task, and Plan.
+ * Selection remains based only on structured semantic meaning already
+ * established by Understanding and preserved through Decision, Task, and Plan.
  *
  * A resolved capability remains only a selected registered contract.
  *
@@ -28,11 +27,18 @@ import com.devil.core.model.understanding.UnderstandingIntent
  * - verification;
  * - Outcome.
  *
- * Unsupported intents, targets, missing semantics, or missing registrations
- * remain unavailable rather than being guessed or fabricated.
+ * Unsupported routes, missing semantics, or missing registrations remain
+ * unavailable rather than being guessed or fabricated.
+ *
+ * GENERAL_INTENT_ROUTER != CAPABILITY_SELECTION_AUTHORITY.
+ * INTENT_ROUTE != CAPABILITY_SELECTED.
+ * CAPABILITY_SELECTED != EXECUTION_APPROVED.
  */
-class DefaultCapabilitySelectionResolver :
-    CapabilitySelectionResolver {
+class DefaultCapabilitySelectionResolver(
+    private val generalIntentCapabilityRouter:
+        GeneralIntentCapabilityRouter =
+        DefaultGeneralIntentCapabilityRouter(),
+) : CapabilitySelectionResolver {
 
     override fun resolve(
         traceId: TraceId,
@@ -77,34 +83,33 @@ class DefaultCapabilitySelectionResolver :
         capabilities: List<CapabilityContract>,
     ): CapabilitySelectionResolutionResult {
         val semantics =
-            request.plan
+            request
+                .plan
                 .task
                 .decision
                 .understanding
                 .semantics
-                ?: return unavailable(traceId)
 
-        if (
-            semantics.intent != UnderstandingIntent.OPEN_TARGET ||
-            semantics.actionability !=
-                UnderstandingActionability.ACTIONABLE
-        ) {
-            return unavailable(traceId)
-        }
-
-        val target =
-            semantics.target
-                ?.trim()
-                ?.lowercase()
-                ?: return unavailable(traceId)
+        val route =
+            generalIntentCapabilityRouter.route(semantics)
 
         val requiredCapabilityId =
-            when (target) {
-                "camera",
-                "the camera",
-                -> "capability-camera"
+            when (route) {
+                GeneralIntentCapabilityRoute.CAMERA ->
+                    "capability-camera"
 
-                else -> return unavailable(traceId)
+                GeneralIntentCapabilityRoute.NO_CAPABILITY_REQUIRED,
+                GeneralIntentCapabilityRoute.SETTINGS,
+                GeneralIntentCapabilityRoute.DEVICE_CONTROL,
+                GeneralIntentCapabilityRoute.ALARM,
+                GeneralIntentCapabilityRoute.MESSAGING,
+                GeneralIntentCapabilityRoute.CALL,
+                GeneralIntentCapabilityRoute.MEDIA,
+                GeneralIntentCapabilityRoute.DEVICE_KNOWLEDGE,
+                GeneralIntentCapabilityRoute.NOTIFICATIONS,
+                GeneralIntentCapabilityRoute.GENERAL_INFORMATION,
+                GeneralIntentCapabilityRoute.UNSUPPORTED,
+                -> return unavailable(traceId)
             }
 
         val matches =
@@ -118,7 +123,8 @@ class DefaultCapabilitySelectionResolver :
 
         return CapabilitySelectionResolutionResult.create(
             traceId = traceId,
-            status = CapabilitySelectionResolutionStatus.RESOLVED,
+            status =
+                CapabilitySelectionResolutionStatus.RESOLVED,
             capability = matches.single(),
         )
     }

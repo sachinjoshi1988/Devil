@@ -4,42 +4,55 @@ import com.devil.app.accessibility.AndroidAccessibilityCapability
 import com.devil.core.model.capability.CapabilityContract
 import com.devil.core.model.capability.CapabilitySelectionRequest
 import com.devil.core.model.common.TraceId
-import com.devil.core.model.understanding.UnderstandingActionability
-import com.devil.core.model.understanding.UnderstandingIntent
 import com.devil.core.runtime.capability.CapabilityRegistryResult
 import com.devil.core.runtime.capability.CapabilityRegistryStatus
 import com.devil.core.runtime.capability.CapabilitySelectionResolutionResult
 import com.devil.core.runtime.capability.CapabilitySelectionResolutionStatus
 import com.devil.core.runtime.capability.CapabilitySelectionResolver
+import com.devil.core.runtime.capability.DefaultGeneralIntentCapabilityRouter
+import com.devil.core.runtime.capability.GeneralIntentCapabilityRoute
+import com.devil.core.runtime.capability.GeneralIntentCapabilityRouter
 
 /**
- * Stage 314 Android embodiment capability-selection resolver.
+ * Android embodiment capability-selection resolver.
  *
- * This resolver remains inside the existing constitutional Capability Selection
- * boundary. It does not create a capability, authorize anything, establish
- * availability or health, grant Android permission, establish Executive
- * readiness, create an ExecutionRequest, perform an Android action, observe an
- * effect, verify an outcome, or establish task completion.
+ * Stage 337J delegates semantic-domain classification to the shared
+ * provider-neutral General Intent & Capability Router while remaining inside
+ * the existing constitutional Capability Selection boundary.
  *
- * Selection is based only on structured semantic meaning already established by
- * Understanding and preserved through Decision -> Task -> Plan.
+ * Stage 314's exact bounded concrete mapping remains preserved:
  *
- * Stage 314 adds one deliberately bounded Android real-device mapping:
- *
- * OPEN_TARGET + "settings" / "the settings"
+ * OPEN_TARGET + settings / the settings
  * -> Android Accessibility Click Visible Text capability.
  *
- * The dynamic visible-text action request itself is NOT created here. That
+ * The dynamic visible-text action request itself is not created here. That
  * remains a separate explicit Android embodiment fact supplied through the
- * Stage 314 one-shot execution-directive store.
+ * existing Stage 314 execution-directive boundary.
+ *
+ * Stage 337J may classify other capability domains, but this resolver does not
+ * activate or select Android Device Knowledge, Internet Knowledge, Vision,
+ * notifications, alarms, messaging, calls, media, or volume-control
+ * capabilities merely because a route or registration exists.
+ *
+ * This resolver does not create a capability, establish availability or
+ * health, authorize work, grant Android permission, establish Executive
+ * readiness, create an ExecutionRequest, perform an Android action, invent an
+ * observation, verify an effect, or establish an Outcome.
  *
  * STRUCTURED_INTENT != AUTHORIZATION.
+ * GENERAL_INTENT_ROUTER != CAPABILITY_SELECTION_AUTHORITY.
+ * INTENT_ROUTE != CAPABILITY_SELECTED.
+ * REGISTERED != SELECTED.
  * CAPABILITY_SELECTED != EXECUTION_APPROVED.
  * ANDROID_PERMISSION != DEVIL_AUTHORIZATION.
+ * ROUTED != EXECUTED.
  * ATTEMPTED != VERIFIED.
  */
-class DefaultAndroidCapabilitySelectionResolver :
-    CapabilitySelectionResolver {
+class DefaultAndroidCapabilitySelectionResolver(
+    private val generalIntentCapabilityRouter:
+        GeneralIntentCapabilityRouter =
+        DefaultGeneralIntentCapabilityRouter(),
+) : CapabilitySelectionResolver {
 
     override fun resolve(
         traceId: TraceId,
@@ -50,11 +63,11 @@ class DefaultAndroidCapabilitySelectionResolver :
             request.plan.task.decision.understanding.context.traceId ==
                 traceId,
         ) {
-            "Stage 314 Android capability resolver trace and request must use the same trace identity."
+            "Android capability resolver trace and request must use the same trace identity."
         }
 
         require(registry.traceId == traceId) {
-            "Stage 314 Android capability resolver trace and registry result must use the same trace identity."
+            "Android capability resolver trace and registry result must use the same trace identity."
         }
 
         return when (registry.status) {
@@ -90,29 +103,27 @@ class DefaultAndroidCapabilitySelectionResolver :
                 .decision
                 .understanding
                 .semantics
-                ?: return unavailable(traceId)
 
-        if (
-            semantics.intent != UnderstandingIntent.OPEN_TARGET ||
-            semantics.actionability !=
-            UnderstandingActionability.ACTIONABLE
-        ) {
-            return unavailable(traceId)
-        }
-
-        val normalizedTarget =
-            semantics.target
-                ?.trim()
-                ?.lowercase()
-                ?: return unavailable(traceId)
+        val route =
+            generalIntentCapabilityRouter.route(semantics)
 
         val requiredCapabilityId =
-            when (normalizedTarget) {
-                "settings",
-                "the settings",
-                -> AndroidAccessibilityCapability.capabilityId
+            when (route) {
+                GeneralIntentCapabilityRoute.SETTINGS ->
+                    AndroidAccessibilityCapability.capabilityId
 
-                else -> return unavailable(traceId)
+                GeneralIntentCapabilityRoute.NO_CAPABILITY_REQUIRED,
+                GeneralIntentCapabilityRoute.CAMERA,
+                GeneralIntentCapabilityRoute.DEVICE_CONTROL,
+                GeneralIntentCapabilityRoute.ALARM,
+                GeneralIntentCapabilityRoute.MESSAGING,
+                GeneralIntentCapabilityRoute.CALL,
+                GeneralIntentCapabilityRoute.MEDIA,
+                GeneralIntentCapabilityRoute.DEVICE_KNOWLEDGE,
+                GeneralIntentCapabilityRoute.NOTIFICATIONS,
+                GeneralIntentCapabilityRoute.GENERAL_INFORMATION,
+                GeneralIntentCapabilityRoute.UNSUPPORTED,
+                -> return unavailable(traceId)
             }
 
         val matches =
