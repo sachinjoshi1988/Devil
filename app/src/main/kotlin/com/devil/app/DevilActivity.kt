@@ -47,6 +47,8 @@ import com.devil.app.voice.AndroidVoiceOutputListener
 import com.devil.app.voice.AndroidVoiceOutputResult
 import com.devil.app.voice.AndroidVoiceOutputStatus
 import com.devil.app.voice.DefaultAndroidVoiceInputSource
+import com.devil.app.voice.AndroidVoiceLanguagePolicy
+import com.devil.app.voice.AndroidVoiceLanguageSelection
 import com.devil.app.voice.HandsFreeConversationState
 import com.devil.app.voice.HandsFreeProductionAction
 import com.devil.app.voice.HandsFreeAuthenticationHandoffStatus
@@ -160,6 +162,18 @@ class DevilActivity : FragmentActivity() {
 
     private lateinit var voiceInputSource:
         AndroidVoiceInputSource
+
+    private var voiceLanguageSelection by
+        mutableStateOf(
+            AndroidVoiceLanguageSelection.fromDeviceLanguageTag(
+                java.util.Locale
+                    .getDefault()
+                    .toLanguageTag(),
+            ),
+        )
+
+    private val voiceLanguagePolicy =
+        AndroidVoiceLanguagePolicy()
 
     private val recordAudioPermissionLauncher =
         registerForActivityResult(
@@ -741,6 +755,21 @@ class DevilActivity : FragmentActivity() {
                                 AndroidVoiceInteractionMode.MANUAL,
                         )
                     },
+                      voiceLanguageSelection =
+                          voiceLanguageSelection,
+                      onVoiceLanguageSelectionChange = {
+                          selection ->
+
+                          voiceLanguageSelection =
+                              selection
+
+                          (application as DevilApplication)
+                              .voiceLanguageSelectionProvider
+                              .select(selection)
+
+                          voiceInputMessage = null
+                          voiceOutputMessage = null
+                      },
                     isVoiceListening =
                         isVoiceListening,
                     voiceInputEnabled =
@@ -768,6 +797,18 @@ class DevilActivity : FragmentActivity() {
         voiceInputSource =
             DefaultAndroidVoiceInputSource(
                 context = applicationContext,
+                recognitionLanguageTagProvider = {
+                    voiceLanguagePolicy.recognitionLanguageTag(
+                        selection =
+                            (application as DevilApplication)
+                                .voiceLanguageSelectionProvider
+                                .current(),
+                        mode =
+                            activeVoiceInteractionMode,
+                        handsFreeState =
+                            handsFreeState,
+                    )
+                },
             )
 
         accessibilityDiagnosticSource =
@@ -815,6 +856,10 @@ class DevilActivity : FragmentActivity() {
 
         devilApplication
             .voiceConversationOutputCoordinator
+            .release()
+
+        devilApplication
+            .voiceOutputSource
             .release()
 
         stage314RealAndroidSubmissionExecutor.shutdown()

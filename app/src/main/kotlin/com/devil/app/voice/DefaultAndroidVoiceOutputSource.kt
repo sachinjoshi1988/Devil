@@ -13,6 +13,11 @@ import java.util.UUID
  *
  * This source performs presentation only.
  *
+ * A supplied TTS locale configures presentation only.
+ *
+ * TTS_LOCALE != RESPONSE_LANGUAGE_TRUTH.
+ * LANGUAGE_UNAVAILABLE != FALLBACK_LANGUAGE_VERIFIED.
+ *
  * It speaks exactly the normalized supplied text and does not:
  *
  * - generate conversational content;
@@ -34,6 +39,7 @@ import java.util.UUID
 class DefaultAndroidVoiceOutputSource(
     context: Context,
     private val voiceProfile: DevilVoiceProfile,
+    private val languageTagProvider: () -> String? = { voiceProfile.languageTag },
 ) : AndroidVoiceOutputSource {
 
     private val applicationContext =
@@ -203,26 +209,6 @@ class DefaultAndroidVoiceOutputSource(
                     return
                 }
 
-        val languageResult =
-            engine.setLanguage(
-                Locale.forLanguageTag(voiceProfile.languageTag),
-            )
-
-        if (
-            languageResult ==
-                TextToSpeech.LANG_MISSING_DATA ||
-            languageResult ==
-                TextToSpeech.LANG_NOT_SUPPORTED
-        ) {
-            initializationFailed = true
-
-            finish(
-                AndroidVoiceOutputResult.unavailable(),
-            )
-
-            return
-        }
-
         val speechRateResult =
             engine.setSpeechRate(
                 voiceProfile.speechRate,
@@ -267,6 +253,37 @@ class DefaultAndroidVoiceOutputSource(
         engine: TextToSpeech,
         text: String,
     ) {
+        val languageTag =
+            languageTagProvider()
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+
+        if (languageTag == null) {
+            finish(
+                AndroidVoiceOutputResult.unavailable(),
+            )
+
+            return
+        }
+
+        val languageResult =
+            engine.setLanguage(
+                Locale.forLanguageTag(languageTag),
+            )
+
+        if (
+            languageResult ==
+                TextToSpeech.LANG_MISSING_DATA ||
+            languageResult ==
+                TextToSpeech.LANG_NOT_SUPPORTED
+        ) {
+            finish(
+                AndroidVoiceOutputResult.unavailable(),
+            )
+
+            return
+        }
+
         val utteranceId =
             "devil-stage-36-${UUID.randomUUID()}"
 

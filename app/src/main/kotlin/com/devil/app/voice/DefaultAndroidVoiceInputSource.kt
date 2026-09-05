@@ -23,6 +23,12 @@ import android.speech.SpeechRecognizer
  *
  * This source performs speech-to-text only.
  *
+ * An explicitly supplied recognition language tag configures Android speech
+ * recognition only. It does not establish detected or verified conversation
+ * language.
+ *
+ * RECOGNITION_LOCALE != UNDERSTANDING_LANGUAGE_TRUTH.
+ *
  * It does not:
  *
  * - request or grant Android microphone permission;
@@ -40,6 +46,7 @@ import android.speech.SpeechRecognizer
  */
 class DefaultAndroidVoiceInputSource(
     context: Context,
+    private val recognitionLanguageTagProvider: () -> String? = { null },
 ) : AndroidVoiceInputSource {
 
     private val applicationContext =
@@ -178,6 +185,16 @@ class DefaultAndroidVoiceInputSource(
                 RecognizerIntent.EXTRA_MAX_RESULTS,
                 5,
             )
+
+            recognitionLanguageTagProvider()
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { languageTag ->
+                    putExtra(
+                        RecognizerIntent.EXTRA_LANGUAGE,
+                        languageTag,
+                    )
+                }
         }
     }
 

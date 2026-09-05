@@ -1,5 +1,7 @@
 package com.devil.app.conversation
 
+import com.devil.app.voice.AndroidVoiceLanguageSelection
+
 import com.devil.app.ui.accessibility.devilInclusiveHeading
 import com.devil.app.ui.accessibility.devilInclusiveInteractiveTarget
 
@@ -100,6 +102,8 @@ fun ConversationScreen(
     onSecurityOpen: () -> Unit = {},
     onSettingsOpen: () -> Unit = {},
     onVoiceInput: () -> Unit = {},
+    voiceLanguageSelection: AndroidVoiceLanguageSelection = AndroidVoiceLanguageSelection.ENGLISH,
+    onVoiceLanguageSelectionChange: (AndroidVoiceLanguageSelection) -> Unit = {},
     isVoiceListening: Boolean = false,
     voiceInputEnabled: Boolean = true,
     voiceInputMessage: String? = null,
@@ -202,6 +206,8 @@ fun ConversationScreen(
                     voiceInputEnabled = voiceInputEnabled,
                     handsFreeEnabled = handsFreeEnabled,
                     onVoiceInput = onVoiceInput,
+                        voiceLanguageSelection = voiceLanguageSelection,
+                        onVoiceLanguageSelectionChange = onVoiceLanguageSelectionChange,
                     onHandsFreeToggle = onHandsFreeToggle,
                     devilRed = devilRed,
                 )
@@ -966,9 +972,12 @@ private fun CompactConversationVoiceControls(
     handsFreeEnabled: Boolean,
     onVoiceInput: () -> Unit,
     onHandsFreeToggle: () -> Unit,
+    voiceLanguageSelection: AndroidVoiceLanguageSelection,
+    onVoiceLanguageSelectionChange:
+        (AndroidVoiceLanguageSelection) -> Unit,
     devilRed: Color,
 ) {
-    Row(
+    Column(
         modifier =
             Modifier
                 .fillMaxWidth()
@@ -976,82 +985,143 @@ private fun CompactConversationVoiceControls(
                     horizontal = 12.dp,
                     vertical = 4.dp,
                 ),
-        horizontalArrangement =
-            Arrangement.spacedBy(8.dp),
+        verticalArrangement =
+            Arrangement.spacedBy(6.dp),
     ) {
-        Button(
-            onClick = onVoiceInput,
-            enabled =
-                voiceInputEnabled &&
-                    !isSubmitting &&
-                    !isVoiceListening &&
-                    !isVoiceSpeaking &&
-                    !handsFreeEnabled,
+        Row(
             modifier =
-                Modifier
-                    .weight(1f)
-                    .devilInclusiveInteractiveTarget(),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor =
-                        devilRed.copy(alpha = 0.16f),
-                    contentColor =
-                        devilRed,
-                ),
-            shape =
-                RoundedCornerShape(16.dp),
+                Modifier.fillMaxWidth(),
+            horizontalArrangement =
+                Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text =
-                    if (isVoiceListening && !handsFreeEnabled) {
-                        "LISTENING"
-                    } else {
-                        "VOICE"
-                    },
-                fontWeight =
-                    FontWeight.Bold,
-            )
+            Button(
+                onClick = onVoiceInput,
+                enabled =
+                    voiceInputEnabled &&
+                        !isSubmitting &&
+                        !isVoiceListening &&
+                        !isVoiceSpeaking &&
+                        !handsFreeEnabled,
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .devilInclusiveInteractiveTarget(),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            devilRed.copy(alpha = 0.16f),
+                        contentColor =
+                            devilRed,
+                    ),
+                shape =
+                    RoundedCornerShape(16.dp),
+            ) {
+                Text(
+                    text =
+                        if (
+                            isVoiceListening &&
+                            !handsFreeEnabled
+                        ) {
+                            "LISTENING"
+                        } else {
+                            "VOICE"
+                        },
+                    fontWeight =
+                        FontWeight.Bold,
+                )
+            }
+
+            Button(
+                onClick = onHandsFreeToggle,
+                enabled =
+                    !isSubmitting &&
+                        !isVoiceSpeaking &&
+                        (
+                            !isVoiceListening ||
+                                handsFreeEnabled
+                        ),
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .devilInclusiveInteractiveTarget(),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            devilRed.copy(alpha = 0.16f),
+                        contentColor =
+                            devilRed,
+                    ),
+                shape =
+                    RoundedCornerShape(16.dp),
+            ) {
+                Text(
+                    text =
+                        if (handsFreeEnabled) {
+                            "STOP HANDS-FREE"
+                        } else {
+                            "HANDS-FREE"
+                        },
+                    fontWeight =
+                        FontWeight.Bold,
+                )
+            }
         }
 
-        Button(
-            onClick = onHandsFreeToggle,
-            enabled =
-                !isSubmitting &&
-                    !isVoiceSpeaking &&
-                    (!isVoiceListening || handsFreeEnabled),
+        Row(
             modifier =
-                Modifier
-                    .weight(1f)
-                    .devilInclusiveInteractiveTarget(),
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor =
-                        devilRed.copy(alpha = 0.16f),
-                    contentColor =
-                        devilRed,
-                ),
-            shape =
-                RoundedCornerShape(16.dp),
+                Modifier.fillMaxWidth(),
+            horizontalArrangement =
+                Arrangement.spacedBy(6.dp),
         ) {
-            Text(
-                text =
-                    if (handsFreeEnabled) {
-                        "STOP HANDS-FREE"
-                    } else {
-                        "HANDS-FREE"
-                    },
-                fontWeight =
-                    FontWeight.Bold,
-            )
+            AndroidVoiceLanguageSelection.entries
+                .forEach { selection ->
+                    Button(
+                        onClick = {
+                            onVoiceLanguageSelectionChange(
+                                selection,
+                            )
+                        },
+                        enabled =
+                            !isSubmitting &&
+                                !isVoiceListening &&
+                                !isVoiceSpeaking &&
+                                !handsFreeEnabled,
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .devilInclusiveInteractiveTarget(),
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor =
+                                    if (
+                                        selection ==
+                                        voiceLanguageSelection
+                                    ) {
+                                        devilRed.copy(
+                                            alpha = 0.34f,
+                                        )
+                                    } else {
+                                        devilRed.copy(
+                                            alpha = 0.10f,
+                                        )
+                                    },
+                                contentColor =
+                                    devilRed,
+                            ),
+                        shape =
+                            RoundedCornerShape(12.dp),
+                    ) {
+                        Text(
+                            text =
+                                selection.uiLabel,
+                            fontWeight =
+                                FontWeight.Bold,
+                        )
+                    }
+                }
         }
     }
 }
-
-/**
- * Stage 253 unified bottom composer.
- *
- * Existing callback semantics and enable/disable rules remain authoritative.
- */
 @Composable
 private fun DevilConversationComposer(
     draft: String,

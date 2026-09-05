@@ -74,6 +74,8 @@ import com.devil.app.verification.DefaultAndroidVerificationAdapter
 import com.devil.app.verification.DefaultAndroidVerificationEvidencePort
 import com.devil.app.verification.Stage314AndroidPostActionVerificationSource
 import com.devil.app.voice.AndroidVoiceOutputSource
+import com.devil.app.voice.AndroidVoiceLanguageSelection
+import com.devil.app.voice.MutableAndroidVoiceLanguageSelectionProvider
 import com.devil.app.voice.DefaultAndroidVoiceOutputSource
 import com.devil.app.voice.DevilVoiceCoordinator
 import com.devil.app.voice.HandsFreeProductionCoordinator
@@ -758,6 +760,18 @@ class DevilApplication : Application() {
         )
     }
 
+    val voiceLanguageSelectionProvider:
+        MutableAndroidVoiceLanguageSelectionProvider by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        MutableAndroidVoiceLanguageSelectionProvider(
+            initialSelection =
+                AndroidVoiceLanguageSelection.fromDeviceLanguageTag(
+                    Locale.getDefault().toLanguageTag(),
+                ),
+        )
+    }
+
     val voiceOutputSource: AndroidVoiceOutputSource by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
@@ -777,13 +791,40 @@ class DevilApplication : Application() {
         )
     }
 
+    private val conversationalVoiceOutputSource:
+        AndroidVoiceOutputSource by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        val devilVoiceProfile =
+            requireNotNull(
+                DevilVoiceCoordinator()
+                    .prepare(
+                        voiceLanguageSelectionProvider
+                            .current()
+                            .languageTag,
+                    ),
+            ) {
+                "Bounded Devil conversational voice profile must be available."
+            }
+
+        DefaultAndroidVoiceOutputSource(
+            context = applicationContext,
+            voiceProfile = devilVoiceProfile,
+            languageTagProvider = {
+                voiceLanguageSelectionProvider
+                    .current()
+                    .languageTag
+            },
+        )
+    }
+
     val voiceConversationOutputCoordinator:
         VoiceConversationOutputCoordinator by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
         VoiceConversationOutputCoordinator(
             outputSource =
-                voiceOutputSource,
+                conversationalVoiceOutputSource,
         )
     }
 
