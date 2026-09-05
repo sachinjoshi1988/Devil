@@ -27,6 +27,8 @@ interface HindiUnderstandingSemanticsResolver {
  * Deterministic Stage 337F Devanagari-Hindi semantics implementation.
  *
  * This bounded implementation intentionally rejects mixed-script input.
+ * Shared Devanagari expressions that do not uniquely identify Hindi are also
+ * rejected rather than guessed.
  * Romanized Hindi / Hinglish, Marathi, translation, transliteration, model
  * inference, Android APIs, capability selection, authorization, and execution
  * are outside Stage 337F.
@@ -59,9 +61,7 @@ class DefaultHindiUnderstandingSemanticsResolver :
             normalized !in
             setOf(
                 "नमस्ते",
-                "नमस्कार",
                 "नमस्ते डेविल",
-                "नमस्कार डेविल",
             )
         ) {
             return null

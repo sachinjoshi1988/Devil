@@ -1,220 +1,73 @@
 package com.devil.core.runtime.understanding
 
 import com.devil.core.model.understanding.UnderstandingActionability
-import com.devil.core.model.understanding.UnderstandingEvaluationRequest
 import com.devil.core.model.understanding.UnderstandingIntent
-import com.devil.core.model.understanding.UnderstandingRecord
 import com.devil.core.model.understanding.UnderstandingSemanticArgument
 import com.devil.core.model.understanding.UnderstandingSemantics
-import com.devil.core.model.understanding.UnderstandingState
-import java.util.Locale
 
 /**
- * Stage 337C/337F/337G bounded deterministic English, Hindi, and Marathi assistant-language understanding resolver.
+ * Stage 337G provider-neutral bounded Marathi semantic-understanding boundary.
  *
- * This resolver establishes bounded structured English, Hindi, and Marathi meaning only.
+ * Implementations may establish only semantics supported by their explicit
+ * Marathi policy. They do not authorize, execute, translate, transliterate,
+ * resolve contacts/references, or establish verified language truth.
  *
- * It does not authenticate or authorize an owner, select a constitutional
- * decision, create a task or plan, select or execute a capability, establish
- * Observation / Verification / Outcome, resolve ambiguous references by
- * guessing, invoke a model, or create persistent Memory.
- *
- * English, bounded Hindi, and bounded Marathi understanding remain provider-independent and available without
- * paid cloud-model access.
- *
- * LANGUAGE_INTERPRETED != UNDERSTANDING_AUTHORITY.
- * INTENT_RECOGNIZED != DECISION_SELECTED.
- * INTENT_RECOGNIZED != CAPABILITY_SELECTED.
- * ACTIONABLE != AUTHORIZED.
- * ACTIONABLE != EXECUTABLE.
- * UNRESOLVED_REFERENCE != GUESSED_REFERENCE.
- * SEMANTIC_CANDIDATE != VERIFIED_USER_INTENT.
- * MODEL != UNDERSTANDING_AUTHORITY.
+ * DEVANAGARI != MARATHI.
+ * MARATHI_POLICY_MATCH != LANGUAGE_VERIFIED.
+ * SHARED_DEVANAGARI_EXPRESSION != LANGUAGE_IDENTIFIED.
+ * MARATHI_UNDERSTOOD != AUTHORIZED.
+ * MARATHI_UNDERSTOOD != EXECUTABLE.
  */
-class DefaultUnderstandingEvaluationResolver(
-    private val languageEvidenceResolver: UnderstandingLanguageEvidenceResolver =
-        DefaultUnderstandingLanguageEvidenceResolver(),
-    private val hindiUnderstandingSemanticsResolver: HindiUnderstandingSemanticsResolver =
-        DefaultHindiUnderstandingSemanticsResolver(),
-    private val marathiUnderstandingSemanticsResolver: MarathiUnderstandingSemanticsResolver =
-        DefaultMarathiUnderstandingSemanticsResolver(),
-) :
-    UnderstandingEvaluationResolver {
+interface MarathiUnderstandingSemanticsResolver {
+    fun resolve(
+        content: String,
+    ): UnderstandingSemantics?
+}
 
-    override fun evaluate(
-        request: UnderstandingEvaluationRequest,
-    ): UnderstandingRecord {
-        val input =
-            request.conversationIntake
-                .record
-                .input
+/**
+ * Deterministic Stage 337G Devanagari-Marathi semantics implementation.
+ *
+ * This implementation intentionally rejects mixed-script input and relies on
+ * bounded Marathi-specific constructions rather than Devanagari script alone.
+ *
+ * Bare shared Devanagari expressions do not establish Marathi.
+ *
+ * Romanized Marathi, translation, transliteration, model inference, Android
+ * APIs, capability selection, authorization, execution, and multilingual
+ * voice activation are outside Stage 337G.
+ */
+class DefaultMarathiUnderstandingSemanticsResolver :
+    MarathiUnderstandingSemanticsResolver {
 
-        val content = input.content
-        val normalized = normalizeForMatching(content)
-
-        greetingSemantics(normalized)?.let { semantics ->
-            return complete(
-                request = request,
-                summary = "User expressed a greeting.",
-                semantics = semantics,
-                boundedLanguageTag = "en",
-            )
+    override fun resolve(
+        content: String,
+    ): UnderstandingSemantics? {
+        if (!isDevanagariText(content)) {
+            return null
         }
 
-        openTargetSemantics(content)?.let { semantics ->
-            return complete(
-                request = request,
-                summary =
-                    "User requested opening the target: ${semantics.target}.",
-                semantics = semantics,
-                boundedLanguageTag = "en",
-            )
-        }
+        val normalized = normalize(content)
 
-        informationQuerySemantics(content, normalized)?.let { semantics ->
-            return complete(
-                request = request,
-                summary =
-                    "User expressed an information query about: ${semantics.target}.",
-                semantics = semantics,
-                boundedLanguageTag = "en",
-            )
-        }
+        greetingSemantics(normalized)?.let { return it }
+        openTargetSemantics(normalized)?.let { return it }
+        informationQuerySemantics(normalized)?.let { return it }
+        actionRequestSemantics(normalized)?.let { return it }
+        informationalSemantics(normalized)?.let { return it }
 
-        actionRequestSemantics(content, normalized)?.let { semantics ->
-            return complete(
-                request = request,
-                summary =
-                    "User expressed an action request: ${semantics.meaning}.",
-                semantics = semantics,
-                boundedLanguageTag = "en",
-            )
-        }
-
-        informationalSemantics(normalized)?.let { semantics ->
-            return complete(
-                request = request,
-                summary =
-                    "User provided a non-actionable informational statement.",
-                semantics = semantics,
-                boundedLanguageTag = "en",
-            )
-        }
-
-
-        hindiUnderstandingSemanticsResolver
-            .resolve(content)
-            ?.let { semantics ->
-                val summary =
-                    when (semantics.intent) {
-                        UnderstandingIntent.GREETING ->
-                            "User expressed a greeting."
-
-                        UnderstandingIntent.OPEN_TARGET ->
-                            "User requested opening the target: ${semantics.target}."
-
-                        UnderstandingIntent.INFORMATION_QUERY ->
-                            "User expressed an information query about: ${semantics.target}."
-
-                        UnderstandingIntent.ACTION_REQUEST ->
-                            "User expressed an action request: ${semantics.meaning}."
-
-                        UnderstandingIntent.INFORMATIONAL ->
-                            "User provided a non-actionable informational statement."
-                    }
-
-                return complete(
-                    request = request,
-                    summary = summary,
-                    semantics = semantics,
-                    boundedLanguageTag = "hi",
-                )
-            }
-
-
-        marathiUnderstandingSemanticsResolver
-            .resolve(content)
-            ?.let { semantics ->
-                val summary =
-                    when (semantics.intent) {
-                        UnderstandingIntent.GREETING ->
-                            "User expressed a greeting."
-
-                        UnderstandingIntent.OPEN_TARGET ->
-                            "User requested opening the target: ${semantics.target}."
-
-                        UnderstandingIntent.INFORMATION_QUERY ->
-                            "User expressed an information query about: ${semantics.target}."
-
-                        UnderstandingIntent.ACTION_REQUEST ->
-                            "User expressed an action request: ${semantics.meaning}."
-
-                        UnderstandingIntent.INFORMATIONAL ->
-                            "User provided a non-actionable informational statement."
-                    }
-
-                return complete(
-                    request = request,
-                    summary = summary,
-                    semantics = semantics,
-                    boundedLanguageTag = "mr",
-                )
-            }
-
-        return UnderstandingRecord.create(
-            context = input.context,
-            state = UnderstandingState.UNSUPPORTED,
-            summary =
-                "No bounded language-understanding policy matched the supplied input.",
-            languageEvidence =
-                languageEvidenceResolver.resolve(
-                    content = content,
-                ),
-        )
-    }
-
-    private fun complete(
-        request: UnderstandingEvaluationRequest,
-        summary: String,
-        semantics: UnderstandingSemantics,
-        boundedLanguageTag: String,
-    ): UnderstandingRecord {
-        return UnderstandingRecord.create(
-            context =
-                request.conversationIntake
-                    .record
-                    .input
-                    .context,
-            state = UnderstandingState.COMPLETE,
-            summary = summary,
-            semantics = semantics,
-            languageEvidence =
-                languageEvidenceResolver.resolve(
-                    content =
-                        request.conversationIntake
-                            .record
-                            .input
-                            .content,
-                    boundedLanguageTag = boundedLanguageTag,
-                ),
-        )
+        return null
     }
 
     private fun greetingSemantics(
         normalized: String,
     ): UnderstandingSemantics? {
-        val greetingMatched =
-            normalized in
-                setOf(
-                    "hello",
-                    "hello devil",
-                    "hi",
-                    "hi devil",
-                    "hey",
-                    "hey devil",
-                )
-
-        if (!greetingMatched) {
+        if (
+            normalized !in
+            setOf(
+                "कसा आहेस डेविल",
+                "कशी आहेस डेविल",
+                "कसे आहात डेविल",
+            )
+        ) {
             return null
         }
 
@@ -226,27 +79,30 @@ class DefaultUnderstandingEvaluationResolver(
         )
     }
 
-    /**
-     * OPEN_TARGET remains a compatibility intent for the already-established
-     * open-target path. Natural polite English wrappers may be interpreted,
-     * but no additional execution authority is created here.
-     */
     private fun openTargetSemantics(
-        content: String,
+        normalized: String,
     ): UnderstandingSemantics? {
         val match =
-            OPEN_TARGET_PATTERN.matchEntire(
-                content.trim(),
-            ) ?: return null
+            OPEN_TARGET_PATTERN.matchEntire(normalized)
+                ?: return null
 
-        val target =
+        val capturedTarget =
             cleanCapturedValue(
                 match.groupValues[1],
             )
 
-        if (target.isEmpty()) {
+        if (capturedTarget.isEmpty()) {
             return null
         }
+
+        val target =
+            when (capturedTarget) {
+                "सेटिंग",
+                "सेटिंग्स",
+                -> "settings"
+
+                else -> capturedTarget
+            }
 
         return UnderstandingSemantics.create(
             intent = UnderstandingIntent.OPEN_TARGET,
@@ -258,7 +114,6 @@ class DefaultUnderstandingEvaluationResolver(
     }
 
     private fun informationQuerySemantics(
-        content: String,
         normalized: String,
     ): UnderstandingSemantics? {
         if (BATTERY_QUERY_PATTERN.matches(normalized)) {
@@ -300,15 +155,13 @@ class DefaultUnderstandingEvaluationResolver(
             )
         }
 
-        val tellMeAboutMatch =
-            TELL_ME_ABOUT_PATTERN.matchEntire(
-                content.trim(),
-            )
+        val aboutMatch =
+            TELL_ME_ABOUT_PATTERN.matchEntire(normalized)
 
-        if (tellMeAboutMatch != null) {
+        if (aboutMatch != null) {
             val target =
                 cleanCapturedValue(
-                    tellMeAboutMatch.groupValues[1],
+                    aboutMatch.groupValues[1],
                 )
 
             if (target.isNotEmpty()) {
@@ -324,9 +177,8 @@ class DefaultUnderstandingEvaluationResolver(
         }
 
         val generalQuestionMatch =
-            GENERAL_INFORMATION_QUERY_PATTERN.matchEntire(
-                content.trim(),
-            )
+            GENERAL_INFORMATION_QUERY_PATTERN
+                .matchEntire(normalized)
 
         if (generalQuestionMatch != null) {
             val target =
@@ -350,7 +202,6 @@ class DefaultUnderstandingEvaluationResolver(
     }
 
     private fun actionRequestSemantics(
-        content: String,
         normalized: String,
     ): UnderstandingSemantics? {
         if (DECREASE_VOLUME_PATTERN.matches(normalized)) {
@@ -379,39 +230,6 @@ class DefaultUnderstandingEvaluationResolver(
             SET_VOLUME_PATTERN.matchEntire(normalized)
 
         if (setVolumeMatch != null) {
-            val value =
-                setVolumeMatch.groupValues[1]
-
-            val unit =
-                setVolumeMatch.groupValues[2]
-                    .takeIf { it.isNotBlank() }
-                    ?.let { capturedUnit ->
-                        if (capturedUnit == "%") {
-                            "percent"
-                        } else {
-                            capturedUnit
-                        }
-                    }
-
-            val arguments =
-                buildList {
-                    add(
-                        UnderstandingSemanticArgument.create(
-                            name = "value",
-                            value = value,
-                        ),
-                    )
-
-                    unit?.let { normalizedUnit ->
-                        add(
-                            UnderstandingSemanticArgument.create(
-                                name = "unit",
-                                value = normalizedUnit,
-                            ),
-                        )
-                    }
-                }
-
             return UnderstandingSemantics.create(
                 intent = UnderstandingIntent.ACTION_REQUEST,
                 actionability =
@@ -419,14 +237,25 @@ class DefaultUnderstandingEvaluationResolver(
                 meaning = "set volume",
                 target = "volume",
                 predicate = "set",
-                arguments = arguments,
+                arguments =
+                    listOf(
+                        UnderstandingSemanticArgument.create(
+                            name = "value",
+                            value =
+                                normalizeDecimalDigits(
+                                    setVolumeMatch.groupValues[1],
+                                ),
+                        ),
+                        UnderstandingSemanticArgument.create(
+                            name = "unit",
+                            value = "percent",
+                        ),
+                    ),
             )
         }
 
         val alarmMatch =
-            SET_ALARM_PATTERN.matchEntire(
-                content.trim(),
-            )
+            SET_ALARM_PATTERN.matchEntire(normalized)
 
         if (alarmMatch != null) {
             val timeExpression =
@@ -454,18 +283,17 @@ class DefaultUnderstandingEvaluationResolver(
         }
 
         val replyMatch =
-            REPLY_PATTERN.matchEntire(
-                content.trim(),
-            )
+            REPLY_PATTERN.matchEntire(normalized)
 
         if (replyMatch != null) {
             val recipientReference =
-                replyMatch.groupValues[1]
-                    .trim()
-
+                cleanCapturedValue(
+                    replyMatch.groupValues[1],
+                )
             val messageContent =
-                replyMatch.groupValues[2]
-                    .trim()
+                cleanCapturedValue(
+                    replyMatch.groupValues[2],
+                )
 
             if (
                 recipientReference.isNotEmpty() &&
@@ -494,9 +322,7 @@ class DefaultUnderstandingEvaluationResolver(
         }
 
         val sendMessageMatch =
-            SEND_MESSAGE_PATTERN.matchEntire(
-                content.trim(),
-            )
+            SEND_MESSAGE_PATTERN.matchEntire(normalized)
 
         if (sendMessageMatch != null) {
             val recipientReference =
@@ -542,9 +368,7 @@ class DefaultUnderstandingEvaluationResolver(
         }
 
         val callMatch =
-            CALL_PATTERN.matchEntire(
-                content.trim(),
-            )
+            CALL_PATTERN.matchEntire(normalized)
 
         if (callMatch != null) {
             val recipientReference =
@@ -572,9 +396,7 @@ class DefaultUnderstandingEvaluationResolver(
         }
 
         val playMatch =
-            PLAY_PATTERN.matchEntire(
-                content.trim(),
-            )
+            PLAY_PATTERN.matchEntire(normalized)
 
         if (playMatch != null) {
             val objectReference =
@@ -630,13 +452,36 @@ class DefaultUnderstandingEvaluationResolver(
         )
     }
 
-    private fun normalizeForMatching(
+    private fun normalizeDecimalDigits(
+        value: String,
+    ): String {
+        return buildString {
+            value.forEach { character ->
+                append(
+                    when (character) {
+                        '०' -> '0'
+                        '१' -> '1'
+                        '२' -> '2'
+                        '३' -> '3'
+                        '४' -> '4'
+                        '५' -> '5'
+                        '६' -> '6'
+                        '७' -> '7'
+                        '८' -> '8'
+                        '९' -> '9'
+                        else -> character
+                    },
+                )
+            }
+        }
+    }
+
+    private fun normalize(
         content: String,
     ): String {
         return content
             .trim()
-            .lowercase(Locale.ROOT)
-            .trimEnd('.', '!', '?')
+            .trimEnd('.', '!', '?', '।')
             .trim()
             .replace(
                 MULTIPLE_WHITESPACE_PATTERN,
@@ -649,86 +494,111 @@ class DefaultUnderstandingEvaluationResolver(
     ): String {
         return value
             .trim()
-            .trimEnd('.', '!', '?')
+            .trimEnd('.', '!', '?', '।')
             .trim()
     }
 
-    private companion object {
+    private fun isDevanagariText(
+        content: String,
+    ): Boolean {
+        var sawDevanagariLetter = false
+        var offset = 0
 
+        while (offset < content.length) {
+            val codePoint = content.codePointAt(offset)
+            offset += Character.charCount(codePoint)
+
+            if (!Character.isLetter(codePoint)) {
+                continue
+            }
+
+            if (
+                Character.UnicodeScript.of(codePoint) !=
+                Character.UnicodeScript.DEVANAGARI
+            ) {
+                return false
+            }
+
+            sawDevanagariLetter = true
+        }
+
+        return sawDevanagariLetter
+    }
+
+    private companion object {
         val OPEN_TARGET_PATTERN =
             Regex(
-                pattern =
-                    """(?i)^(?:(?:please\s+)|(?:(?:can|could|would)\s+you\s+(?:please\s+)?))?open\s+(?:my\s+)?(.+?)(?:\s+please)?[.!?]?$""",
+                """^(?:कृपया\s+)?(.+?)\s+(?:उघडा|उघड)$""",
             )
 
         val BATTERY_QUERY_PATTERN =
             Regex(
-                """^(?:what(?:['’]s|\s+is))\s+(?:my\s+|the\s+)?battery(?:\s+(?:level|percentage|percent|status))?$""",
+                """^(?:माझी\s+)?बॅटरी(?:\s+(?:पातळी|टक्केवारी|टक्के))?\s+किती\s+(?:आहे|आहेत)$""",
             )
 
         val NOTIFICATION_QUERY_PATTERN =
             Regex(
-                """^(?:show|read)\s+(?:me\s+)?(?:my\s+|the\s+)?(latest\s+)?notifications?$""",
+                """^(?:माझ्या\s+)?(?:(नवीनतम|शेवटची|ताजी)\s+)?(?:सूचना|नोटिफिकेशन(?:्स)?)\s+(?:दाखवा|वाचा|सांगा)$""",
             )
 
         val TELL_ME_ABOUT_PATTERN =
             Regex(
-                """(?i)^(?:please\s+)?tell\s+me\s+about\s+(.+?)[.!?]?$""",
+                """^(.+?)\s*बद्दल\s+(?:सांगा|सांग)$""",
             )
 
         val GENERAL_INFORMATION_QUERY_PATTERN =
             Regex(
-                """(?i)^(?:what(?:['’]s|\s+is)|who\s+is|where\s+is|when\s+is)\s+(.+?)[?!.]?$""",
+                """^(.+?)\s+(?:कोण|काय)\s+(?:आहे|आहेत)$""",
             )
 
         val DECREASE_VOLUME_PATTERN =
             Regex(
-                """^(?:(?:please\s+)|(?:(?:can|could|would)\s+you\s+(?:please\s+)?))?(?:lower|decrease|reduce|turn\s+down)\s+(?:the\s+|my\s+)?volume$""",
+                """^(?:कृपया\s+)?(?:आवाज|व्हॉल्यूम)\s+(?:कमी\s+करा|कमी\s+कर)$""",
             )
 
         val INCREASE_VOLUME_PATTERN =
             Regex(
-                """^(?:(?:please\s+)|(?:(?:can|could|would)\s+you\s+(?:please\s+)?))?(?:raise|increase|turn\s+up)\s+(?:the\s+|my\s+)?volume$""",
+                """^(?:कृपया\s+)?(?:आवाज|व्हॉल्यूम)\s+(?:वाढवा|वाढव|मोठा\s+करा)$""",
             )
 
         val SET_VOLUME_PATTERN =
             Regex(
-                """^(?:(?:please\s+)|(?:(?:can|could|would)\s+you\s+(?:please\s+)?))?set\s+(?:the\s+|my\s+)?volume\s+to\s+(\d{1,3})(?:\s*(percent|%))?$""",
+                """^(?:कृपया\s+)?(?:आवाज|व्हॉल्यूम)\s+([0-9०-९]{1,3})\s*(?:टक्के|%)\s+(?:करा|कर)$""",
             )
 
         val SET_ALARM_PATTERN =
             Regex(
-                """(?i)^(?:(?:please\s+)|(?:(?:can|could|would)\s+you\s+(?:please\s+)?))?set\s+(?:an?\s+|the\s+)?alarm\s+for\s+(.+?)[.!?]?$""",
+                """^(.+?)\s+गजर\s+(?:लावा|सेट\s+करा)$""",
             )
 
         val REPLY_PATTERN =
             Regex(
-                """(?i)^(?:(?:please\s+)|(?:(?:can|could|would)\s+you\s+(?:please\s+)?))?reply\s+to\s+(.+?)\s*:\s*(.+)$""",
+                """^(.+?)ला\s+उत्तर\s+द्या\s*:\s*(.+)$""",
             )
 
         val SEND_MESSAGE_PATTERN =
             Regex(
-                """(?i)^(?:(?:please\s+)|(?:(?:can|could|would)\s+you\s+(?:please\s+)?))?send\s+(?:a\s+)?message\s+to\s+(.+?)(?::\s*(.+))?[.!?]?$""",
+                """^(.+?)ला\s+(?:संदेश|मेसेज)\s+पाठवा(?::\s*(.+))?$""",
             )
 
         val CALL_PATTERN =
             Regex(
-                """(?i)^(?:(?:please\s+)|(?:(?:can|could|would)\s+you\s+(?:please\s+)?))?call\s+(.+?)[.!?]?$""",
+                """^(.+?)ला\s+(?:फोन|कॉल)\s+करा$""",
             )
 
         val PLAY_PATTERN =
             Regex(
-                """(?i)^(?:(?:please\s+)|(?:(?:can|could|would)\s+you\s+(?:please\s+)?))?play\s+(.+?)[.!?]?$""",
+                """^(.+?)\s+(?:वाजवा|चालू\s+करा)$""",
             )
 
         val PAUSE_MEDIA_PATTERN =
             Regex(
-                """^(?:(?:please\s+)|(?:(?:can|could|would)\s+you\s+(?:please\s+)?))?pause(?:\s+(?:the\s+)?(?:music|media|song|audio))?$""",
+                """^(?:गाणे|गाणं|संगीत|मीडिया)\s+(?:थांबवा|बंद\s+करा)$""",
             )
 
         val INFORMATIONAL_PATTERN =
             Regex(
-                """^i\s+(watched|used|opened|visited)\s+.+$""",
+                """^मी\s+.+\s+(?:पाहिले|वापरले|उघडले)$""",
             )
 
         val MULTIPLE_WHITESPACE_PATTERN =

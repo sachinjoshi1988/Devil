@@ -21,28 +21,28 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 /**
- * Stage 337F bounded Hindi Understanding proof.
+ * Stage 337G bounded Marathi Understanding proof.
  *
- * DEVANAGARI != HINDI.
- * HINDI_POLICY_MATCH != LANGUAGE_VERIFIED.
- * HINDI_UNDERSTOOD != AUTHORIZED.
- * HINDI_UNDERSTOOD != CAPABILITY_AVAILABLE.
- * HINDI_UNDERSTOOD != EXECUTABLE.
+ * DEVANAGARI != MARATHI.
+ * MARATHI_POLICY_MATCH != LANGUAGE_VERIFIED.
+ * SHARED_DEVANAGARI_EXPRESSION != LANGUAGE_IDENTIFIED.
+ * MARATHI_UNDERSTOOD != AUTHORIZED.
+ * MARATHI_UNDERSTOOD != CAPABILITY_AVAILABLE.
+ * MARATHI_UNDERSTOOD != EXECUTABLE.
  * UNRESOLVED_REFERENCE != GUESSED_REFERENCE.
  * TRANSLITERATED != TRANSLATED.
- * INPUT_SOURCE != UNDERSTANDING_AUTHORITY.
  */
-class Stage337FHindiUnderstandingTest {
+class Stage337GMarathiUnderstandingTest {
 
     private val resolver =
         DefaultUnderstandingEvaluationResolver()
 
     @Test
-    fun `Hindi greeting establishes bounded detected Hindi evidence`() {
+    fun `Marathi conversational greeting establishes detected Marathi evidence`() {
         val understanding =
             evaluate(
-                content = "नमस्ते डेविल",
-                trace = "trace-stage337f-greeting",
+                content = "कसा आहेस डेविल",
+                trace = "trace-stage337g-greeting",
             )
 
         assertEquals(
@@ -62,17 +62,17 @@ class Stage337FHindiUnderstandingTest {
             understanding.languageEvidence.status,
         )
         assertEquals(
-            "hi",
+            "mr",
             understanding.languageEvidence.languageTag,
         )
     }
 
     @Test
-    fun `Hindi open settings reuses existing open target semantics`() {
+    fun `Marathi open settings reuses existing open target semantics`() {
         val understanding =
             evaluate(
-                content = "सेटिंग खोलो",
-                trace = "trace-stage337f-open-settings",
+                content = "सेटिंग उघडा",
+                trace = "trace-stage337g-open-settings",
             )
 
         assertEquals(
@@ -84,23 +84,23 @@ class Stage337FHindiUnderstandingTest {
             understanding.semantics?.target,
         )
         assertEquals(
-            "hi",
+            "mr",
             understanding.languageEvidence.languageTag,
         )
     }
 
     @Test
-    fun `Hindi volume decrease and increase reuse canonical action semantics`() {
+    fun `Marathi volume decrease and increase reuse canonical action semantics`() {
         val decrease =
             evaluate(
-                content = "आवाज़ कम करो",
-                trace = "trace-stage337f-volume-down",
+                content = "आवाज कमी करा",
+                trace = "trace-stage337g-volume-down",
             )
 
         val increase =
             evaluate(
-                content = "आवाज़ बढ़ाओ",
-                trace = "trace-stage337f-volume-up",
+                content = "आवाज वाढवा",
+                trace = "trace-stage337g-volume-up",
             )
 
         assertEquals(
@@ -122,11 +122,11 @@ class Stage337FHindiUnderstandingTest {
     }
 
     @Test
-    fun `Hindi set volume preserves structured numeric value`() {
+    fun `Marathi set volume accepts Devanagari digits and canonicalizes value`() {
         val understanding =
             evaluate(
-                content = "आवाज़ 30 प्रतिशत करो",
-                trace = "trace-stage337f-set-volume",
+                content = "आवाज ३० टक्के करा",
+                trace = "trace-stage337g-set-volume",
             )
 
         assertEquals(
@@ -152,17 +152,17 @@ class Stage337FHindiUnderstandingTest {
     }
 
     @Test
-    fun `Hindi battery and latest notification questions reuse information query semantics`() {
+    fun `Marathi battery and notification questions reuse information semantics`() {
         val battery =
             evaluate(
-                content = "मेरी बैटरी कितनी है",
-                trace = "trace-stage337f-battery",
+                content = "माझी बॅटरी किती आहे",
+                trace = "trace-stage337g-battery",
             )
 
         val notification =
             evaluate(
-                content = "मेरा लेटेस्ट नोटिफिकेशन पढ़ो",
-                trace = "trace-stage337f-notification",
+                content = "माझ्या नवीनतम सूचना दाखवा",
+                trace = "trace-stage337g-notification",
             )
 
         assertEquals(
@@ -193,11 +193,11 @@ class Stage337FHindiUnderstandingTest {
     }
 
     @Test
-    fun `Hindi alarm preserves unresolved time expression`() {
+    fun `Marathi alarm preserves unresolved time expression`() {
         val understanding =
             evaluate(
-                content = "कल सुबह सात बजे का अलार्म लगाओ",
-                trace = "trace-stage337f-alarm",
+                content = "सकाळी सात वाजता गजर लावा",
+                trace = "trace-stage337g-alarm",
             )
 
         assertEquals(
@@ -216,7 +216,7 @@ class Stage337FHindiUnderstandingTest {
                 ?.name,
         )
         assertEquals(
-            "कल सुबह सात बजे",
+            "सकाळी सात वाजता",
             understanding.semantics
                 ?.arguments
                 ?.single()
@@ -225,33 +225,33 @@ class Stage337FHindiUnderstandingTest {
     }
 
     @Test
-    fun `Hindi messaging and call preserve unresolved references rather than guessing`() {
+    fun `Marathi messaging reply and call preserve unresolved references`() {
         val send =
             evaluate(
-                content = "राहुल को मैसेज भेजो: वहीं रुको",
-                trace = "trace-stage337f-send",
+                content = "राहुलला संदेश पाठवा: तिथे थांब",
+                trace = "trace-stage337g-send",
             )
 
         val reply =
             evaluate(
-                content = "राहुल को जवाब दो: मैं आ रहा हूँ",
-                trace = "trace-stage337f-reply",
+                content = "राहुलला उत्तर द्या: मी येतोय",
+                trace = "trace-stage337g-reply",
             )
 
         val call =
             evaluate(
-                content = "राहुल को कॉल करो",
-                trace = "trace-stage337f-call",
+                content = "राहुलला फोन करा",
+                trace = "trace-stage337g-call",
             )
 
         assertEquals(
-            listOf("राहुल", "वहीं रुको"),
+            listOf("राहुल", "तिथे थांब"),
             send.semantics
                 ?.arguments
                 ?.map { argument -> argument.value },
         )
         assertEquals(
-            listOf("राहुल", "मैं आ रहा हूँ"),
+            listOf("राहुल", "मी येतोय"),
             reply.semantics
                 ?.arguments
                 ?.map { argument -> argument.value },
@@ -266,17 +266,17 @@ class Stage337FHindiUnderstandingTest {
     }
 
     @Test
-    fun `Hindi media request preserves unresolved object reference`() {
+    fun `Marathi media request preserves unresolved object reference`() {
         val play =
             evaluate(
-                content = "वह गाना चलाओ",
-                trace = "trace-stage337f-play",
+                content = "ते गाणे वाजवा",
+                trace = "trace-stage337g-play",
             )
 
         val pause =
             evaluate(
-                content = "संगीत रोक दो",
-                trace = "trace-stage337f-pause",
+                content = "संगीत थांबवा",
+                trace = "trace-stage337g-pause",
             )
 
         assertEquals(
@@ -284,7 +284,7 @@ class Stage337FHindiUnderstandingTest {
             play.semantics?.predicate,
         )
         assertEquals(
-            "वह गाना",
+            "ते गाणे",
             play.semantics
                 ?.arguments
                 ?.single()
@@ -302,17 +302,17 @@ class Stage337FHindiUnderstandingTest {
     }
 
     @Test
-    fun `Hindi general information question preserves question target without answering`() {
+    fun `Marathi information questions preserve targets without answering`() {
         val who =
             evaluate(
-                content = "एडा लवलेस कौन हैं",
-                trace = "trace-stage337f-who",
+                content = "एडा लवलेस कोण आहे",
+                trace = "trace-stage337g-who",
             )
 
         val about =
             evaluate(
-                content = "क्वांटम कंप्यूटिंग के बारे में बताओ",
-                trace = "trace-stage337f-about",
+                content = "क्वांटम कंप्यूटिंगबद्दल सांगा",
+                trace = "trace-stage337g-about",
             )
 
         assertEquals(
@@ -330,11 +330,43 @@ class Stage337FHindiUnderstandingTest {
     }
 
     @Test
-    fun `unmatched Devanagari remains unsupported and does not invent Hindi`() {
+    fun `Hindi and Marathi open settings remain distinct bounded language policies`() {
+        val hindi =
+            evaluate(
+                content = "सेटिंग खोलो",
+                trace = "trace-stage337g-hindi-open",
+            )
+
+        val marathi =
+            evaluate(
+                content = "सेटिंग उघडा",
+                trace = "trace-stage337g-marathi-open",
+            )
+
+        assertEquals(
+            "hi",
+            hindi.languageEvidence.languageTag,
+        )
+        assertEquals(
+            "mr",
+            marathi.languageEvidence.languageTag,
+        )
+        assertEquals(
+            hindi.semantics?.intent,
+            marathi.semantics?.intent,
+        )
+        assertEquals(
+            hindi.semantics?.target,
+            marathi.semantics?.target,
+        )
+    }
+
+    @Test
+    fun `shared Namaskar greeting remains language unknown rather than guessed`() {
         val understanding =
             evaluate(
-                content = "आज आकाश सुंदर दिसते",
-                trace = "trace-stage337f-unmatched-devanagari",
+                content = "नमस्कार",
+                trace = "trace-stage337g-shared-namaskar",
             )
 
         assertEquals(
@@ -358,11 +390,11 @@ class Stage337FHindiUnderstandingTest {
     }
 
     @Test
-    fun `unmatched Marathi wording does not become Hindi merely from Devanagari`() {
+    fun `unmatched Devanagari remains language unknown`() {
         val understanding =
             evaluate(
-                content = "कृपया मदत करा",
-                trace = "trace-stage337f-marathi-boundary",
+                content = "कखग घचज",
+                trace = "trace-stage337g-unmatched",
             )
 
         assertEquals(
@@ -382,11 +414,11 @@ class Stage337FHindiUnderstandingTest {
     }
 
     @Test
-    fun `mixed Hindi and Latin input remains outside bounded Hindi policy`() {
+    fun `mixed Latin and Marathi remains outside bounded Marathi policy`() {
         val understanding =
             evaluate(
-                content = "Devil सेटिंग खोलो",
-                trace = "trace-stage337f-mixed",
+                content = "Devil सेटिंग उघडा",
+                trace = "trace-stage337g-mixed",
             )
 
         assertEquals(
@@ -407,19 +439,19 @@ class Stage337FHindiUnderstandingTest {
     }
 
     @Test
-    fun `equivalent text and voice Hindi preserve same semantic and language policy`() {
+    fun `equivalent text and voice Marathi preserve same semantic and language policy`() {
         val text =
             evaluate(
                 source = ContextSource.TEXT,
-                content = "आवाज़ कम करो",
-                trace = "trace-stage337f-text",
+                content = "आवाज कमी करा",
+                trace = "trace-stage337g-text",
             )
 
         val voice =
             evaluate(
                 source = ContextSource.VOICE,
-                content = "आवाज़ कम करो",
-                trace = "trace-stage337f-voice",
+                content = "आवाज कमी करा",
+                trace = "trace-stage337g-voice",
             )
 
         assertEquals(
@@ -467,7 +499,7 @@ class Stage337FHindiUnderstandingTest {
                                                 observedAt =
                                                     DevilTimestamp
                                                         .fromEpochMilliseconds(
-                                                            1_754_100_337_006L,
+                                                            1_754_200_337_007L,
                                                         ),
                                             ),
                                         content = content,
@@ -475,7 +507,7 @@ class Stage337FHindiUnderstandingTest {
                                 state =
                                     ConversationIntakeState.ACCEPTED,
                                 rationale =
-                                    "Stage 337F accepted conversation intake.",
+                                    "Stage 337G accepted conversation intake.",
                             ),
                     ),
             ),
