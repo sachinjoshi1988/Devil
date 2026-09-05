@@ -24,11 +24,13 @@ interface UnderstandingLanguageEvidenceResolver {
 }
 
 /**
- * Deterministic Stage 337E implementation based only on Unicode script evidence.
+ * Deterministic Stage 337E/337F provider-neutral language-evidence implementation.
  *
  * Digits, punctuation, symbols, and whitespace do not establish a script.
- * A bounded language tag becomes DETECTED only when the textual script is
- * consistently Latin. Mixed or non-Latin content remains language UNKNOWN.
+ * A nonblank language tag becomes DETECTED only when an independent bounded
+ * semantic policy supplied that tag and the text contains one non-mixed observed script.
+ *
+ * Script classification itself never creates a language identity.
  *
  * This implementation has no Android, education, model-provider, translation,
  * transliteration, authorization, execution, or Memory dependency.
@@ -49,7 +51,8 @@ class DefaultUnderstandingLanguageEvidenceResolver :
 
         if (
             normalizedBoundedLanguageTag != null &&
-            script == UnderstandingScript.LATIN
+            script != UnderstandingScript.UNKNOWN &&
+            script != UnderstandingScript.MIXED
         ) {
             return UnderstandingLanguageEvidence.create(
                 status = UnderstandingLanguageEvidenceStatus.DETECTED,

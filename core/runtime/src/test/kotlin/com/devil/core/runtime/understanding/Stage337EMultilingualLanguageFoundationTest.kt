@@ -131,7 +131,7 @@ class Stage337EMultilingualLanguageFoundationTest {
         val understanding =
             evaluate(
                 source = ContextSource.TEXT,
-                content = "सेटिंग खोलो",
+                content = "कखग घचज",
                 trace = "trace-stage337e-devanagari",
             )
 
