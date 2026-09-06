@@ -9,13 +9,21 @@ import com.devil.core.model.capability.CapabilityHealthState
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+/**
+ * Preserves Stage 42 Internet production-source coverage while applying the
+ * tighter Stage 337K capability-state evidence boundary.
+ *
+ * A genuine retrieval implementation proves that bounded retrieval code exists.
+ * Its presence alone does not prove current network availability or operational
+ * health.
+ */
 class Stage42InternetKnowledgeProductionStateTest {
 
     private val realSource =
         DefaultAndroidInternetKnowledgeSource()
 
     @Test
-    fun `Internet Knowledge becomes available only when real source is supplied`() {
+    fun `Internet retrieval source presence does not establish capability availability`() {
         val source: AndroidCapabilityAvailabilitySource =
             DefaultAndroidCapabilityAvailabilitySource(
                 internetKnowledgeSource =
@@ -23,7 +31,7 @@ class Stage42InternetKnowledgeProductionStateTest {
             )
 
         assertEquals(
-            CapabilityAvailabilityState.AVAILABLE,
+            CapabilityAvailabilityState.UNAVAILABLE,
             source.availability(
                 AndroidInternetKnowledgeCapability.contract,
             ),
@@ -31,7 +39,7 @@ class Stage42InternetKnowledgeProductionStateTest {
     }
 
     @Test
-    fun `Internet Knowledge becomes ready only when real source is supplied`() {
+    fun `Internet retrieval source presence does not establish capability health`() {
         val source: AndroidCapabilityHealthSource =
             DefaultAndroidCapabilityHealthSource(
                 internetKnowledgeSource =
@@ -39,7 +47,7 @@ class Stage42InternetKnowledgeProductionStateTest {
             )
 
         assertEquals(
-            CapabilityHealthState.READY,
+            CapabilityHealthState.UNAVAILABLE,
             source.health(
                 AndroidInternetKnowledgeCapability.contract,
             ),
@@ -47,7 +55,7 @@ class Stage42InternetKnowledgeProductionStateTest {
     }
 
     @Test
-    fun `Internet Knowledge remains unavailable without real source evidence`() {
+    fun `Internet Knowledge remains unavailable without retrieval source`() {
         assertEquals(
             CapabilityAvailabilityState.UNAVAILABLE,
             DefaultAndroidCapabilityAvailabilitySource()

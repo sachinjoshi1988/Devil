@@ -13,21 +13,24 @@ import com.devil.core.model.capability.CapabilityContract
 /**
  * Default Android capability-availability source.
  *
- * Stage 38 accessibility availability requires a genuinely connected
+ * Accessibility availability requires a genuinely connected
  * DevilAccessibilityService.
  *
- * Stage 40 Device Knowledge is AVAILABLE because its approved bounded source
- * reads non-sensitive Android Build facts directly from the running platform.
+ * Device Knowledge is AVAILABLE because its approved bounded source reads
+ * non-sensitive Android Build facts directly from the running platform.
  *
- * Stage 41 Vision availability requires explicit camera-inventory evidence
- * reporting at least one Android camera.
+ * Vision availability requires explicit camera-inventory evidence reporting at
+ * least one Android camera.
  *
- * Stage 42 Internet Knowledge remains UNAVAILABLE until a genuine bounded
- * production Internet source and explicit reachability evidence exist.
+ * Stage 337K keeps Internet Knowledge UNAVAILABLE until later Internet
+ * activation establishes explicit operational availability evidence.
  *
- * Merely declaring Manifest.permission.INTERNET is not network evidence.
+ * The Internet retrieval-source constructor seam is preserved for compatibility
+ * with the existing Android composition and Stage 42 contracts. Merely supplying
+ * that implementation object does not establish current network availability.
  *
  * Registered Internet capability
+ * != retrieval implementation present
  * != Android INTERNET permission
  * != network connected
  * != destination reachable
@@ -35,18 +38,19 @@ import com.devil.core.model.capability.CapabilityContract
  * != external content retrieved
  * != external content trusted.
  *
- * Availability describes embodiment availability only.
- *
- * Available != authenticated.
- * Available != Devil authorized.
- * Available != Executive ready.
- * Available != execution approved.
- * Available != verified Outcome.
+ * REGISTERED != AVAILABLE.
+ * AVAILABLE != HEALTH_READY.
+ * AVAILABLE != AUTHENTICATED.
+ * AVAILABLE != DEVIL_AUTHORIZED.
+ * AVAILABLE != EXECUTIVE_READY.
+ * AVAILABLE != EXECUTION_APPROVED.
+ * AVAILABLE != VERIFIED_OUTCOME.
  */
 class DefaultAndroidCapabilityAvailabilitySource(
     private val visionCameraInventorySource:
         AndroidCameraInventorySource? = null,
-    private val internetKnowledgeSource:
+    @Suppress("UNUSED_PARAMETER")
+    internetKnowledgeSource:
         AndroidInternetKnowledgeSource? = null,
 ) : AndroidCapabilityAvailabilitySource {
 
@@ -82,11 +86,8 @@ class DefaultAndroidCapabilityAvailabilitySource(
             AndroidInternetKnowledgeCapability.matches(
                 capability,
             ) ->
-                if (internetKnowledgeSource != null) {
-                    CapabilityAvailabilityState.AVAILABLE
-                } else {
-                    CapabilityAvailabilityState.UNAVAILABLE
-                }
+                CapabilityAvailabilityState.UNAVAILABLE
+
             else ->
                 CapabilityAvailabilityState.UNAVAILABLE
         }
