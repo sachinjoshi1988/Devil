@@ -8,20 +8,31 @@ import com.devil.core.model.common.TraceId
 import com.devil.core.model.execution.ExecutionRequest
 
 /**
- * Stage 314 process-local one-shot Android execution-directive store.
+ * Process-local Android execution-directive bridge.
  *
- * This store exists only to support explicit real-device alpha execution testing
- * through the already-established constitutional execution chain.
+ * Stage 314 established the explicit one-shot directive store used for bounded
+ * real-device Open Settings acceptance.
  *
- * Explicit Android embodiment action data may be armed before runtime submission.
+ * Stage 337L preserves that explicit Stage 314 directive as first priority and
+ * adds a fail-closed structured fallback through the existing
+ * AndroidExecutionDirectiveProvider boundary.
  *
- * Trace identity and constitutional execution identity are never fabricated or
- * supplied by the arming caller. They are bound only when the existing execution
- * path later presents one genuine runtime-created ExecutionRequest.
+ * An explicitly armed action remains:
  *
- * This store does not:
+ * - process-local;
+ * - explicitly supplied;
+ * - unbound before constitutional execution;
+ * - bound only to the genuine trace and capability supplied by ExecutionRequest;
+ * - and one-shot after a justified match.
  *
- * - infer targets from conversation text;
+ * If no explicit Stage 314 action is armed, the structured provider may resolve
+ * only an already-established bounded directive from the genuine
+ * ExecutionRequest. The default Stage 337L provider currently supports only the
+ * existing SETTINGS accessibility embodiment.
+ *
+ * This bridge does not:
+ *
+ * - parse raw conversation text;
  * - infer targets from model output or summaries;
  * - create TraceId;
  * - create ExecutionRequest;
@@ -36,21 +47,17 @@ import com.devil.core.model.execution.ExecutionRequest
  * - persist execution directives;
  * - or create a second runtime.
  *
- * A stored action request is:
- *
- * - process-local;
- * - explicitly supplied;
- * - unbound before constitutional execution;
- * - bound only to the genuine trace and capability supplied by ExecutionRequest;
- * - and one-shot after a justified match.
- *
- * Stage 314 may additionally preserve one bounded post-action expectation only
- * after that genuine trace/capability binding has occurred.
+ * Stage 314 post-action expectation/readiness evidence is bound only for the
+ * explicit Stage 314 armed Settings directive. A Stage 337L structured fallback
+ * does not manufacture Stage 314 Observation, Verification, or Outcome
+ * evidence.
  *
  * EXPECTATION_STORED != OBSERVED.
  * ARMED != AUTHORIZED.
  * ARMED != TRACE_BOUND.
  * DIRECTIVE_AVAILABLE != EXECUTION_APPROVED.
+ * STRUCTURED_SEMANTICS != EXECUTION_APPROVAL.
+ * DIRECTIVE_CREATED != EXECUTED.
  * ANDROID_PERMISSION != DEVIL_AUTHORIZATION.
  * ATTEMPTED != VERIFIED.
  */
@@ -61,6 +68,9 @@ class AndroidRealExecutionDirectiveStore(
     private val accessibilityChangeReadinessStore:
         Stage314AndroidAccessibilityChangeReadinessStore =
         Stage314AndroidAccessibilityChangeReadinessStore(),
+    private val structuredDirectiveProvider:
+        AndroidExecutionDirectiveProvider =
+        DefaultAndroidExecutionDirectiveProvider(),
 ) : AndroidExecutionDirectiveProvider {
 
     private val lock = Any()
@@ -96,7 +106,7 @@ class AndroidRealExecutionDirectiveStore(
                 .context
                 .traceId == traceId,
         ) {
-            "Stage 314 directive lookup and constitutional execution request must use the same trace identity."
+            "Android directive lookup and constitutional execution request must use the same trace identity."
         }
 
         if (
@@ -104,21 +114,28 @@ class AndroidRealExecutionDirectiveStore(
                 request.capability,
             )
         ) {
-            return null
+            return structuredDirectiveProvider.provide(
+                traceId = traceId,
+                request = request,
+            )
         }
 
-        synchronized(lock) {
-            val accessibilityRequest =
-                pendingAccessibilityRequest
-                    ?: return null
+        val explicitlyArmedRequest =
+            synchronized(lock) {
+                val pending =
+                    pendingAccessibilityRequest
+                        ?: return@synchronized null
 
-            pendingAccessibilityRequest = null
+                pendingAccessibilityRequest = null
+                pending
+            }
 
+        if (explicitlyArmedRequest != null) {
             bindStage314PostActionExpectation(
                 traceId = traceId,
                 request = request,
                 accessibilityRequest =
-                    accessibilityRequest,
+                    explicitlyArmedRequest,
             )
 
             return AndroidExecutionDirective(
@@ -126,9 +143,14 @@ class AndroidRealExecutionDirectiveStore(
                 capabilityId =
                     request.capability.capabilityId,
                 accessibilityRequest =
-                    accessibilityRequest,
+                    explicitlyArmedRequest,
             )
         }
+
+        return structuredDirectiveProvider.provide(
+            traceId = traceId,
+            request = request,
+        )
     }
 
     private fun bindStage314PostActionExpectation(

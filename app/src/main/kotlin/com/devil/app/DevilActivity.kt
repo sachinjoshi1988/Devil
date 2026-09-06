@@ -147,18 +147,24 @@ class DevilActivity : FragmentActivity() {
         mutableStateOf<String?>(null)
 
     /**
-     * Stage 314 real-Android submission worker.
+     * Stage 314 / Stage 337L real-Android submission worker.
      *
-     * Only the already-recognized bounded owner-alpha real Android action path
-     * uses this worker. Ordinary conversation submission remains unchanged.
+     * Stage 314 typed real-Android submission and Stage 337L recognized manual
+     * voice conversation submission share this worker so runtime work that can
+     * reach Android accessibility execution does not occupy the Android main thread.
      *
      * WORKER_THREAD != AUTHORIZATION.
      * BACKGROUND_SUBMISSION != EXECUTION_SUCCESS.
+     * VOICE_WORKER_HANDOFF != SECOND_RUNTIME.
+     * VOICE_WORKER_HANDOFF != VOICE_AUTHENTICATION.
      */
     private val stage314RealAndroidSubmissionExecutor: ExecutorService =
         Executors.newSingleThreadExecutor()
 
     private var stage314RealAndroidSubmissionInProgress = false
+
+    private var stage337LManualVoiceSubmissionInProgress by
+        mutableStateOf(false)
 
     private lateinit var voiceInputSource:
         AndroidVoiceInputSource
@@ -774,7 +780,8 @@ class DevilActivity : FragmentActivity() {
                         isVoiceListening,
                     voiceInputEnabled =
                         !isVoiceSpeaking &&
-                            !handsFreeEnabled,
+                            !handsFreeEnabled &&
+                            !stage337LManualVoiceSubmissionInProgress,
                     voiceInputMessage =
                         voiceInputMessage,
                     isVoiceSpeaking =
@@ -870,34 +877,109 @@ class DevilActivity : FragmentActivity() {
     private fun handleManualVoiceResult(
         result: AndroidVoiceInputResult,
     ) {
+        if (
+            result.status !=
+            AndroidVoiceInputStatus.RECOGNIZED
+        ) {
+            val devilApplication =
+                application as DevilApplication
+
+            val previousEntryCount =
+                conversationState.entries.size
+
+            val handled =
+                devilApplication
+                    .voiceConversationResultCoordinator
+                    .handle(
+                        state =
+                            conversationState,
+                        result =
+                            result,
+                    )
+
+            conversationState =
+                handled.state
+
+            voiceInputMessage =
+                handled.message
+
+            speakNewestRuntimeEntry(
+                previousEntryCount =
+                    previousEntryCount,
+                resumeHandsFree = false,
+            )
+
+            return
+        }
+
+        if (stage337LManualVoiceSubmissionInProgress) {
+            return
+        }
+
         val devilApplication =
             application as DevilApplication
 
+        val stateAtSubmission =
+            conversationState
+
         val previousEntryCount =
-            conversationState.entries.size
+            stateAtSubmission.entries.size
 
-        val handled =
-            devilApplication
-                .voiceConversationResultCoordinator
-                .handle(
-                    state =
-                        conversationState,
-                    result =
-                        result,
+        /*
+         * Stage 337L moves only the already-recognized manual voice
+         * conversation submission away from Android's main thread.
+         *
+         * SpeechRecognizer lifecycle remains on the Android main thread.
+         * The same VoiceConversationResultCoordinator, runtime-input
+         * coordinator, and one Unified Devil Runtime remain authoritative.
+         *
+         * This handoff creates no identity, authentication, authorization,
+         * capability availability, execution approval, Verification, Outcome,
+         * or second runtime.
+         *
+         * VOICE_SOURCE != SPEAKER_AUTHENTICATED.
+         * RECOGNIZED != AUTHORIZED.
+         * WORKER_SUBMISSION != EXECUTION_APPROVAL.
+         * VOICE_WORKER_HANDOFF != SECOND_RUNTIME.
+         * VOICE_WORKER_HANDOFF != VOICE_AUTHENTICATION.
+         */
+        stage337LManualVoiceSubmissionInProgress =
+            true
+
+        stage314RealAndroidSubmissionExecutor.execute {
+            val handled =
+                devilApplication
+                    .voiceConversationResultCoordinator
+                    .handle(
+                        state =
+                            stateAtSubmission,
+                        result =
+                            result,
+                    )
+
+            runOnUiThread {
+                stage337LManualVoiceSubmissionInProgress =
+                    false
+
+                if (isDestroyed) {
+                    return@runOnUiThread
+                }
+
+                conversationState =
+                    handled.state
+
+                voiceInputMessage =
+                    handled.message
+
+                speakNewestRuntimeEntry(
+                    previousEntryCount =
+                        previousEntryCount,
+                    resumeHandsFree = false,
                 )
-
-        conversationState =
-            handled.state
-
-        voiceInputMessage =
-            handled.message
-
-        speakNewestRuntimeEntry(
-            previousEntryCount =
-                previousEntryCount,
-            resumeHandsFree = false,
-        )
+            }
+        }
     }
+
 
     private fun toggleHandsFree() {
         if (handsFreeEnabled) {
@@ -970,7 +1052,8 @@ class DevilActivity : FragmentActivity() {
     ) {
         if (
             isVoiceListening ||
-            isVoiceSpeaking
+            isVoiceSpeaking ||
+            stage337LManualVoiceSubmissionInProgress
         ) {
             return
         }
@@ -1009,7 +1092,8 @@ class DevilActivity : FragmentActivity() {
     ) {
         if (
             isVoiceListening ||
-            isVoiceSpeaking
+            isVoiceSpeaking ||
+            stage337LManualVoiceSubmissionInProgress
         ) {
             return
         }
