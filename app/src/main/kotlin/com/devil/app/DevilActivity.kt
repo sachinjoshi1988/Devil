@@ -903,7 +903,7 @@ class DevilActivity : FragmentActivity() {
             voiceInputMessage =
                 handled.message
 
-            speakNewestRuntimeEntry(
+            speakNewestSpeakableEntry(
                 previousEntryCount =
                     previousEntryCount,
                 resumeHandsFree = false,
@@ -971,7 +971,7 @@ class DevilActivity : FragmentActivity() {
                 voiceInputMessage =
                     handled.message
 
-                speakNewestRuntimeEntry(
+                speakNewestSpeakableEntry(
                     previousEntryCount =
                         previousEntryCount,
                     resumeHandsFree = false,
@@ -1477,7 +1477,7 @@ class DevilActivity : FragmentActivity() {
                 voiceInputMessage = null
                 voiceOutputMessage = null
 
-                speakNewestRuntimeEntry(
+                speakNewestSpeakableEntry(
                     previousEntryCount = previousEntryCount,
                     resumeHandsFree = false,
                 )
@@ -1502,7 +1502,7 @@ class DevilActivity : FragmentActivity() {
         voiceInputMessage = null
         voiceOutputMessage = null
 
-        speakNewestRuntimeEntry(
+        speakNewestSpeakableEntry(
             previousEntryCount = previousEntryCount,
             resumeHandsFree = false,
         )
@@ -1809,14 +1809,14 @@ class DevilActivity : FragmentActivity() {
         handsFreeMessage =
             handled.message
 
-        speakNewestRuntimeEntry(
+        speakNewestSpeakableEntry(
             previousEntryCount =
                 previousEntryCount,
             resumeHandsFree = true,
         )
     }
 
-    private fun speakNewestRuntimeEntry(
+    private fun speakNewestSpeakableEntry(
         previousEntryCount: Int,
         resumeHandsFree: Boolean,
     ) {
@@ -1827,16 +1827,26 @@ class DevilActivity : FragmentActivity() {
                     previousEntryCount,
                 )
 
-        val runtimeEntry =
-            newEntries.lastOrNull {
-                it.role ==
-                    ConversationEntryRole.RUNTIME
-            }
+        /*
+         * Stage337M selects speech through the same presentation policy used by
+         * the existing VoiceConversationOutputCoordinator.
+         *
+         * This selects only an already-established presentation entry.
+         *
+         * SPEAKABLE_ENTRY_SELECTED != AUTHORIZATION.
+         * SPOKEN_DEVICE_KNOWLEDGE != RUNTIME_STATUS.
+         * SPOKEN_DEVICE_KNOWLEDGE != VERIFIED_OUTCOME.
+         */
+        val speakableEntry =
+            com.devil.app.voice.VoiceOutputPresentationPolicy()
+                .newestSpeakableEntry(
+                    entries = newEntries,
+                )
 
-        if (runtimeEntry != null) {
-            speakRuntimeEntry(
+        if (speakableEntry != null) {
+            speakConversationEntry(
                 entry =
-                    runtimeEntry,
+                    speakableEntry,
                 resumeHandsFree =
                     resumeHandsFree,
             )
@@ -1847,12 +1857,19 @@ class DevilActivity : FragmentActivity() {
         }
     }
 
-    private fun speakRuntimeEntry(
+    private fun speakConversationEntry(
         entry: ConversationTimelineEntry,
         resumeHandsFree: Boolean,
     ) {
         if (isVoiceSpeaking) {
             return
+        }
+
+        require(
+            entry.role == ConversationEntryRole.RUNTIME ||
+                entry.role == ConversationEntryRole.KNOWLEDGE,
+        ) {
+            "Only runtime or bounded knowledge presentation may enter this voice-output handoff."
         }
 
         val devilApplication =
@@ -1864,7 +1881,20 @@ class DevilActivity : FragmentActivity() {
             resumeHandsFree
 
         voiceOutputMessage =
-            "Speaking runtime status…"
+            when (entry.role) {
+                ConversationEntryRole.RUNTIME ->
+                    "Speaking runtime status…"
+
+                ConversationEntryRole.KNOWLEDGE ->
+                    "Speaking device knowledge…"
+
+                ConversationEntryRole.USER,
+                ConversationEntryRole.ASSISTANT,
+                ConversationEntryRole.OUTCOME,
+                -> error(
+                    "Non-speakable conversation role reached the bounded voice-output handoff.",
+                )
+            }
 
         devilApplication
             .voiceConversationOutputCoordinator

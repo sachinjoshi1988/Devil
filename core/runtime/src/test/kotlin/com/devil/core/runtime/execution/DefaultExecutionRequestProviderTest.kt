@@ -65,6 +65,36 @@ class DefaultExecutionRequestProviderTest {
     }
 
     @Test
+    fun `provide does not create execution request for selected ready knowledge capability`() {
+        val traceId =
+            TraceId.from(
+                "trace-stage337m-knowledge-no-execution",
+            )
+
+        val result =
+            DefaultExecutionRequestProvider().provide(
+                plan = createPlanResult(traceId),
+                capability =
+                    createCapabilityResult(
+                        traceId = traceId,
+                        category = CapabilityCategory.KNOWLEDGE,
+                    ),
+                readiness =
+                    ExecutiveReadinessResult.create(
+                        traceId = traceId,
+                        status = ExecutiveReadinessStatus.READY,
+                    ),
+            )
+
+        assertEquals(
+            ExecutionRequestStatus.UNAVAILABLE,
+            result.status,
+        )
+        assertNull(result.request)
+        assertNull(result.error)
+    }
+
+    @Test
     fun `provide returns unavailable for deferred readiness`() {
         val traceId = TraceId.from(
             "trace-execution-request-provider-002",
@@ -311,6 +341,7 @@ class DefaultExecutionRequestProviderTest {
 
     private fun createCapabilityResult(
         traceId: TraceId,
+        category: CapabilityCategory = CapabilityCategory.ACTION,
     ): CapabilitySelectionResult {
         return CapabilitySelectionResult.create(
             traceId = traceId,
@@ -319,7 +350,7 @@ class DefaultExecutionRequestProviderTest {
                 capabilityId = CapabilityId.from(
                     "capability-camera",
                 ),
-                category = CapabilityCategory.ACTION,
+                category = category,
                 name = "Camera",
                 description =
                     "Performs one bounded registered camera action.",

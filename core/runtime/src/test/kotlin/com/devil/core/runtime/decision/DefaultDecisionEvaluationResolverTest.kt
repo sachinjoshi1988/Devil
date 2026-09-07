@@ -123,6 +123,42 @@ class DefaultDecisionEvaluationResolverTest {
         )
     }
 
+
+    @Test
+    fun `evaluate selects bounded Stage337M Device Knowledge queries`() {
+        listOf(
+            "device model",
+            "android version",
+            "device summary",
+            "battery level",
+        ).forEach { target ->
+            val decision =
+                DefaultDecisionEvaluationResolver().evaluate(
+                    createSemanticRequest(
+                        intent =
+                            UnderstandingIntent.INFORMATION_QUERY,
+                        actionability =
+                            UnderstandingActionability.ACTIONABLE,
+                        meaning = "query $target",
+                        target = target,
+                        predicate = "query",
+                    ),
+                )
+
+            assertEquals(
+                DecisionState.SELECTED,
+                decision.state,
+            )
+            assertEquals(
+                "Proceed with the Stage337M bounded Device Knowledge query.",
+                decision.summary,
+            )
+            assertEquals(
+                target,
+                decision.understanding.semantics?.target,
+            )
+        }
+    }
     @Test
     fun `evaluate defers understood information query without operational decision policy`() {
         val decision =
@@ -131,8 +167,8 @@ class DefaultDecisionEvaluationResolverTest {
                     intent = UnderstandingIntent.INFORMATION_QUERY,
                     actionability =
                         UnderstandingActionability.ACTIONABLE,
-                    meaning = "query battery level",
-                    target = "battery level",
+                    meaning = "query Ada Lovelace",
+                    target = "Ada Lovelace",
                     predicate = "query",
                 ),
             )

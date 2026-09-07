@@ -211,6 +211,22 @@ class DevilApplication : Application() {
         )
     }
 
+    /**
+     * Stage337M process-scoped trace/query correlation store.
+     *
+     * The same instance is shared by Capability Selection and local response
+     * composition.
+     *
+     * QUERY_RECORD != DEVICE_FACT.
+     * QUERY_RECORD != AUTHORIZATION.
+     */
+    val stage337MDeviceKnowledgeQueryStore:
+        com.devil.app.device.Stage337MDeviceKnowledgeQueryStore by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        com.devil.app.device.Stage337MDeviceKnowledgeQueryStore()
+    }
+
     val runtime: UnifiedDevilRuntime by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
     ) {
@@ -238,7 +254,10 @@ class DevilApplication : Application() {
                     registry =
                         capabilityRegistry,
                     resolver =
-                        com.devil.app.capability.DefaultAndroidCapabilitySelectionResolver(),
+                        com.devil.app.capability.DefaultAndroidCapabilitySelectionResolver(
+                            deviceKnowledgeQueryStore =
+                                stage337MDeviceKnowledgeQueryStore,
+                        ),
                 ),
             executionAttemptPort = executionAttemptPort,
             observationEvidencePort = observationEvidencePort,
@@ -672,6 +691,24 @@ class DevilApplication : Application() {
         )
     }
 
+    private val stage337MDeviceKnowledgeResponseCompositionCoordinator:
+        com.devil.app.device.Stage337MDeviceKnowledgeResponseCompositionCoordinator by lazy(
+        LazyThreadSafetyMode.SYNCHRONIZED,
+    ) {
+        com.devil.app.device.Stage337MDeviceKnowledgeResponseCompositionCoordinator(
+            queryStore =
+                stage337MDeviceKnowledgeQueryStore,
+            capabilityStateProvider =
+                capabilityStateProvider,
+            queryCoordinator =
+                deviceKnowledgeQueryCoordinator,
+            interactionCoordinator =
+                conversationInteractionCoordinator,
+            entryIdProvider =
+                conversationEntryIdProvider,
+        )
+    }
+
     private val conversationalResponseCompositionCoordinator:
         AndroidConversationalResponseCompositionCoordinator by lazy(
         LazyThreadSafetyMode.SYNCHRONIZED,
@@ -688,6 +725,8 @@ class DevilApplication : Application() {
                 conversationInteractionCoordinator,
             entryIdProvider =
                 conversationEntryIdProvider,
+            deviceKnowledgeResponseCompositionCoordinator =
+                stage337MDeviceKnowledgeResponseCompositionCoordinator,
         )
     }
 

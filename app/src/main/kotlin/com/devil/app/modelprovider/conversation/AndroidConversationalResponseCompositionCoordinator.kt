@@ -3,6 +3,7 @@ package com.devil.app.modelprovider.conversation
 import com.devil.app.conversation.ConversationEntryIdProvider
 import com.devil.app.conversation.ConversationInteractionCoordinator
 import com.devil.app.conversation.ConversationUiState
+import com.devil.app.device.Stage337MDeviceKnowledgeResponseCompositionCoordinator
 import com.devil.core.model.common.TraceId
 import com.devil.core.model.conversation.ConversationIntakeState
 import com.devil.core.runtime.conversation.ConversationIntakeAuthorityStatus
@@ -11,49 +12,26 @@ import com.devil.core.runtime.modelprovider.conversation.ConversationalResponseC
 import com.devil.core.runtime.modelprovider.conversation.GeneratedAssistantResponse
 
 /**
- * Stage 313 Android composition boundary for one generated conversational response.
+ * Android composition boundary for one post-runtime conversational response.
  *
- * This coordinator operates only from one genuine runtime TraceId supplied by the
- * bounded Stage 313 submission wrapper after an actual runtime timeline entry was
- * created.
+ * One genuine runtime TraceId is first correlated with exact already-observed
+ * constitutional Conversation Intake evidence.
  *
- * It uses that exact trace identity to consume the already-established
- * ConversationIntakeAuthorityResult observed from the single Unified Devil Runtime.
+ * Stage337M then gives bounded local Device Knowledge the first response
+ * opportunity. A trace claimed by Stage337M never falls through to model
+ * inference for competing device-state text.
  *
- * The exact original content preserved by that intake evidence is the only content
- * supplied to conversational model inference. No caller may substitute different
- * conversational text after constitutional intake.
+ * If Stage337M does not claim the trace, the existing Stage313 conversational
+ * model path remains unchanged.
  *
- * ConversationalResponseCoordinator remains responsible for strictly requiring that
- * any supplied intake result was PRODUCED and constitutionally ACCEPTED.
- *
- * This Android composition boundary fails closed before invoking that strict core
- * coordinator when observed intake evidence is non-produced, missing its preserved
- * intake, or not constitutionally ACCEPTED.
- *
- * RuntimeStatus is deliberately not treated as model-inference authority.
- *
- * Missing, ineligible, unavailable, or failed intake/model evidence produces no
- * assistant entry and does not fabricate output.
- *
- * This coordinator does not:
- *
- * - perform Conversation Intake Authority;
- * - reinterpret runtime status as authorization;
- * - reconstruct RuntimeResult or ConversationRuntimePresentation;
- * - substitute content after constitutional intake;
- * - resolve identity or trust;
- * - authenticate a subject;
- * - grant authorization;
- * - execute capabilities;
- * - establish constitutional Observation, Verification, or Outcome;
- * - perform Learning;
- * - create, commit, persist, or recall Memory;
- * - or treat generated model text as verified truth.
+ * RuntimeStatus is not model authority.
  *
  * TRACE_CORRELATION != AUTHORIZATION.
- * INTAKE_CONTENT != CALLER_SUBSTITUTABLE_CONTENT.
  * CONVERSATION_INTAKE_ACCEPTED != MODEL_OUTPUT_VERIFIED.
+ * DEVICE_KNOWLEDGE_CLAIM != DEVICE_FACT.
+ * LOCAL_KNOWLEDGE != RUNTIME.
+ * LOCAL_KNOWLEDGE != VERIFIED_OUTCOME.
+ * MODEL_OUTPUT != DEVICE_STATE.
  * ASSISTANT != RUNTIME.
  * GENERATED != VERIFIED.
  * MODEL != DEVIL.
@@ -61,10 +39,17 @@ import com.devil.core.runtime.modelprovider.conversation.GeneratedAssistantRespo
  * MODEL != AUTHORITY.
  */
 class AndroidConversationalResponseCompositionCoordinator(
-    private val intakeEvidenceStore: AndroidConversationIntakeEvidenceStore,
-    private val responseCoordinator: ConversationalResponseCoordinator,
-    private val interactionCoordinator: ConversationInteractionCoordinator,
-    private val entryIdProvider: ConversationEntryIdProvider,
+    private val intakeEvidenceStore:
+        AndroidConversationIntakeEvidenceStore,
+    private val responseCoordinator:
+        ConversationalResponseCoordinator,
+    private val interactionCoordinator:
+        ConversationInteractionCoordinator,
+    private val entryIdProvider:
+        ConversationEntryIdProvider,
+    private val deviceKnowledgeResponseCompositionCoordinator:
+        Stage337MDeviceKnowledgeResponseCompositionCoordinator? =
+        null,
 ) {
 
     fun generateAndAppend(
@@ -98,10 +83,32 @@ class AndroidConversationalResponseCompositionCoordinator(
             return state
         }
 
+        val deviceKnowledgeState =
+            deviceKnowledgeResponseCompositionCoordinator
+                ?.composeIfClaimed(
+                    state = state,
+                    runtimeTraceId = runtimeTraceId,
+                )
+
+        /*
+         * Non-null means Stage337M claimed this genuine runtime trace.
+         *
+         * The returned state may contain a genuine local KNOWLEDGE entry or may
+         * remain unchanged because the local path failed closed.
+         *
+         * Either way, model inference must not compete for the same device-state
+         * request.
+         */
+        if (deviceKnowledgeState != null) {
+            return deviceKnowledgeState
+        }
+
         val inference =
             responseCoordinator.generate(
-                conversationIntake = conversationIntake,
-                content = intake.record.input.content,
+                conversationIntake =
+                    conversationIntake,
+                content =
+                    intake.record.input.content,
             )
 
         if (
@@ -125,7 +132,8 @@ class AndroidConversationalResponseCompositionCoordinator(
 
         return interactionCoordinator.appendGeneratedAssistantResponse(
             state = state,
-            assistantEntryId = entryIdProvider.provide(),
+            assistantEntryId =
+                entryIdProvider.provide(),
             response = response,
         )
     }

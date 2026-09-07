@@ -20,6 +20,14 @@ import com.devil.core.runtime.modelprovider.conversation.GeneratedAssistantRespo
  * verified truth, verified Outcome, execution success, Learning, or Memory
  * merely because it is presented in the conversation timeline.
  *
+ * A KNOWLEDGE entry presents bounded descriptive information obtained through
+ * an approved knowledge source and preserves the runtime TraceId that selected
+ * that knowledge path.
+ *
+ * KNOWLEDGE is presentation only. It is not RuntimeStatus, generated-model
+ * truth, constitutional Verification, Outcome, World Model state, Learning, or
+ * Memory.
+ *
  * An OUTCOME entry presents one already-established trace-backed Outcome.
  * It does not reinterpret RuntimeResult or claim task completion, World Model
  * update, Learning, Memory, or persistence.
@@ -28,6 +36,9 @@ import com.devil.core.runtime.modelprovider.conversation.GeneratedAssistantRespo
  *
  * ASSISTANT != RUNTIME.
  * GENERATED != VERIFIED.
+ * KNOWLEDGE != RUNTIME.
+ * KNOWLEDGE != OUTCOME.
+ * KNOWLEDGE != MEMORY.
  * OUTCOME != RUNTIME.
  * OUTCOME_ESTABLISHED != TASK_COMPLETED.
  */
@@ -78,6 +89,25 @@ data class ConversationTimelineEntry private constructor(
                 role = ConversationEntryRole.ASSISTANT,
                 content = response.content,
                 traceId = response.traceId,
+            )
+        }
+
+        fun knowledge(
+            id: ConversationEntryId,
+            traceId: TraceId,
+            content: String,
+        ): ConversationTimelineEntry {
+            val normalizedContent = content.trim()
+
+            require(normalizedContent.isNotEmpty()) {
+                "Knowledge conversation entry content must not be blank."
+            }
+
+            return ConversationTimelineEntry(
+                id = id,
+                role = ConversationEntryRole.KNOWLEDGE,
+                content = normalizedContent,
+                traceId = traceId,
             )
         }
 

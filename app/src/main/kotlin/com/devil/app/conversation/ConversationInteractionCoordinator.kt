@@ -143,6 +143,45 @@ class ConversationInteractionCoordinator {
     }
 
     /**
+     * Stage 337M presentation-only attachment of one already-obtained bounded
+     * trace-backed knowledge result.
+     *
+     * This method does not read a platform fact, select a capability, establish
+     * authorization, create an ExecutionRequest, reinterpret RuntimeStatus,
+     * establish Verification or Outcome, update the World Model, perform
+     * Learning, or create/persist Memory.
+     *
+     * KNOWLEDGE != RUNTIME.
+     * KNOWLEDGE != VERIFIED_OUTCOME.
+     * KNOWLEDGE != MEMORY.
+     */
+    fun appendKnowledge(
+        state: ConversationUiState,
+        knowledgeEntryId: ConversationEntryId,
+        traceId: com.devil.core.model.common.TraceId,
+        message: String,
+    ): ConversationUiState {
+        require(!state.isSubmitting) {
+            "Knowledge presentation may be appended only after runtime submission has completed."
+        }
+
+        val knowledgeEntry =
+            ConversationTimelineEntry.knowledge(
+                id = knowledgeEntryId,
+                traceId = traceId,
+                content = message,
+            )
+
+        return state.copy(
+            entries =
+                boundCompletedTimeline(
+                    entries = state.entries + knowledgeEntry,
+                ),
+            submissionNotice = null,
+        )
+    }
+
+    /**
      * Stage 314 presentation-only attachment of one already-established
      * trace-backed Android Outcome.
      *

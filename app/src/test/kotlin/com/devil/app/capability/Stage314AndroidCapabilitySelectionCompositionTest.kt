@@ -40,7 +40,7 @@ class Stage314AndroidCapabilitySelectionCompositionTest {
             "registry =",
             "capabilityRegistry",
             "resolver =",
-            "DefaultAndroidCapabilitySelectionResolver()",
+            "com.devil.app.capability.DefaultAndroidCapabilitySelectionResolver(",
             "executionAttemptPort = executionAttemptPort",
         ).forEach { marker ->
             assertTrue(

@@ -2,6 +2,8 @@ package com.devil.app.capability
 
 import com.devil.app.accessibility.AndroidAccessibilityCapability
 import com.devil.app.device.AndroidDeviceKnowledgeCapability
+import com.devil.app.device.AndroidDeviceKnowledgeQueryType
+import com.devil.app.device.Stage337MDeviceKnowledgeQueryStore
 import com.devil.app.internet.AndroidInternetKnowledgeCapability
 import com.devil.core.model.capability.CapabilitySelectionRequest
 import com.devil.core.model.common.DevilTimestamp
@@ -30,6 +32,7 @@ import com.devil.core.runtime.capability.CapabilitySelectionResolutionStatus
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertNotNull
 
 /**
  * Stage 337J Android integration protection.
@@ -82,6 +85,123 @@ class Stage337JAndroidGeneralIntentCapabilityRouterTest {
             AndroidAccessibilityCapability.capabilityId,
             result.capability?.capabilityId,
         )
+    }
+
+    @Test
+    fun `Stage337M supported device knowledge targets select exact capability and record typed query`() {
+        listOf(
+            Triple(
+                "device model",
+                AndroidDeviceKnowledgeQueryType.DEVICE_MODEL,
+                "model",
+            ),
+            Triple(
+                "android version",
+                AndroidDeviceKnowledgeQueryType.ANDROID_VERSION,
+                "version",
+            ),
+            Triple(
+                "device summary",
+                AndroidDeviceKnowledgeQueryType.DEVICE_SUMMARY,
+                "summary",
+            ),
+        ).forEach { (target, expectedType, traceSuffix) ->
+            val traceId =
+                TraceId.from(
+                    "trace-stage337m-device-$traceSuffix",
+                )
+
+            val store =
+                Stage337MDeviceKnowledgeQueryStore()
+
+            val result =
+                DefaultAndroidCapabilitySelectionResolver(
+                    deviceKnowledgeQueryStore = store,
+                ).resolve(
+                    traceId = traceId,
+                    request =
+                        request(
+                            traceId = traceId,
+                            intent =
+                                UnderstandingIntent.INFORMATION_QUERY,
+                            target = target,
+                            predicate = "query",
+                        ),
+                    registry =
+                        CapabilityRegistryResult.create(
+                            traceId = traceId,
+                            status =
+                                CapabilityRegistryStatus.AVAILABLE,
+                            capabilities =
+                                listOf(
+                                    AndroidDeviceKnowledgeCapability.contract,
+                                ),
+                        ),
+                )
+
+            assertEquals(
+                CapabilitySelectionResolutionStatus.RESOLVED,
+                result.status,
+            )
+            assertEquals(
+                AndroidDeviceKnowledgeCapability.capabilityId,
+                result.capability?.capabilityId,
+            )
+            assertEquals(
+                expectedType,
+                store.consume(traceId),
+            )
+            assertNull(
+                store.consume(traceId),
+            )
+        }
+    }
+
+    @Test
+    fun `Stage337M battery route remains unavailable and records no guessed query`() {
+        val traceId =
+            TraceId.from(
+                "trace-stage337m-battery-no-evidence",
+            )
+
+        val store =
+            Stage337MDeviceKnowledgeQueryStore()
+
+        val result =
+            DefaultAndroidCapabilitySelectionResolver(
+                deviceKnowledgeQueryStore = store,
+            ).resolve(
+                traceId = traceId,
+                request =
+                    request(
+                        traceId = traceId,
+                        intent =
+                            UnderstandingIntent.INFORMATION_QUERY,
+                        target = "battery level",
+                        predicate = "query",
+                    ),
+                registry =
+                    CapabilityRegistryResult.create(
+                        traceId = traceId,
+                        status =
+                            CapabilityRegistryStatus.AVAILABLE,
+                        capabilities =
+                            listOf(
+                                AndroidDeviceKnowledgeCapability.contract,
+                            ),
+                    ),
+            )
+
+        assertEquals(
+            CapabilitySelectionResolutionStatus.UNAVAILABLE,
+            result.status,
+        )
+        assertNull(result.capability)
+        val claim =
+            assertNotNull(
+                store.consumeRecord(traceId),
+            )
+        assertNull(claim.queryType)
     }
 
     @Test

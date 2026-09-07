@@ -13,12 +13,28 @@ import com.devil.core.model.understanding.UnderstandingState
  * structured semantic meaning already established by Understanding and carried
  * through the selected Decision and created Task.
  *
+ * Stage337M narrowly permits planning for only four already-structured bounded
+ * Device Knowledge information-query targets:
+ *
+ * - device model;
+ * - android version;
+ * - device summary;
+ * - battery level.
+ *
+ * Battery receives planning only so the later Device Knowledge capability
+ * boundary can claim the device-state domain and fail closed because no genuine
+ * Stage40 battery source exists.
+ *
  * Planner may formulate how to pursue the established goal, but it must not
  * reinterpret or change that goal.
  *
- * Providing a strategy does not generate plan identity, create a plan,
- * select or authorize a capability, execute an action, observe execution,
- * verify an effect, or establish an Outcome.
+ * Providing a strategy does not generate plan identity, create a plan, select
+ * or authorize a capability, execute an action, observe execution, verify an
+ * effect, or establish an Outcome.
+ *
+ * INFORMATION_QUERY != PLANNABLE_BY_DEFAULT.
+ * DEVICE_KNOWLEDGE_PLAN != DEVICE_FACT.
+ * BATTERY_QUERY != BATTERY_FACT.
  */
 class DefaultPlanningStrategyProvider : PlanningStrategyProvider {
 
@@ -27,7 +43,8 @@ class DefaultPlanningStrategyProvider : PlanningStrategyProvider {
         request: PlanCreationRequest,
     ): PlanningStrategyProvisionResult {
         require(
-            request.task.decision.understanding.context.traceId == traceId,
+            request.task.decision.understanding.context.traceId ==
+                traceId,
         ) {
             "Planning strategy trace and plan-creation request must use the same trace identity."
         }
@@ -35,10 +52,14 @@ class DefaultPlanningStrategyProvider : PlanningStrategyProvider {
         val understanding =
             request.task.decision.understanding
 
-        if (understanding.state != UnderstandingState.COMPLETE) {
+        if (
+            understanding.state !=
+            UnderstandingState.COMPLETE
+        ) {
             return PlanningStrategyProvisionResult.create(
                 traceId = traceId,
-                status = PlanningStrategyProvisionStatus.UNAVAILABLE,
+                status =
+                    PlanningStrategyProvisionStatus.UNAVAILABLE,
             )
         }
 
@@ -46,7 +67,8 @@ class DefaultPlanningStrategyProvider : PlanningStrategyProvider {
             understanding.semantics
                 ?: return PlanningStrategyProvisionResult.create(
                     traceId = traceId,
-                    status = PlanningStrategyProvisionStatus.UNAVAILABLE,
+                    status =
+                        PlanningStrategyProvisionStatus.UNAVAILABLE,
                 )
 
         val strategy =
@@ -76,10 +98,29 @@ class DefaultPlanningStrategyProvider : PlanningStrategyProvider {
                     }
                 }
 
+                UnderstandingIntent.ACTION_REQUEST ->
+                    null
 
-                UnderstandingIntent.ACTION_REQUEST,
-                UnderstandingIntent.INFORMATION_QUERY,
-                -> null
+                UnderstandingIntent.INFORMATION_QUERY -> {
+                    val target = semantics.target
+                    val predicate = semantics.predicate
+
+                    if (
+                        semantics.actionability ==
+                        UnderstandingActionability.ACTIONABLE &&
+                        target != null &&
+                        predicate != null &&
+                        isStage337MDeviceKnowledgeQuery(
+                            target = target,
+                            predicate = predicate,
+                        )
+                    ) {
+                        "Prepare the Stage337M bounded read-only Device Knowledge query."
+                    } else {
+                        null
+                    }
+                }
+
                 UnderstandingIntent.INFORMATIONAL -> {
                     if (
                         semantics.actionability ==
@@ -95,14 +136,33 @@ class DefaultPlanningStrategyProvider : PlanningStrategyProvider {
         return if (strategy != null) {
             PlanningStrategyProvisionResult.create(
                 traceId = traceId,
-                status = PlanningStrategyProvisionStatus.AVAILABLE,
+                status =
+                    PlanningStrategyProvisionStatus.AVAILABLE,
                 strategy = strategy,
             )
         } else {
             PlanningStrategyProvisionResult.create(
                 traceId = traceId,
-                status = PlanningStrategyProvisionStatus.UNAVAILABLE,
+                status =
+                    PlanningStrategyProvisionStatus.UNAVAILABLE,
             )
         }
+    }
+
+    private fun isStage337MDeviceKnowledgeQuery(
+        target: String,
+        predicate: String,
+    ): Boolean {
+        if (predicate != "query") {
+            return false
+        }
+
+        return target in
+            setOf(
+                "device model",
+                "android version",
+                "device summary",
+                "battery level",
+            )
     }
 }

@@ -261,6 +261,39 @@ class DefaultUnderstandingEvaluationResolver(
         content: String,
         normalized: String,
     ): UnderstandingSemantics? {
+        if (DEVICE_MODEL_QUERY_PATTERN.matches(normalized)) {
+            return UnderstandingSemantics.create(
+                intent = UnderstandingIntent.INFORMATION_QUERY,
+                actionability =
+                    UnderstandingActionability.ACTIONABLE,
+                meaning = "query device model",
+                target = "device model",
+                predicate = "query",
+            )
+        }
+
+        if (ANDROID_VERSION_QUERY_PATTERN.matches(normalized)) {
+            return UnderstandingSemantics.create(
+                intent = UnderstandingIntent.INFORMATION_QUERY,
+                actionability =
+                    UnderstandingActionability.ACTIONABLE,
+                meaning = "query android version",
+                target = "android version",
+                predicate = "query",
+            )
+        }
+
+        if (DEVICE_SUMMARY_QUERY_PATTERN.matches(normalized)) {
+            return UnderstandingSemantics.create(
+                intent = UnderstandingIntent.INFORMATION_QUERY,
+                actionability =
+                    UnderstandingActionability.ACTIONABLE,
+                meaning = "query device summary",
+                target = "device summary",
+                predicate = "query",
+            )
+        }
+
         if (BATTERY_QUERY_PATTERN.matches(normalized)) {
             return UnderstandingSemantics.create(
                 intent = UnderstandingIntent.INFORMATION_QUERY,
@@ -659,6 +692,21 @@ class DefaultUnderstandingEvaluationResolver(
             Regex(
                 pattern =
                     """(?i)^(?:(?:please\s+)|(?:(?:can|could|would)\s+you\s+(?:please\s+)?))?open\s+(?:my\s+)?(.+?)(?:\s+please)?[.!?]?$""",
+            )
+
+        val DEVICE_MODEL_QUERY_PATTERN =
+            Regex(
+                """^(?:what(?:['’]s|\s+is)\s+my\s+device\s+model|what\s+phone\s+is\s+this)$""",
+            )
+
+        val ANDROID_VERSION_QUERY_PATTERN =
+            Regex(
+                """^what\s+android\s+version\s+am\s+i\s+using$""",
+            )
+
+        val DEVICE_SUMMARY_QUERY_PATTERN =
+            Regex(
+                """^tell\s+me\s+about\s+this\s+device$""",
             )
 
         val BATTERY_QUERY_PATTERN =

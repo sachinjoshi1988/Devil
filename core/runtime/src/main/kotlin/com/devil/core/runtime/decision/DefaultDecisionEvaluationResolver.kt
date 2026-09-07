@@ -13,6 +13,17 @@ import com.devil.core.model.understanding.UnderstandingState
  * Stage 57 introduces a deliberately small deterministic Decision policy over
  * semantic understanding established by the preceding Understanding Authority.
  *
+ * Stage337M narrowly extends INFORMATION_QUERY decision policy only for the
+ * already-structured bounded Device Knowledge targets:
+ *
+ * - device model;
+ * - android version;
+ * - device summary;
+ * - battery level.
+ *
+ * Battery is included only so the later Stage337M Device Knowledge boundary can
+ * fail closed without permitting a competing guessed/model-derived device fact.
+ *
  * Decision remains downstream from Understanding and upstream from Task.
  *
  * A SELECTED decision does not:
@@ -27,6 +38,10 @@ import com.devil.core.model.understanding.UnderstandingState
  *
  * Unsupported or incomplete understanding remains deferred rather than being
  * converted into fabricated intent or unjustified action.
+ *
+ * INFORMATION_QUERY != OPERATIONAL_BY_DEFAULT.
+ * DEVICE_KNOWLEDGE_DECISION != DEVICE_FACT.
+ * BATTERY_QUERY != BATTERY_FACT.
  */
 class DefaultDecisionEvaluationResolver :
     DecisionEvaluationResolver {
@@ -114,10 +129,7 @@ class DefaultDecisionEvaluationResolver :
                 }
             }
 
-
-            UnderstandingIntent.ACTION_REQUEST,
-            UnderstandingIntent.INFORMATION_QUERY,
-            -> {
+            UnderstandingIntent.ACTION_REQUEST -> {
                 if (
                     semantics.actionability !=
                     UnderstandingActionability.ACTIONABLE ||
@@ -134,6 +146,39 @@ class DefaultDecisionEvaluationResolver :
                     )
                 }
             }
+
+            UnderstandingIntent.INFORMATION_QUERY -> {
+                val target = semantics.target
+                val predicate = semantics.predicate
+                if (
+                    semantics.actionability !=
+                    UnderstandingActionability.ACTIONABLE ||
+                    target == null ||
+                    predicate == null
+                ) {
+                    deferredSemanticMismatch(request)
+                } else if (
+                    isStage337MDeviceKnowledgeQuery(
+                        target = target,
+                        predicate = predicate,
+                    )
+                ) {
+                    DecisionRecord.create(
+                        understanding = understanding,
+                        state = DecisionState.SELECTED,
+                        summary =
+                            "Proceed with the Stage337M bounded Device Knowledge query.",
+                    )
+                } else {
+                    DecisionRecord.create(
+                        understanding = understanding,
+                        state = DecisionState.DEFERRED,
+                        summary =
+                            "Decision deferred because the understood request has no operational decision policy.",
+                    )
+                }
+            }
+
             UnderstandingIntent.INFORMATIONAL -> {
                 if (
                     semantics.actionability !=
@@ -150,6 +195,23 @@ class DefaultDecisionEvaluationResolver :
                 }
             }
         }
+    }
+
+    private fun isStage337MDeviceKnowledgeQuery(
+        target: String,
+        predicate: String,
+    ): Boolean {
+        if (predicate != "query") {
+            return false
+        }
+
+        return target in
+            setOf(
+                "device model",
+                "android version",
+                "device summary",
+                "battery level",
+            )
     }
 
     private fun deferredSemanticMismatch(

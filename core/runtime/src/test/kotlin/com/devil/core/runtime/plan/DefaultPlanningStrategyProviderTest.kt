@@ -105,6 +105,50 @@ class DefaultPlanningStrategyProviderTest {
         assertNull(result.error)
     }
 
+
+    @Test
+    fun `provides bounded Stage337M Device Knowledge strategies`() {
+        listOf(
+            "device model",
+            "android version",
+            "device summary",
+            "battery level",
+        ).forEachIndexed { index, target ->
+            val traceId =
+                TraceId.from(
+                    "trace-stage337m-planning-${index + 1}",
+                )
+
+            val result =
+                DefaultPlanningStrategyProvider().provide(
+                    traceId = traceId,
+                    request =
+                        createRequest(
+                            traceId = traceId,
+                            semantics =
+                                UnderstandingSemantics.create(
+                                    intent =
+                                        UnderstandingIntent.INFORMATION_QUERY,
+                                    actionability =
+                                        UnderstandingActionability.ACTIONABLE,
+                                    meaning = "query $target",
+                                    target = target,
+                                    predicate = "query",
+                                ),
+                        ),
+                )
+
+            assertEquals(
+                PlanningStrategyProvisionStatus.AVAILABLE,
+                result.status,
+            )
+            assertEquals(
+                "Prepare the Stage337M bounded read-only Device Knowledge query.",
+                result.strategy,
+            )
+            assertNull(result.error)
+        }
+    }
     @Test
     fun `provide returns unavailable for understood information query`() {
         val traceId =
@@ -123,8 +167,8 @@ class DefaultPlanningStrategyProviderTest {
                                 intent = UnderstandingIntent.INFORMATION_QUERY,
                                 actionability =
                                     UnderstandingActionability.ACTIONABLE,
-                                meaning = "query battery level",
-                                target = "battery level",
+                                meaning = "query Ada Lovelace",
+                                target = "Ada Lovelace",
                                 predicate = "query",
                             ),
                     ),

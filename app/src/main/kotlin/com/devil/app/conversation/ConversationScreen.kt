@@ -709,6 +709,11 @@ private fun ConversationTimelineRow(
                 entry = entry,
             )
 
+        ConversationEntryRole.KNOWLEDGE ->
+            DevilConversationCard(
+                entry = entry,
+            )
+
         ConversationEntryRole.OUTCOME ->
             DevilConversationCard(
                 entry = entry,

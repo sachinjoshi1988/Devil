@@ -173,6 +173,21 @@ class Stage337JGeneralIntentCapabilityRouterTest {
             target = "battery level",
             predicate = "query",
         )
+        listOf(
+            "device model",
+            "android version",
+            "device summary",
+        ).forEach { target ->
+            assertRoute(
+                route =
+                    GeneralIntentCapabilityRoute.DEVICE_KNOWLEDGE,
+                intent =
+                    UnderstandingIntent.INFORMATION_QUERY,
+                target = target,
+                predicate = "query",
+            )
+        }
+
 
         assertRoute(
             route = GeneralIntentCapabilityRoute.NOTIFICATIONS,

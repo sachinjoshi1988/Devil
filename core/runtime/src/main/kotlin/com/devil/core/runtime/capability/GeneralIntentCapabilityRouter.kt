@@ -182,6 +182,9 @@ class DefaultGeneralIntentCapabilityRouter :
         }
 
         return when (target) {
+            "device model",
+            "android version",
+            "device summary",
             "battery level" ->
                 GeneralIntentCapabilityRoute.DEVICE_KNOWLEDGE
 

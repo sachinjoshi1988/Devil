@@ -201,6 +201,58 @@ class DefaultUnderstandingEvaluationResolverTest {
     }
 
     @Test
+    fun `evaluate understands bounded Stage337M device knowledge questions`() {
+        listOf(
+            Triple(
+                "What is my device model?",
+                "device model",
+                "query device model",
+            ),
+            Triple(
+                "What phone is this?",
+                "device model",
+                "query device model",
+            ),
+            Triple(
+                "What Android version am I using?",
+                "android version",
+                "query android version",
+            ),
+            Triple(
+                "Tell me about this device.",
+                "device summary",
+                "query device summary",
+            ),
+        ).forEach { (content, target, meaning) ->
+            val understanding =
+                evaluate(
+                    content,
+                )
+
+            assertEquals(
+                UnderstandingIntent.INFORMATION_QUERY,
+                understanding.semantics?.intent,
+            )
+            assertEquals(
+                UnderstandingActionability.ACTIONABLE,
+                understanding.semantics?.actionability,
+            )
+            assertEquals(
+                target,
+                understanding.semantics?.target,
+            )
+            assertEquals(
+                meaning,
+                understanding.semantics?.meaning,
+            )
+            assertEquals(
+                "query",
+                understanding.semantics?.predicate,
+            )
+        }
+    }
+
+    @Test
     fun `evaluate understands battery level question as information query`() {
         val understanding =
             evaluate(
